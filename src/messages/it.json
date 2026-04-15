@@ -1,0 +1,44 @@
+{
+  "setup": {
+    "title": "Gioco del Sommelier",
+    "subtitle": "Metti alla prova la tua conoscenza delle denominazioni vinicole italiane",
+    "filterLabel": "Mostra denominazioni:",
+    "filterBoth": "DOC e DOCG",
+    "filterDocg": "Solo DOCG",
+    "filterDoc": "Solo DOC",
+    "startButton": "Inizia Sessione"
+  },
+  "game": {
+    "endSession": "Termina Sessione",
+    "score": "Punteggio",
+    "wrongAttempts": "Tentativi errati",
+    "hint": "Suggerimento",
+    "dragInstruction": "Trascina nella regione corretta sulla mappa",
+    "regionsFound": "regioni trovate",
+    "regionsRemaining": "rimanenti",
+    "correctFeedback": "Corretto!",
+    "allFoundFeedback": "Tutte le regioni trovate!",
+    "wrongFeedback": "Non esatto, riprova!",
+    "autoPlacedFeedback": "Posizionato automaticamente in"
+  },
+  "recap": {
+    "title": "Sessione Completata",
+    "totalAttempted": "Schede tentate",
+    "score": "Punteggio",
+    "noWrong": "Perfetto (nessun errore)",
+    "oneWrong": "1 errore",
+    "twoWrong": "2 errori",
+    "autoPlaced": "Posizionato automaticamente",
+    "byRegion": "Performance per regione",
+    "aiReview": "Valutazione del Tutore",
+    "newSession": "Inizia Nuova Sessione",
+    "loadingReview": "Generazione della valutazione..."
+  },
+  "map": {
+    "placedCards": "denominazioni posizionate",
+    "noCards": "Nessuna denominazione ancora"
+  },
+  "language": {
+    "toggle": "English"
+  }
+}

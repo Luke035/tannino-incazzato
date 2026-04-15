@@ -1,0 +1,44 @@
+{
+  "setup": {
+    "title": "Sommelier Game",
+    "subtitle": "Test your knowledge of Italian wine denominations",
+    "filterLabel": "Show denominations:",
+    "filterBoth": "DOC & DOCG",
+    "filterDocg": "DOCG only",
+    "filterDoc": "DOC only",
+    "startButton": "Start Session"
+  },
+  "game": {
+    "endSession": "End Session",
+    "score": "Score",
+    "wrongAttempts": "Wrong attempts",
+    "hint": "Hint",
+    "dragInstruction": "Drag to the correct region on the map",
+    "regionsFound": "regions found",
+    "regionsRemaining": "remaining",
+    "correctFeedback": "Correct!",
+    "allFoundFeedback": "All regions found!",
+    "wrongFeedback": "Not quite, try again!",
+    "autoPlacedFeedback": "Auto-placed in"
+  },
+  "recap": {
+    "title": "Session Complete",
+    "totalAttempted": "Cards attempted",
+    "score": "Score",
+    "noWrong": "Perfect (no wrong attempts)",
+    "oneWrong": "1 wrong attempt",
+    "twoWrong": "2 wrong attempts",
+    "autoPlaced": "Auto-placed",
+    "byRegion": "Performance by region",
+    "aiReview": "Tutor's Assessment",
+    "newSession": "Start New Session",
+    "loadingReview": "Generating your assessment..."
+  },
+  "map": {
+    "placedCards": "denominations placed",
+    "noCards": "No denominations placed yet"
+  },
+  "language": {
+    "toggle": "Italiano"
+  }
+}
