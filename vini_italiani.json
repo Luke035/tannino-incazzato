@@ -1,0 +1,2057 @@
+[
+  {
+    "name": "Abruzzo",
+    "type": "DOC",
+    "region": "Abruzzo"
+  },
+  {
+    "name": "Aglianico del Taburno",
+    "type": "DOCG",
+    "region": "Campania"
+  },
+  {
+    "name": "Aglianico del Vulture",
+    "type": "DOC",
+    "region": "Basilicata"
+  },
+  {
+    "name": "Aglianico del Vulture Superiore",
+    "type": "DOCG",
+    "region": "Basilicata"
+  },
+  {
+    "name": "Alba",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Albugnano",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Alcamo",
+    "type": "DOC",
+    "region": "Sicilia"
+  },
+  {
+    "name": "Aleatico di Gradoli",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Aleatico di Puglia",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Alezio",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Alghero",
+    "type": "DOC",
+    "region": "Sardegna"
+  },
+  {
+    "name": "Alta Langa",
+    "type": "DOCG",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Alto Adige dell'Alto Adige Südtirol Südtiroler",
+    "type": "DOC",
+    "region": "Provincia Autonoma di Bolzano"
+  },
+  {
+    "name": "Amarone della Valpolicella",
+    "type": "DOCG",
+    "region": "Veneto"
+  },
+  {
+    "name": "Amelia",
+    "type": "DOC",
+    "region": "Umbria"
+  },
+  {
+    "name": "Ansonica Costa dell'Argentario",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Aprilia",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Arborea",
+    "type": "DOC",
+    "region": "Sardegna"
+  },
+  {
+    "name": "Arcole",
+    "type": "DOC",
+    "region": "Veneto"
+  },
+  {
+    "name": "Asolo Montello / Montello Asolo",
+    "type": "DOC",
+    "region": "Veneto"
+  },
+  {
+    "name": "Asolo Prosecco / Asolo",
+    "type": "DOCG",
+    "region": "Veneto"
+  },
+  {
+    "name": "Assisi",
+    "type": "DOC",
+    "region": "Umbria"
+  },
+  {
+    "name": "Asti",
+    "type": "DOCG",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Atina",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Aversa",
+    "type": "DOC",
+    "region": "Campania"
+  },
+  {
+    "name": "Bagnoli di Sopra Bagnoli",
+    "type": "DOC",
+    "region": "Veneto"
+  },
+  {
+    "name": "Bagnoli Friularo Friularo di Bagnoli",
+    "type": "DOCG",
+    "region": "Veneto"
+  },
+  {
+    "name": "Barbaresco",
+    "type": "DOCG",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Barbera d'Alba",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Barbera d'Asti",
+    "type": "DOCG",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Barbera del Monferrato",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Barbera del Monferrato Superiore",
+    "type": "DOCG",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Barco Reale di Carmignano",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Bardolino",
+    "type": "DOC",
+    "region": "Veneto"
+  },
+  {
+    "name": "Bardolino Superiore",
+    "type": "DOCG",
+    "region": "Veneto"
+  },
+  {
+    "name": "Barletta",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Barolo",
+    "type": "DOCG",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Bianchello del Metauro",
+    "type": "DOC",
+    "region": "Marche"
+  },
+  {
+    "name": "Bianco Capena",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Bianco dell'Empolese",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Bianco di Pitigliano",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Biferno",
+    "type": "DOC",
+    "region": "Molise"
+  },
+  {
+    "name": "Bivongi",
+    "type": "DOC",
+    "region": "Calabria"
+  },
+  {
+    "name": "Boca",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Bolgheri",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Bolgheri Sassicaia",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Bonarda dell'Oltrepò Pavese",
+    "type": "DOC",
+    "region": "Lombardia"
+  },
+  {
+    "name": "Bosco Eliceo",
+    "type": "DOC",
+    "region": "Emilia Romagna"
+  },
+  {
+    "name": "Botticino",
+    "type": "DOC",
+    "region": "Lombardia"
+  },
+  {
+    "name": "Brachetto d'Acqui Acqui",
+    "type": "DOCG",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Bramaterra",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Breganze",
+    "type": "DOC",
+    "region": "Veneto"
+  },
+  {
+    "name": "Brindisi",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Brunello di Montalcino",
+    "type": "DOCG",
+    "region": "Toscana"
+  },
+  {
+    "name": "Buttafuoco dell'Oltrepò Pavese Buttafuoco",
+    "type": "DOC",
+    "region": "Lombardia"
+  },
+  {
+    "name": "Cacc'e mmitte di Lucera",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Cagliari",
+    "type": "DOC",
+    "region": "Sardegna"
+  },
+  {
+    "name": "Calosso",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Campi Flegrei",
+    "type": "DOC",
+    "region": "Campania"
+  },
+  {
+    "name": "Campidano di Terralba Terralba",
+    "type": "DOC",
+    "region": "Sardegna"
+  },
+  {
+    "name": "Canavese",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Candia dei Colli Apuani",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Canelli",
+    "type": "DOCG",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Cannellino di Frascati",
+    "type": "DOCG",
+    "region": "Lazio"
+  },
+  {
+    "name": "Cannonau di Sardegna",
+    "type": "DOC",
+    "region": "Sardegna"
+  },
+  {
+    "name": "Capalbio",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Capri",
+    "type": "DOC",
+    "region": "Campania"
+  },
+  {
+    "name": "Capriano del Colle",
+    "type": "DOC",
+    "region": "Lombardia"
+  },
+  {
+    "name": "Carema",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Carignano del Sulcis",
+    "type": "DOC",
+    "region": "Sardegna"
+  },
+  {
+    "name": "Carmignano",
+    "type": "DOCG",
+    "region": "Toscana"
+  },
+  {
+    "name": "Carso Carso - Kras",
+    "type": "DOC",
+    "region": "Friuli Venezia Giulia"
+  },
+  {
+    "name": "Casauria",
+    "type": "DOCG",
+    "region": "Abruzzo"
+  },
+  {
+    "name": "Casavecchia di Pontelatone",
+    "type": "DOC",
+    "region": "Campania"
+  },
+  {
+    "name": "Casteggio",
+    "type": "DOC",
+    "region": "Lombardia"
+  },
+  {
+    "name": "Castel del Monte",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Castel del Monte Bombino Nero",
+    "type": "DOCG",
+    "region": "Puglia"
+  },
+  {
+    "name": "Castel del Monte Nero di Troia Riserva",
+    "type": "DOCG",
+    "region": "Puglia"
+  },
+  {
+    "name": "Castel del Monte Rosso Riserva",
+    "type": "DOCG",
+    "region": "Puglia"
+  },
+  {
+    "name": "Castel San Lorenzo",
+    "type": "DOC",
+    "region": "Campania"
+  },
+  {
+    "name": "Casteller",
+    "type": "DOC",
+    "region": "Provincia Autonoma di Trento"
+  },
+  {
+    "name": "Castelli di Jesi Verdicchio Riserva",
+    "type": "DOCG",
+    "region": "Marche"
+  },
+  {
+    "name": "Castelli Romani",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Cellatica",
+    "type": "DOC",
+    "region": "Lombardia"
+  },
+  {
+    "name": "Cerasuolo d'Abruzzo",
+    "type": "DOC",
+    "region": "Abruzzo"
+  },
+  {
+    "name": "Cerasuolo di Vittoria",
+    "type": "DOCG",
+    "region": "Sicilia"
+  },
+  {
+    "name": "Cerveteri",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Cesanese del Piglio Piglio",
+    "type": "DOCG",
+    "region": "Lazio"
+  },
+  {
+    "name": "Cesanese di Affile Affile",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Cesanese di Olevano Romano Olevano Romano",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Chianti",
+    "type": "DOCG",
+    "region": "Toscana"
+  },
+  {
+    "name": "Chianti Classico",
+    "type": "DOCG",
+    "region": "Toscana"
+  },
+  {
+    "name": "Cilento",
+    "type": "DOC",
+    "region": "Campania"
+  },
+  {
+    "name": "Cinque Terre Cinque Terre Sciacchetrà",
+    "type": "DOC",
+    "region": "Liguria"
+  },
+  {
+    "name": "Circeo",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Cirò",
+    "type": "DOC",
+    "region": "Calabria"
+  },
+  {
+    "name": "Cirò Classico",
+    "type": "DOCG",
+    "region": "Calabria"
+  },
+  {
+    "name": "Cisterna d'Asti",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Colli Albani",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Colli Altotiberini",
+    "type": "DOC",
+    "region": "Umbria"
+  },
+  {
+    "name": "Colli Berici",
+    "type": "DOC",
+    "region": "Veneto"
+  },
+  {
+    "name": "Colli Bolognesi",
+    "type": "DOC",
+    "region": "Emilia Romagna"
+  },
+  {
+    "name": "Colli Bolognesi Pignoletto",
+    "type": "DOCG",
+    "region": "Emilia Romagna"
+  },
+  {
+    "name": "Colli del Trasimeno Trasimeno",
+    "type": "DOC",
+    "region": "Umbria"
+  },
+  {
+    "name": "Colli della Sabina",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Colli dell'Etruria Centrale",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Colli di Conegliano",
+    "type": "DOCG",
+    "region": "Veneto"
+  },
+  {
+    "name": "Colli di Faenza",
+    "type": "DOC",
+    "region": "Emilia Romagna"
+  },
+  {
+    "name": "Colli di Luni",
+    "type": "DOC",
+    "region": "Liguria Toscana"
+  },
+  {
+    "name": "Colli di Parma",
+    "type": "DOC",
+    "region": "Emilia Romagna"
+  },
+  {
+    "name": "Colli di Scandiano e di Canossa",
+    "type": "DOC",
+    "region": "Emilia Romagna"
+  },
+  {
+    "name": "Colli d'Imola",
+    "type": "DOC",
+    "region": "Emilia Romagna"
+  },
+  {
+    "name": "Colli Etruschi Viterbesi Tuscia",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Colli Euganei",
+    "type": "DOC",
+    "region": "Veneto"
+  },
+  {
+    "name": "Colli Euganei Fior d'Arancio Fior d'Arancio Colli Euganei",
+    "type": "DOCG",
+    "region": "Veneto"
+  },
+  {
+    "name": "Colli Lanuvini",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Colli Maceratesi",
+    "type": "DOC",
+    "region": "Marche"
+  },
+  {
+    "name": "Colli Martani",
+    "type": "DOC",
+    "region": "Umbria"
+  },
+  {
+    "name": "Colli Orientali del Friuli Picolit",
+    "type": "DOCG",
+    "region": "Friuli Venezia Giulia"
+  },
+  {
+    "name": "Colli Perugini",
+    "type": "DOC",
+    "region": "Umbria"
+  },
+  {
+    "name": "Colli Pesaresi",
+    "type": "DOC",
+    "region": "Marche"
+  },
+  {
+    "name": "Colli Piacentini",
+    "type": "DOC",
+    "region": "Emilia Romagna"
+  },
+  {
+    "name": "Colli Romagna centrale",
+    "type": "DOC",
+    "region": "Emilia Romagna"
+  },
+  {
+    "name": "Colli Tortonesi",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Collina Torinese",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Colline di Levanto",
+    "type": "DOC",
+    "region": "Liguria"
+  },
+  {
+    "name": "Colline Joniche Tarantine",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Colline Lucchesi",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Colline Novaresi",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Colline Saluzzesi",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Collio Goriziano Collio",
+    "type": "DOC",
+    "region": "Friuli Venezia Giulia"
+  },
+  {
+    "name": "Conegliano Valdobbiadene - Prosecco Conegliano - Prosecco Valdobbiadene - Prosecco",
+    "type": "DOCG",
+    "region": "Veneto"
+  },
+  {
+    "name": "Cònero",
+    "type": "DOCG",
+    "region": "Marche"
+  },
+  {
+    "name": "Contea di Sclafani Valledolmo-Contea di Sclafani",
+    "type": "DOC",
+    "region": "Sicilia"
+  },
+  {
+    "name": "Contessa Entellina",
+    "type": "DOC",
+    "region": "Sicilia"
+  },
+  {
+    "name": "Controguerra",
+    "type": "DOC",
+    "region": "Abruzzo"
+  },
+  {
+    "name": "Copertino",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Cori",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Cortese dell'Alto Monferrato",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Corti Benedettine del Padovano",
+    "type": "DOC",
+    "region": "Veneto"
+  },
+  {
+    "name": "Cortona",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Costa d'Amalfi",
+    "type": "DOC",
+    "region": "Campania"
+  },
+  {
+    "name": "Coste della Sesia",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Curtefranca",
+    "type": "DOC",
+    "region": "Lombardia"
+  },
+  {
+    "name": "Custoza",
+    "type": "DOC",
+    "region": "Veneto"
+  },
+  {
+    "name": "Delia Nivolelli",
+    "type": "DOC",
+    "region": "Sicilia"
+  },
+  {
+    "name": "delle Venezie Beneških okolišev",
+    "type": "DOC",
+    "region": "Friuli Venezia Giulia Provincia Autonoma di Trento Veneto"
+  },
+  {
+    "name": "Dogliani",
+    "type": "DOCG",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Dolcetto d'Acqui",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Dolcetto d'Alba",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Dolcetto d'Asti",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Dolcetto di Diano d'Alba Diano d'Alba",
+    "type": "DOCG",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Dolcetto di Ovada",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Dolcetto di Ovada Superiore Ovada",
+    "type": "DOCG",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Elba",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Elba Aleatico Passito Aleatico Passito dell'Elba",
+    "type": "DOCG",
+    "region": "Toscana"
+  },
+  {
+    "name": "Eloro",
+    "type": "DOC",
+    "region": "Sicilia"
+  },
+  {
+    "name": "Emilia-Romagna",
+    "type": "DOC",
+    "region": "Emilia Romagna"
+  },
+  {
+    "name": "Erbaluce di Caluso Caluso",
+    "type": "DOCG",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Erice",
+    "type": "DOC",
+    "region": "Sicilia"
+  },
+  {
+    "name": "Esino",
+    "type": "DOC",
+    "region": "Marche"
+  },
+  {
+    "name": "Est! Est!! Est!! di Montefiascone",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Etna",
+    "type": "DOC",
+    "region": "Sicilia"
+  },
+  {
+    "name": "Falanghina del Sannio",
+    "type": "DOC",
+    "region": "Campania"
+  },
+  {
+    "name": "Falerio",
+    "type": "DOC",
+    "region": "Marche"
+  },
+  {
+    "name": "Falerno del Massico",
+    "type": "DOC",
+    "region": "Campania"
+  },
+  {
+    "name": "Fara",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Faro",
+    "type": "DOC",
+    "region": "Sicilia"
+  },
+  {
+    "name": "Fiano di Avellino",
+    "type": "DOCG",
+    "region": "Campania"
+  },
+  {
+    "name": "Franciacorta",
+    "type": "DOCG",
+    "region": "Lombardia"
+  },
+  {
+    "name": "Frascati",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Frascati Superiore",
+    "type": "DOCG",
+    "region": "Lazio"
+  },
+  {
+    "name": "Freisa d'Asti",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Freisa di Chieri",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Friuli / Friuli Venezia Giulia / Furlanija / Furlanija Julijska krajina",
+    "type": "DOC",
+    "region": "Friuli Venezia Giulia"
+  },
+  {
+    "name": "Friuli Annia",
+    "type": "DOC",
+    "region": "Friuli Venezia Giulia"
+  },
+  {
+    "name": "Friuli Aquileia",
+    "type": "DOC",
+    "region": "Friuli Venezia Giulia"
+  },
+  {
+    "name": "Friuli Colli Orientali",
+    "type": "DOC",
+    "region": "Friuli Venezia Giulia"
+  },
+  {
+    "name": "Friuli Grave",
+    "type": "DOC",
+    "region": "Friuli Venezia Giulia"
+  },
+  {
+    "name": "Friuli Isonzo Isonzo del Friuli",
+    "type": "DOC",
+    "region": "Friuli Venezia Giulia"
+  },
+  {
+    "name": "Friuli Latisana",
+    "type": "DOC",
+    "region": "Friuli Venezia Giulia"
+  },
+  {
+    "name": "Gabiano",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Galatina",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Galluccio",
+    "type": "DOC",
+    "region": "Campania"
+  },
+  {
+    "name": "Gambellara",
+    "type": "DOC",
+    "region": "Veneto"
+  },
+  {
+    "name": "Garda",
+    "type": "DOC",
+    "region": "Lombardia Veneto"
+  },
+  {
+    "name": "Garda Colli Mantovani",
+    "type": "DOC",
+    "region": "Lombardia"
+  },
+  {
+    "name": "Gattinara",
+    "type": "DOCG",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Gavi Cortese di Gavi",
+    "type": "DOCG",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Genazzano",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Ghemme",
+    "type": "DOCG",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Gioia del Colle",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Girò di Cagliari",
+    "type": "DOC",
+    "region": "Sardegna"
+  },
+  {
+    "name": "Golfo del Tigullio - Portofino Portofino",
+    "type": "DOC",
+    "region": "Liguria"
+  },
+  {
+    "name": "Grance Senesi",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Gravina",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Greco di Bianco",
+    "type": "DOC",
+    "region": "Calabria"
+  },
+  {
+    "name": "Greco di Tufo",
+    "type": "DOCG",
+    "region": "Campania"
+  },
+  {
+    "name": "Grignolino d'Asti",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Grignolino del Monferrato Casalese",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Grottino di Roccanova",
+    "type": "DOC",
+    "region": "Basilicata"
+  },
+  {
+    "name": "Gutturnio",
+    "type": "DOC",
+    "region": "Emilia Romagna"
+  },
+  {
+    "name": "I Terreni di Sanseverino",
+    "type": "DOC",
+    "region": "Marche"
+  },
+  {
+    "name": "Irpinia",
+    "type": "DOC",
+    "region": "Campania"
+  },
+  {
+    "name": "Ischia",
+    "type": "DOC",
+    "region": "Campania"
+  },
+  {
+    "name": "Lacrima di Morro Lacrima di Morro d'Alba",
+    "type": "DOC",
+    "region": "Marche"
+  },
+  {
+    "name": "Lago di Caldaro Caldaro Kalterersee Kalterer",
+    "type": "DOC",
+    "region": "Provincia Autonoma di Bolzano Provincia Autonoma di Trento"
+  },
+  {
+    "name": "Lago di Corbara",
+    "type": "DOC",
+    "region": "Umbria"
+  },
+  {
+    "name": "Lambrusco di Sorbara",
+    "type": "DOC",
+    "region": "Emilia Romagna"
+  },
+  {
+    "name": "Lambrusco Grasparossa di Castelvetro",
+    "type": "DOC",
+    "region": "Emilia Romagna"
+  },
+  {
+    "name": "Lambrusco Mantovano",
+    "type": "DOC",
+    "region": "Lombardia"
+  },
+  {
+    "name": "Lambrusco Salamino di Santa Croce",
+    "type": "DOC",
+    "region": "Emilia Romagna"
+  },
+  {
+    "name": "Lamezia",
+    "type": "DOC",
+    "region": "Calabria"
+  },
+  {
+    "name": "Langhe",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Lessini Durello Durello Lessini",
+    "type": "DOC",
+    "region": "Veneto"
+  },
+  {
+    "name": "Lessona",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Leverano",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Lison",
+    "type": "DOCG",
+    "region": "Friuli Venezia Giulia Veneto"
+  },
+  {
+    "name": "Lison-Pramaggiore",
+    "type": "DOC",
+    "region": "Friuli Venezia Giulia Veneto"
+  },
+  {
+    "name": "Lizzano",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Loazzolo",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Locorotondo",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Lugana",
+    "type": "DOC",
+    "region": "Lombardia Veneto"
+  },
+  {
+    "name": "Malvasia delle Lipari",
+    "type": "DOC",
+    "region": "Sicilia"
+  },
+  {
+    "name": "Malvasia di Bosa",
+    "type": "DOC",
+    "region": "Sardegna"
+  },
+  {
+    "name": "Malvasia di Casorzo d'Asti Casorzo Malvasia di Casorzo",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Malvasia di Castelnuovo Don Bosco",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Mamertino di Milazzo Mamertino",
+    "type": "DOC",
+    "region": "Sicilia"
+  },
+  {
+    "name": "Mandrolisai",
+    "type": "DOC",
+    "region": "Sardegna"
+  },
+  {
+    "name": "Maremma toscana",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Marino",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Marsala",
+    "type": "DOC",
+    "region": "Sicilia"
+  },
+  {
+    "name": "Martina Martina Franca",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Matera",
+    "type": "DOC",
+    "region": "Basilicata"
+  },
+  {
+    "name": "Matino",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Melissa",
+    "type": "DOC",
+    "region": "Calabria"
+  },
+  {
+    "name": "Menfi",
+    "type": "DOC",
+    "region": "Sicilia"
+  },
+  {
+    "name": "Merlara",
+    "type": "DOC",
+    "region": "Veneto"
+  },
+  {
+    "name": "Modena di Modena",
+    "type": "DOC",
+    "region": "Emilia Romagna"
+  },
+  {
+    "name": "Molise del Molise",
+    "type": "DOC",
+    "region": "Molise"
+  },
+  {
+    "name": "Monferrato",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Monica di Sardegna",
+    "type": "DOC",
+    "region": "Sardegna"
+  },
+  {
+    "name": "Monreale",
+    "type": "DOC",
+    "region": "Sicilia"
+  },
+  {
+    "name": "Montecarlo",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Montecompatri Colonna Montecompatri Colonna",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Montecucco",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Montecucco Sangiovese",
+    "type": "DOCG",
+    "region": "Toscana"
+  },
+  {
+    "name": "Montefalco",
+    "type": "DOC",
+    "region": "Umbria"
+  },
+  {
+    "name": "Montefalco Sagrantino",
+    "type": "DOCG",
+    "region": "Umbria"
+  },
+  {
+    "name": "Montello rosso Montello",
+    "type": "DOCG",
+    "region": "Veneto"
+  },
+  {
+    "name": "Montepulciano d'Abruzzo",
+    "type": "DOC",
+    "region": "Abruzzo"
+  },
+  {
+    "name": "Colline Teramane Montepulciano d'Abruzzo",
+    "type": "DOCG",
+    "region": "Abruzzo"
+  },
+  {
+    "name": "Monteregio di Massa Marittima",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Montescudaio",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Monti Lessini",
+    "type": "DOC",
+    "region": "Veneto"
+  },
+  {
+    "name": "Morellino di Scansano",
+    "type": "DOCG",
+    "region": "Toscana"
+  },
+  {
+    "name": "Moscadello di Montalcino",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Moscato di Sardegna",
+    "type": "DOC",
+    "region": "Sardegna"
+  },
+  {
+    "name": "Moscato di Sorso-Sennori Moscato di Sorso Moscato di Sennori",
+    "type": "DOC",
+    "region": "Sardegna"
+  },
+  {
+    "name": "Moscato di Trani",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Nardò",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Nasco di Cagliari",
+    "type": "DOC",
+    "region": "Sardegna"
+  },
+  {
+    "name": "Nebbiolo d'Alba",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Negroamaro di Terra d'Otranto",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Nettuno",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Nizza",
+    "type": "DOCG",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Noto",
+    "type": "DOC",
+    "region": "Sicilia"
+  },
+  {
+    "name": "Nuragus di Cagliari",
+    "type": "DOC",
+    "region": "Sardegna"
+  },
+  {
+    "name": "Offida",
+    "type": "DOCG",
+    "region": "Marche"
+  },
+  {
+    "name": "Oltrepò Pavese",
+    "type": "DOC",
+    "region": "Lombardia"
+  },
+  {
+    "name": "Oltrepò Pavese metodo classico",
+    "type": "DOCG",
+    "region": "Lombardia"
+  },
+  {
+    "name": "Oltrepò Pavese Pinot grigio",
+    "type": "DOC",
+    "region": "Lombardia"
+  },
+  {
+    "name": "Orcia",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Orta Nova",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Ortona",
+    "type": "DOC",
+    "region": "Abruzzo"
+  },
+  {
+    "name": "Ortrugo dei Colli Piacentini * Ortrugo - Colli Piacentini *",
+    "type": "DOC",
+    "region": "Emilia Romagna"
+  },
+  {
+    "name": "Orvieto",
+    "type": "DOC",
+    "region": "Lazio Umbria"
+  },
+  {
+    "name": "Ostuni",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Pantelleria",
+    "type": "DOC",
+    "region": "Sicilia"
+  },
+  {
+    "name": "Parrina",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Penisola Sorrentina",
+    "type": "DOC",
+    "region": "Campania"
+  },
+  {
+    "name": "Pentro di Isernia Pentro",
+    "type": "DOC",
+    "region": "Molise"
+  },
+  {
+    "name": "Pergola",
+    "type": "DOC",
+    "region": "Marche"
+  },
+  {
+    "name": "Piave",
+    "type": "DOC",
+    "region": "Veneto"
+  },
+  {
+    "name": "Piave Malanotte Malanotte del Piave",
+    "type": "DOCG",
+    "region": "Veneto"
+  },
+  {
+    "name": "Piemonte",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Pinerolese",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Pinot nero dell'Oltrepò Pavese",
+    "type": "DOC",
+    "region": "Lombardia"
+  },
+  {
+    "name": "Pomino",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Pornassio Ormeasco di Pornassio",
+    "type": "DOC",
+    "region": "Liguria"
+  },
+  {
+    "name": "Primitivo di Manduria",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Primitivo di Manduria Dolce Naturale",
+    "type": "DOCG",
+    "region": "Puglia"
+  },
+  {
+    "name": "Prosecco",
+    "type": "DOC",
+    "region": "Friuli Venezia Giulia Veneto"
+  },
+  {
+    "name": "Ramandolo",
+    "type": "DOCG",
+    "region": "Friuli Venezia Giulia"
+  },
+  {
+    "name": "Recioto della Valpolicella",
+    "type": "DOCG",
+    "region": "Veneto"
+  },
+  {
+    "name": "Recioto di Gambellara",
+    "type": "DOCG",
+    "region": "Veneto"
+  },
+  {
+    "name": "Recioto di Soave",
+    "type": "DOCG",
+    "region": "Veneto"
+  },
+  {
+    "name": "Reggiano",
+    "type": "DOC",
+    "region": "Emilia Romagna"
+  },
+  {
+    "name": "Reno",
+    "type": "DOC",
+    "region": "Emilia Romagna"
+  },
+  {
+    "name": "Riesi",
+    "type": "DOC",
+    "region": "Sicilia"
+  },
+  {
+    "name": "Rimini",
+    "type": "DOC",
+    "region": "Emilia Romagna"
+  },
+  {
+    "name": "Riviera del Brenta",
+    "type": "DOC",
+    "region": "Veneto"
+  },
+  {
+    "name": "Riviera del Garda Classico",
+    "type": "DOC",
+    "region": "Lombardia"
+  },
+  {
+    "name": "Riviera Ligure di Ponente",
+    "type": "DOC",
+    "region": "Liguria"
+  },
+  {
+    "name": "Roero",
+    "type": "DOCG",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Roma",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Romagna",
+    "type": "DOC",
+    "region": "Emilia Romagna"
+  },
+  {
+    "name": "Romagna Albana",
+    "type": "DOCG",
+    "region": "Emilia Romagna"
+  },
+  {
+    "name": "Rosazzo",
+    "type": "DOCG",
+    "region": "Friuli Venezia Giulia"
+  },
+  {
+    "name": "Rossese di Dolceacqua Dolceaqua",
+    "type": "DOC",
+    "region": "Liguria"
+  },
+  {
+    "name": "Rosso Cònero",
+    "type": "DOC",
+    "region": "Marche"
+  },
+  {
+    "name": "Rosso di Cerignola",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Rosso di Montalcino",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Rosso di Montepulciano",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Rosso Orvietano Orvietano Rosso",
+    "type": "DOC",
+    "region": "Umbria"
+  },
+  {
+    "name": "Rosso Piceno Piceno",
+    "type": "DOC",
+    "region": "Marche"
+  },
+  {
+    "name": "Rubino di Cantavenna",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Ruchè di Castagnole Monferrato",
+    "type": "DOCG",
+    "region": "Piemonte"
+  },
+  {
+    "name": "S. Anna di Isola Capo Rizzuto",
+    "type": "DOC",
+    "region": "Calabria"
+  },
+  {
+    "name": "Salaparuta",
+    "type": "DOC",
+    "region": "Sicilia"
+  },
+  {
+    "name": "Salice Salentino",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Sambuca di Sicilia",
+    "type": "DOC",
+    "region": "Sicilia"
+  },
+  {
+    "name": "San Colombano al Lambro San Colombano",
+    "type": "DOC",
+    "region": "Lombardia"
+  },
+  {
+    "name": "San Gimignano",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "San Ginesio",
+    "type": "DOC",
+    "region": "Marche"
+  },
+  {
+    "name": "San Martino della Battaglia",
+    "type": "DOC",
+    "region": "Lombardia Veneto"
+  },
+  {
+    "name": "San Severo",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "San Torpè",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Sangue di Giuda dell'Oltrepò Pavese Sangue di Giuda",
+    "type": "DOC",
+    "region": "Lombardia"
+  },
+  {
+    "name": "Sannio",
+    "type": "DOC",
+    "region": "Campania"
+  },
+  {
+    "name": "Santa Margherita di Belice",
+    "type": "DOC",
+    "region": "Sicilia"
+  },
+  {
+    "name": "Sant'Antimo",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Sardegna Semidano",
+    "type": "DOC",
+    "region": "Sardegna"
+  },
+  {
+    "name": "Savuto",
+    "type": "DOC",
+    "region": "Calabria"
+  },
+  {
+    "name": "Scanzo Moscato di Scanzo",
+    "type": "DOCG",
+    "region": "Lombardia"
+  },
+  {
+    "name": "Scavigna",
+    "type": "DOC",
+    "region": "Calabria"
+  },
+  {
+    "name": "Sciacca",
+    "type": "DOC",
+    "region": "Sicilia"
+  },
+  {
+    "name": "Serrapetrona",
+    "type": "DOC",
+    "region": "Marche"
+  },
+  {
+    "name": "Sforzato di Valtellina Sfursat di Valtellina",
+    "type": "DOCG",
+    "region": "Lombardia"
+  },
+  {
+    "name": "Sicilia",
+    "type": "DOC",
+    "region": "Sicilia"
+  },
+  {
+    "name": "Siracusa",
+    "type": "DOC",
+    "region": "Sicilia"
+  },
+  {
+    "name": "Sizzano",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Soave",
+    "type": "DOC",
+    "region": "Veneto"
+  },
+  {
+    "name": "Soave Superiore",
+    "type": "DOCG",
+    "region": "Veneto"
+  },
+  {
+    "name": "Sovana",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Spoleto",
+    "type": "DOC",
+    "region": "Umbria"
+  },
+  {
+    "name": "Squinzano",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Strevi",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Suvereto",
+    "type": "DOCG",
+    "region": "Toscana"
+  },
+  {
+    "name": "Tarquinia",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Taurasi",
+    "type": "DOCG",
+    "region": "Campania"
+  },
+  {
+    "name": "Tavoliere delle Puglie Tavoliere",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Teroldego Rotaliano",
+    "type": "DOC",
+    "region": "Provincia Autonoma di Trento"
+  },
+  {
+    "name": "Terra d'Otranto",
+    "type": "DOC",
+    "region": "Puglia"
+  },
+  {
+    "name": "Terracina Moscato di Terracina",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Terratico di Bibbona",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Terre Alfieri",
+    "type": "DOCG",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Terre del Colleoni Colleoni",
+    "type": "DOC",
+    "region": "Lombardia"
+  },
+  {
+    "name": "Terre dell'Alta Val d'Agri",
+    "type": "DOC",
+    "region": "Basilicata"
+  },
+  {
+    "name": "Terre di Casole",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Terre di Cosenza",
+    "type": "DOC",
+    "region": "Calabria"
+  },
+  {
+    "name": "Terre di Offida",
+    "type": "DOC",
+    "region": "Marche"
+  },
+  {
+    "name": "Terre di Pisa",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Terre Tollesi Tullum",
+    "type": "DOCG",
+    "region": "Abruzzo"
+  },
+  {
+    "name": "Tintilia del Molise",
+    "type": "DOC",
+    "region": "Molise"
+  },
+  {
+    "name": "Todi",
+    "type": "DOC",
+    "region": "Umbria"
+  },
+  {
+    "name": "Torgiano",
+    "type": "DOC",
+    "region": "Umbria"
+  },
+  {
+    "name": "Torgiano Rosso Riserva",
+    "type": "DOCG",
+    "region": "Umbria"
+  },
+  {
+    "name": "Trebbiano d'Abruzzo",
+    "type": "DOC",
+    "region": "Abruzzo"
+  },
+  {
+    "name": "Trentino",
+    "type": "DOC",
+    "region": "Provincia Autonoma di Trento"
+  },
+  {
+    "name": "Trento",
+    "type": "DOC",
+    "region": "Provincia Autonoma di Trento"
+  },
+  {
+    "name": "Val d'Arbia",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Val d'Arno di Sopra Valdarno di Sopra",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Val di Cornia",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Val di Cornia Rosso Rosso della Val di Cornia",
+    "type": "DOCG",
+    "region": "Toscana"
+  },
+  {
+    "name": "Val Polcèvera",
+    "type": "DOC",
+    "region": "Liguria"
+  },
+  {
+    "name": "Valcalepio",
+    "type": "DOC",
+    "region": "Lombardia"
+  },
+  {
+    "name": "Valdadige Etschtaler",
+    "type": "DOC",
+    "region": "Provincia Autonoma di Bolzano Provincia Autonoma di Trento Veneto"
+  },
+  {
+    "name": "Valdadige Terradeiforti Terradeiforti",
+    "type": "DOC",
+    "region": "Provincia Autonoma di Trento Veneto"
+  },
+  {
+    "name": "Valdichiana toscana",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Valdinievole",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Valle d'Aosta Vallée d'Aoste",
+    "type": "DOC",
+    "region": "Valle D'Aosta"
+  },
+  {
+    "name": "Valli Ossolane",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Valpolicella",
+    "type": "DOC",
+    "region": "Veneto"
+  },
+  {
+    "name": "Valpolicella Ripasso",
+    "type": "DOC",
+    "region": "Veneto"
+  },
+  {
+    "name": "Valsusa",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Valtellina rosso Rosso di Valtellina",
+    "type": "DOC",
+    "region": "Lombardia"
+  },
+  {
+    "name": "Valtellina Superiore",
+    "type": "DOCG",
+    "region": "Lombardia"
+  },
+  {
+    "name": "Velletri",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Venezia",
+    "type": "DOC",
+    "region": "Veneto"
+  },
+  {
+    "name": "Verdicchio dei Castelli di Jesi",
+    "type": "DOC",
+    "region": "Marche"
+  },
+  {
+    "name": "Verdicchio di Matelica",
+    "type": "DOC",
+    "region": "Marche"
+  },
+  {
+    "name": "Verdicchio di Matelica Riserva",
+    "type": "DOCG",
+    "region": "Marche"
+  },
+  {
+    "name": "Verduno Pelaverga Verduno",
+    "type": "DOC",
+    "region": "Piemonte"
+  },
+  {
+    "name": "Vermentino di Gallura",
+    "type": "DOCG",
+    "region": "Sardegna"
+  },
+  {
+    "name": "Vermentino di Sardegna",
+    "type": "DOC",
+    "region": "Sardegna"
+  },
+  {
+    "name": "Vernaccia di Oristano",
+    "type": "DOC",
+    "region": "Sardegna"
+  },
+  {
+    "name": "Vernaccia di San Gimignano",
+    "type": "DOCG",
+    "region": "Toscana"
+  },
+  {
+    "name": "Vernaccia di Serrapetrona",
+    "type": "DOCG",
+    "region": "Marche"
+  },
+  {
+    "name": "Vesuvio",
+    "type": "DOC",
+    "region": "Campania"
+  },
+  {
+    "name": "Vicenza",
+    "type": "DOC",
+    "region": "Veneto"
+  },
+  {
+    "name": "Vignanello",
+    "type": "DOC",
+    "region": "Lazio"
+  },
+  {
+    "name": "Vigneti della Serenissima Serenissima",
+    "type": "DOC",
+    "region": "Veneto"
+  },
+  {
+    "name": "Villamagna",
+    "type": "DOC",
+    "region": "Abruzzo"
+  },
+  {
+    "name": "Vin Santo del Chianti",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Vin Santo del Chianti Classico",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Vin Santo di Carmignano",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Vin Santo di Montepulciano",
+    "type": "DOC",
+    "region": "Toscana"
+  },
+  {
+    "name": "Vino Nobile di Montepulciano",
+    "type": "DOCG",
+    "region": "Toscana"
+  },
+  {
+    "name": "Vittoria",
+    "type": "DOC",
+    "region": "Sicilia"
+  },
+  {
+    "name": "Zagarolo",
+    "type": "DOC",
+    "region": "Lazio"
+  }
+]
