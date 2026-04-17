@@ -21,10 +21,11 @@ export const svgCollisionDetection: CollisionDetection = ({
 
   const { x, y } = pointerCoordinates;
 
-  // 1. Native hit-test: find the element actually under the cursor.
-  const hit = document.elementFromPoint(x, y);
-  if (hit) {
-    // Walk up the DOM from the hit element to find a registered droppable.
+  // 1. Native hit-test: all elements at cursor position, top to bottom.
+  // elementsFromPoint (plural) lets us skip the DragOverlay card sitting on
+  // top of the map and still find the SVG region beneath it.
+  const hits = document.elementsFromPoint(x, y);
+  for (const hit of hits) {
     for (const container of droppableContainers) {
       const node = container.node.current;
       if (node && node.contains(hit)) {

@@ -1,7 +1,7 @@
 'use client';
-import { useEffect, useReducer, useCallback } from 'react';
+import { useEffect, useReducer, useCallback, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { svgCollisionDetection } from '@/lib/svgCollision';
 import { useRouter } from '@/i18n/navigation';
 import { useLocale, useTranslations } from 'next-intl';
@@ -174,6 +174,7 @@ export default function GamePage() {
   const filter = (searchParams.get('filter') ?? 'both') as Filter;
 
   const [state, dispatch] = useReducer(gameReducer, getInitialState());
+  const [dragging, setDragging] = useState(false);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -219,6 +220,7 @@ export default function GamePage() {
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
+      setDragging(false);
       const { over } = event;
       if (!over || !state.current) return;
 
@@ -266,7 +268,7 @@ export default function GamePage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="h-screen flex flex-col">
       <Header />
 
       {/* Auto-place modal — shown when 3 wrong attempts are reached */}
@@ -277,7 +279,7 @@ export default function GamePage() {
         />
       )}
 
-      <DndContext sensors={sensors} collisionDetection={svgCollisionDetection} onDragEnd={handleDragEnd}>
+      <DndContext sensors={sensors} collisionDetection={svgCollisionDetection} onDragStart={() => setDragging(true)} onDragEnd={handleDragEnd}>
         <main className="flex-1 flex gap-0 overflow-hidden">
           {/* Left: Map */}
           <div className="flex-1 flex items-start justify-center p-6 overflow-auto">
@@ -321,6 +323,42 @@ export default function GamePage() {
             </div>
           </div>
         </main>
+
+        <DragOverlay dropAnimation={null}>
+          {dragging && state.current ? (
+            <div
+              className="bg-yellow-100 border border-yellow-300 rounded-lg shadow-xl p-5 select-none w-72"
+              style={{ rotate: '2deg', opacity: 0.9 }}
+            >
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <h2 className="text-xl font-bold text-gray-900 leading-tight">{state.current.name}</h2>
+                <span
+                  className={`text-xs font-bold px-2 py-1 rounded flex-shrink-0 ${
+                    state.current.type === 'DOCG' ? 'bg-red-800 text-white' : 'bg-amber-700 text-white'
+                  }`}
+                >
+                  {state.current.type}
+                </span>
+              </div>
+              {state.current.regions.length > 1 && (
+                <div className="mt-2 space-y-1">
+                  {state.current.regions.map((region) => (
+                    <div key={region} className="flex items-center gap-2 text-sm">
+                      <span
+                        className={`w-3 h-3 rounded-full flex-shrink-0 ${
+                          state.foundRegions.includes(region) ? 'bg-green-500' : 'bg-gray-300'
+                        }`}
+                      />
+                      <span className={state.foundRegions.includes(region) ? 'line-through text-gray-400' : 'text-gray-700'}>
+                        {region}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : null}
+        </DragOverlay>
       </DndContext>
     </div>
   );

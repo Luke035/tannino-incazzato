@@ -1,7 +1,6 @@
 'use client';
 import React from 'react';
 import { useDraggable } from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
 import { Denomination } from '@/types';
 import { useTranslations } from 'next-intl';
 
@@ -21,17 +20,14 @@ export default function PostIt({
   isLoadingHint,
 }: PostItProps) {
   const t = useTranslations('game');
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: 'current-card',
   });
 
-  const style = {
-    transform: CSS.Translate.toString(transform),
-    rotate: isDragging ? '2deg' : '-1deg',
-    opacity: isDragging ? 0.85 : 1,
-    zIndex: isDragging ? 50 : 1,
+  const style: React.CSSProperties = {
+    rotate: '-1deg',
+    opacity: isDragging ? 0 : 1,
     cursor: isDragging ? 'grabbing' : 'grab',
-    pointerEvents: (isDragging ? 'none' : 'auto') as React.CSSProperties['pointerEvents'],
   };
 
   const remainingRegions = denomination.regions.filter((r) => !foundRegions.includes(r));
