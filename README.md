@@ -94,6 +94,7 @@ Three Gemini-powered endpoints respond in the user's selected language (EN/IT):
 | Map | `@svg-maps/italy` (20 regions) |
 | AI | Google Gemini (`gemini-3.1-flash-lite-preview`) |
 | i18n | next-intl — EN 🇬🇧 / IT 🇮🇹 |
+| Testing | Vitest |
 
 ---
 
@@ -110,6 +111,22 @@ npm install
 npm run dev
 # → http://localhost:3000
 ```
+
+---
+
+## 🧪 Testing
+
+```bash
+npm run test        # run all tests once
+npm run test:watch  # watch mode for TDD
+```
+
+Tests cover the pure library functions in `src/lib/` (scoring, region mapping, recap stats). Browser-dependent and AI/API code is excluded from unit tests.
+
+| File | What's tested |
+|------|---------------|
+| `lib/gameLogic.ts` | `scoreForCard`, `maxPossibleScore`, `computeRecapStats` |
+| `lib/regionMapping.ts` | `regionToSvgId`, `svgIdToDisplay` |
 
 ---
 

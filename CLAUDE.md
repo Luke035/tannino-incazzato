@@ -11,6 +11,8 @@ A web app for sommelier students to learn the regional collocations of Italian D
 echo "GEMINI_API_KEY=your_key" > .env.local
 npm run dev       # http://localhost:3000
 npm run build     # production build (run this to verify before committing)
+npm run test      # run test suite once
+npm run test:watch  # TDD watch mode (re-runs on save)
 ```
 
 ## Tech stack
@@ -20,6 +22,7 @@ npm run build     # production build (run this to verify before committing)
 - **@svg-maps/italy** for the SVG map (20 regions, English kebab-case IDs)
 - **next-intl** for i18n (EN/IT, locale-based routing under `src/app/[locale]/`)
 - **@google/generative-ai** — Gemini model `gemini-3.1-flash-lite-preview`
+- **Vitest** for testing (pure lib functions; no browser/API tests)
 - No backend, no database, no auth
 
 ## Key conventions
@@ -81,6 +84,7 @@ src/
     gemini.ts            # Gemini client helpers
     regionMapping.ts     # Italian name <-> SVG ID conversion + centroids
     svgCollision.ts      # Custom dnd-kit collision detection for SVG maps
+    __tests__/           # Vitest unit tests for pure lib functions
   messages/en.json
   messages/it.json
   middleware.ts          # next-intl locale routing
