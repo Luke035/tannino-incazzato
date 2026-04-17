@@ -1,36 +1,159 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🍷 Sommelier Game
 
-## Getting Started
+> An interactive learning tool for sommelier students to master Italian wine geography through drag-and-drop.
 
-First, run the development server:
+Place **DOC** and **DOCG** wine denomination cards onto the correct regions of an SVG map of Italy. Get AI-powered hints when you're wrong, earn points for precision, and review your session with a full AI recap.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+---
+
+## 🎮 How it works
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        GAME SCREEN                              │
+│                                                                 │
+│  ┌──────────────────────────┐   ┌──────────────────────────┐   │
+│  │                          │   │  🏆 Score: 42            │   │
+│  │    🗺️  SVG Map of Italy  │   │                          │   │
+│  │                          │   │  ┌──────────────┐        │   │
+│  │   Drop the card on the   │   │  │  Prosecco 🗒️ │        │   │
+│  │   correct region ──────► │   │  │     DOC      │        │   │
+│  │                          │   │  │   ● ●        │        │   │
+│  │                          │   │  └──────────────┘        │   │
+│  │                          │   │                          │   │
+│  │                          │   │  ❌ ○ ○  wrong attempts  │   │
+│  │                          │   │                          │   │
+│  │                          │   │  💡 Hint: This wine      │   │
+│  │                          │   │  comes from the Veneto   │   │
+│  │                          │   │  hills near Treviso…     │   │
+│  └──────────────────────────┘   └──────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 🔄 Game flow
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+  Start
+    │
+    ▼
+┌─────────┐   correct drop    ┌─────────────────┐
+│  Card   │ ─────────────────►│  Next card / +3 │
+│ active  │                   └─────────────────┘
+│         │   wrong drop
+│         │ ─────────────────► AI hint shown, -1 point potential
+│         │
+│         │   3rd wrong drop
+└─────────┘ ─────────────────► AutoPlace modal + AI memory tip → next card
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 🏅 Scoring
 
-## Learn More
+| Wrong attempts | Points earned |
+|:--------------:|:-------------:|
+| 0              | ⭐⭐⭐ 3      |
+| 1              | ⭐⭐ 2        |
+| 2              | ⭐ 1          |
+| 3 (auto-placed)| 0             |
 
-To learn more about Next.js, take a look at the following resources:
+Multi-region denominations (e.g. Prosecco spans Veneto + Friuli) must be placed in **all** correct regions. A single wrong-attempt counter tracks the whole card.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🤖 AI features
 
-## Deploy on Vercel
+Three Gemini-powered endpoints respond in the user's selected language (EN/IT):
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Endpoint | When | What it does |
+|----------|------|--------------|
+| `POST /api/hint` | After a wrong drop | Gives a geographic or cultural clue |
+| `POST /api/memorize` | In the auto-place modal | Provides a memory tip to remember the region |
+| `POST /api/review` | Recap screen | Full session analysis with strengths & weaknesses |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🗺️ Screens
+
+```
+  ┌──────────┐     start game     ┌──────────┐    session end    ┌──────────┐
+  │  Setup   │ ─────────────────► │   Game   │ ────────────────► │  Recap   │
+  │  screen  │                    │  screen  │                   │  screen  │
+  └──────────┘                    └──────────┘                   └──────────┘
+  Filter: DOC /                   Map + post-it                  Stats + AI
+  DOCG / both                     drag-and-drop                  review
+```
+
+---
+
+## 🛠️ Tech stack
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 16 (App Router) + TypeScript |
+| Styling | Tailwind CSS |
+| Drag & Drop | dnd-kit with custom SVG collision detection |
+| Map | `@svg-maps/italy` (20 regions) |
+| AI | Google Gemini (`gemini-3.1-flash-lite-preview`) |
+| i18n | next-intl — EN 🇬🇧 / IT 🇮🇹 |
+
+---
+
+## 🚀 Getting started
+
+```bash
+# 1. Set your Gemini API key
+echo "GEMINI_API_KEY=your_key_here" > .env.local
+
+# 2. Install dependencies
+npm install
+
+# 3. Run the dev server
+npm run dev
+# → http://localhost:3000
+```
+
+---
+
+## 📁 Project structure
+
+```
+src/
+├── app/
+│   ├── [locale]/
+│   │   ├── page.tsx          # Setup screen
+│   │   ├── game/page.tsx     # Game screen
+│   │   └── recap/page.tsx    # Recap screen
+│   └── api/
+│       ├── hint/             # AI hint endpoint
+│       ├── memorize/         # AI memory tip endpoint
+│       └── review/           # AI session review endpoint
+├── components/
+│   ├── game/                 # PostIt, ScoreCounter, AutoPlaceModal
+│   ├── map/                  # ItalyMap, RegionPanel
+│   └── recap/                # RecapStats, AIReview
+├── data/
+│   └── denominations.json    # 410 DOC/DOCG entries
+├── lib/
+│   ├── gameLogic.ts          # Scoring, shuffling, recap stats
+│   ├── gemini.ts             # Gemini client helpers
+│   ├── regionMapping.ts      # Italian name ↔ SVG ID conversion
+│   └── svgCollision.ts       # Pixel-perfect SVG hit detection
+└── messages/
+    ├── en.json
+    └── it.json
+```
+
+---
+
+## 🍇 Data model
+
+Each denomination in `denominations.json`:
+
+```json
+{
+  "name": "Prosecco",
+  "type": "DOC",
+  "regions": ["Veneto", "Friuli Venezia Giulia"]
+}
+```
+
+410 entries covering all Italian DOC and DOCG appellations. `regions` is always an array — many denominations span multiple regions.
