@@ -327,32 +327,28 @@ export default function GamePage() {
         <DragOverlay dropAnimation={null}>
           {dragging && state.current ? (
             <div
-              className="bg-yellow-100 border border-yellow-300 rounded-lg shadow-xl p-5 select-none w-72"
+              className="bg-yellow-100 border border-yellow-300 rounded-lg shadow-xl w-32 h-32 flex flex-col p-2 select-none"
               style={{ rotate: '2deg', opacity: 0.9 }}
             >
-              <div className="flex items-start justify-between gap-3 mb-3">
-                <h2 className="text-xl font-bold text-gray-900 leading-tight">{state.current.name}</h2>
+              <div className="flex justify-end">
                 <span
-                  className={`text-xs font-bold px-2 py-1 rounded flex-shrink-0 ${
+                  className={`text-xs font-bold px-1.5 py-0.5 rounded ${
                     state.current.type === 'DOCG' ? 'bg-red-800 text-white' : 'bg-amber-700 text-white'
                   }`}
                 >
                   {state.current.type}
                 </span>
               </div>
+              <div className="flex-1 flex items-center justify-center px-1">
+                <h2 className="text-sm font-bold text-gray-900 text-center leading-tight">{state.current.name}</h2>
+              </div>
               {state.current.regions.length > 1 && (
-                <div className="mt-2 space-y-1">
+                <div className="flex justify-center gap-1 pb-1">
                   {state.current.regions.map((region) => (
-                    <div key={region} className="flex items-center gap-2 text-sm">
-                      <span
-                        className={`w-3 h-3 rounded-full flex-shrink-0 ${
-                          state.foundRegions.includes(region) ? 'bg-green-500' : 'bg-gray-300'
-                        }`}
-                      />
-                      <span className={state.foundRegions.includes(region) ? 'line-through text-gray-400' : 'text-gray-700'}>
-                        {region}
-                      </span>
-                    </div>
+                    <span
+                      key={region}
+                      className={`w-2 h-2 rounded-full ${state.foundRegions.includes(region) ? 'bg-green-500' : 'bg-gray-300'}`}
+                    />
                   ))}
                 </div>
               )}

@@ -30,53 +30,42 @@ export default function PostIt({
     cursor: isDragging ? 'grabbing' : 'grab',
   };
 
-  const remainingRegions = denomination.regions.filter((r) => !foundRegions.includes(r));
   const isMultiRegion = denomination.regions.length > 1;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col items-center gap-2">
       {/* Post-it card */}
       <div
         ref={setNodeRef}
         style={style}
         {...listeners}
         {...attributes}
-        className="bg-yellow-100 border border-yellow-300 rounded-lg shadow-lg p-5 select-none"
+        className="bg-yellow-100 border border-yellow-300 rounded-lg shadow-lg w-32 h-32 flex flex-col p-2 select-none"
       >
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <h2 className="text-xl font-bold text-gray-900 leading-tight">{denomination.name}</h2>
+        <div className="flex justify-end">
           <span
-            className={`text-xs font-bold px-2 py-1 rounded flex-shrink-0 ${
-              denomination.type === 'DOCG'
-                ? 'bg-red-800 text-white'
-                : 'bg-amber-700 text-white'
+            className={`text-xs font-bold px-1.5 py-0.5 rounded ${
+              denomination.type === 'DOCG' ? 'bg-red-800 text-white' : 'bg-amber-700 text-white'
             }`}
           >
             {denomination.type}
           </span>
         </div>
 
+        <div className="flex-1 flex items-center justify-center px-1">
+          <h2 className="text-sm font-bold text-gray-900 text-center leading-tight">{denomination.name}</h2>
+        </div>
+
         {isMultiRegion && (
-          <div className="mt-2 space-y-1">
+          <div className="flex justify-center gap-1 pb-1">
             {denomination.regions.map((region) => (
-              <div key={region} className="flex items-center gap-2 text-sm">
-                <span
-                  className={`w-3 h-3 rounded-full flex-shrink-0 ${
-                    foundRegions.includes(region) ? 'bg-green-500' : 'bg-gray-300'
-                  }`}
-                />
-                <span className={foundRegions.includes(region) ? 'line-through text-gray-400' : 'text-gray-700'}>
-                  {region}
-                </span>
-              </div>
+              <span
+                key={region}
+                className={`w-2 h-2 rounded-full ${foundRegions.includes(region) ? 'bg-green-500' : 'bg-gray-300'}`}
+              />
             ))}
-            <p className="text-xs text-gray-500 mt-1">
-              {foundRegions.length}/{denomination.regions.length} {t('regionsFound')}
-            </p>
           </div>
         )}
-
-        <p className="text-xs text-gray-400 mt-3 italic">{t('dragInstruction')}</p>
       </div>
 
       {/* Wrong attempt indicator */}
@@ -92,7 +81,7 @@ export default function PostIt({
 
       {/* Hint bubble */}
       {(hint || isLoadingHint) && (
-        <div className="bg-white border border-amber-200 rounded-xl p-4 shadow-sm">
+        <div className="bg-white border border-amber-200 rounded-xl p-3 shadow-sm">
           <p className="text-xs font-semibold text-amber-700 mb-1">{t('hint')}</p>
           {isLoadingHint ? (
             <div className="flex gap-1 items-center">
