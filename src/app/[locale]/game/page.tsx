@@ -2,6 +2,7 @@
 import { useEffect, useReducer, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { svgCollisionDetection } from '@/lib/svgCollision';
 import { useRouter } from '@/i18n/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { Denomination, SessionState, CardAttempt, Filter } from '@/types';
@@ -10,6 +11,7 @@ import { svgIdToDisplay } from '@/lib/regionMapping';
 import ItalyMap from '@/components/map/ItalyMap';
 import PostIt from '@/components/game/PostIt';
 import ScoreCounter from '@/components/game/ScoreCounter';
+import AutoPlaceModal from '@/components/game/AutoPlaceModal';
 import Header from '@/components/Header';
 import allDenominations from '@/data/denominations.json';
 
@@ -17,13 +19,22 @@ type GameAction =
   | { type: 'INIT'; payload: Denomination[] }
   | { type: 'CORRECT_DROP'; payload: { region: string } }
   | { type: 'WRONG_DROP'; payload: { region: string } }
-  | { type: 'AUTO_PLACE' }
+  | { type: 'DISMISS_MODAL' }
   | { type: 'SET_HINT'; payload: string };
+
+interface PendingAutoPlace {
+  denomination: Denomination;
+  attempt: CardAttempt;
+  allRegions: string[];
+  next: Denomination | undefined;
+  rest: Denomination[];
+}
 
 interface GameState extends SessionState {
   hint: string | null;
   isLoadingHint: boolean;
   isComplete: boolean;
+  pendingAutoPlace: PendingAutoPlace | null; // set when modal should be shown
 }
 
 function getInitialState(): GameState {
@@ -38,6 +49,7 @@ function getInitialState(): GameState {
     hint: null,
     isLoadingHint: false,
     isComplete: false,
+    pendingAutoPlace: null,
   };
 }
 
@@ -98,7 +110,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       if (!state.current) return state;
       const newWrong = state.wrongAttempts + 1;
       if (newWrong >= 3) {
-        // Auto-place remaining
+        // Auto-place remaining — pause and show modal before advancing
         const autoPlaced = state.current.regions.filter(
           (r) => !state.foundRegions.includes(r)
         );
@@ -113,18 +125,37 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         const [next, ...rest] = state.queue;
         return {
           ...state,
-          queue: rest,
-          current: next ?? null,
-          wrongAttempts: 0,
-          foundRegions: [],
-          history: [...state.history, attempt],
-          placedCards: addToPlacedCards(state.placedCards, allRegions, attempt),
+          wrongAttempts: newWrong,
           hint: null,
-          isLoadingHint: true,
-          isComplete: !next && rest.length === 0,
+          isLoadingHint: false,
+          pendingAutoPlace: {
+            denomination: state.current,
+            attempt,
+            allRegions,
+            next,
+            rest,
+          },
         };
       }
       return { ...state, wrongAttempts: newWrong, isLoadingHint: true };
+    }
+
+    case 'DISMISS_MODAL': {
+      if (!state.pendingAutoPlace) return state;
+      const { attempt, allRegions, next, rest } = state.pendingAutoPlace;
+      return {
+        ...state,
+        queue: rest,
+        current: next ?? null,
+        wrongAttempts: 0,
+        foundRegions: [],
+        history: [...state.history, attempt],
+        placedCards: addToPlacedCards(state.placedCards, allRegions, attempt),
+        hint: null,
+        isLoadingHint: false,
+        pendingAutoPlace: null,
+        isComplete: !next && rest.length === 0,
+      };
     }
 
     case 'SET_HINT':
@@ -198,6 +229,8 @@ export default function GamePage() {
         (r) => !state.foundRegions.includes(r)
       );
 
+      if (state.pendingAutoPlace) return;
+
       if (remainingRegions.includes(droppedRegionDisplay)) {
         dispatch({ type: 'CORRECT_DROP', payload: { region: droppedRegionDisplay } });
       } else {
@@ -235,7 +268,16 @@ export default function GamePage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+
+      {/* Auto-place modal — shown when 3 wrong attempts are reached */}
+      {state.pendingAutoPlace && (
+        <AutoPlaceModal
+          denomination={state.pendingAutoPlace.denomination}
+          onContinue={() => dispatch({ type: 'DISMISS_MODAL' })}
+        />
+      )}
+
+      <DndContext sensors={sensors} collisionDetection={svgCollisionDetection} onDragEnd={handleDragEnd}>
         <main className="flex-1 flex gap-0 overflow-hidden">
           {/* Left: Map */}
           <div className="flex-1 flex items-start justify-center p-6 overflow-auto">
@@ -247,24 +289,26 @@ export default function GamePage() {
           </div>
 
           {/* Right: Post-it + controls */}
-          <div className="w-80 flex flex-col gap-4 p-6 border-l border-amber-200 bg-amber-50">
+          <div className="w-80 flex flex-col gap-4 p-6 border-l border-amber-200 bg-amber-50 overflow-hidden">
             <ScoreCounter score={state.score} total={state.history.length + (state.current ? 1 : 0)} />
 
-            {state.current ? (
-              <PostIt
-                denomination={state.current}
-                foundRegions={state.foundRegions}
-                wrongAttempts={state.wrongAttempts}
-                hint={state.hint}
-                isLoadingHint={state.isLoadingHint}
-              />
-            ) : (
-              <div className="bg-yellow-100 border border-yellow-300 rounded-lg p-5 text-center text-gray-500 italic">
-                Session complete!
-              </div>
-            )}
+            <div className="flex-1 overflow-y-auto">
+              {state.current ? (
+                <PostIt
+                  denomination={state.current}
+                  foundRegions={state.foundRegions}
+                  wrongAttempts={state.wrongAttempts}
+                  hint={state.hint}
+                  isLoadingHint={state.isLoadingHint}
+                />
+              ) : (
+                <div className="bg-yellow-100 border border-yellow-300 rounded-lg p-5 text-center text-gray-500 italic">
+                  Session complete!
+                </div>
+              )}
+            </div>
 
-            <div className="mt-auto">
+            <div>
               <p className="text-xs text-gray-400 mb-2 text-center">
                 {state.history.length} completed · {state.queue.length + (state.current ? 1 : 0)} remaining
               </p>

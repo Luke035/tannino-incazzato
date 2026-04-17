@@ -40,5 +40,14 @@
   },
   "language": {
     "toggle": "Italiano"
+  },
+  "autoPlace": {
+    "title": "Maximum attempts reached",
+    "subtitle": "The correct answer has been revealed.",
+    "correctRegion": "Correct region",
+    "correctRegions": "Correct regions",
+    "memorizeTip": "How to remember it",
+    "loadingTip": "Generating a memory tip...",
+    "continue": "Got it, continue"
   }
 }

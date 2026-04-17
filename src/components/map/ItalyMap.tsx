@@ -21,7 +21,6 @@ interface ItalyMapProps {
 
 interface DroppableRegionProps {
   location: MapLocation;
-  isCorrect: boolean;
   isFound: boolean;
   isActive: boolean;
   placedCount: number;
@@ -53,13 +52,12 @@ const REGION_CENTROIDS: Record<string, { x: number; y: number }> = {
   'veneto': { x: 330, y: 145 },
 };
 
-function DroppableRegion({ location, isCorrect, isFound, isActive, placedCount, centroid, onClick }: DroppableRegionProps) {
+function DroppableRegion({ location, isFound, isActive, placedCount, centroid, onClick }: DroppableRegionProps) {
   const { isOver, setNodeRef } = useDroppable({ id: location.id });
 
   let fill = '#f5f0e8';
   if (isFound) fill = '#16a34a';
   else if (isOver && isActive) fill = '#fbbf24';
-  else if (isCorrect && isActive) fill = '#fef3c7';
   else if (isOver) fill = '#e5d5b5';
 
   return (
@@ -94,10 +92,6 @@ function DroppableRegion({ location, isCorrect, isFound, isActive, placedCount, 
 export default function ItalyMap({ currentDenomination, foundRegions, placedCards }: ItalyMapProps) {
   const [selectedRegionId, setSelectedRegionId] = useState<string | null>(null);
 
-  const correctSvgIds = currentDenomination
-    ? currentDenomination.regions.map(regionToSvgId)
-    : [];
-
   const foundSvgIds = foundRegions.map(regionToSvgId);
 
   return (
@@ -115,7 +109,6 @@ export default function ItalyMap({ currentDenomination, foundRegions, placedCard
             <DroppableRegion
               key={location.id}
               location={location}
-              isCorrect={correctSvgIds.includes(location.id)}
               isFound={foundSvgIds.includes(location.id)}
               isActive={!!currentDenomination}
               placedCount={placed.length}

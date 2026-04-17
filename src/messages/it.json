@@ -40,5 +40,14 @@
   },
   "language": {
     "toggle": "English"
+  },
+  "autoPlace": {
+    "title": "Tentativi esauriti",
+    "subtitle": "La risposta corretta è stata rivelata.",
+    "correctRegion": "Regione corretta",
+    "correctRegions": "Regioni corrette",
+    "memorizeTip": "Come ricordarlo",
+    "loadingTip": "Generazione del suggerimento...",
+    "continue": "Capito, continua"
   }
 }

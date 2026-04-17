@@ -1,4 +1,5 @@
 'use client';
+import React from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { Denomination } from '@/types';
@@ -30,6 +31,7 @@ export default function PostIt({
     opacity: isDragging ? 0.85 : 1,
     zIndex: isDragging ? 50 : 1,
     cursor: isDragging ? 'grabbing' : 'grab',
+    pointerEvents: (isDragging ? 'none' : 'auto') as React.CSSProperties['pointerEvents'],
   };
 
   const remainingRegions = denomination.regions.filter((r) => !foundRegions.includes(r));
