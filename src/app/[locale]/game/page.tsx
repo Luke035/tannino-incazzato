@@ -7,7 +7,8 @@ import { useRouter } from '@/i18n/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { Denomination, SessionState, CardAttempt, Filter } from '@/types';
 import { shuffleArray, scoreForCard } from '@/lib/gameLogic';
-import { svgIdToDisplay } from '@/lib/regionMapping';
+import { svgIdToDisplay, regionToSvgId } from '@/lib/regionMapping';
+import { fetchHint } from '@/lib/api';
 import ItalyMap from '@/components/map/ItalyMap';
 import PostIt from '@/components/game/PostIt';
 import ScoreCounter from '@/components/game/ScoreCounter';
@@ -189,28 +190,23 @@ export default function GamePage() {
   }, [filter]);
 
   // Fetch hint after wrong drop
-  const fetchHint = useCallback(
+  const fetchHintCallback = useCallback(
     async (wrongRegion: string) => {
       if (!state.current) return;
       const remainingRegions = state.current.regions.filter(
         (r) => !state.foundRegions.includes(r)
       );
       try {
-        const res = await fetch('/api/hint', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            denominationName: state.current.name,
-            denominationType: state.current.type,
-            wrongRegion,
-            correctRegions: state.current.regions,
-            remainingRegions,
-            attemptNumber: state.wrongAttempts + 1,
-            language: locale,
-          }),
+        const hint = await fetchHint({
+          denominationName: state.current.name,
+          denominationType: state.current.type,
+          wrongRegion,
+          correctRegions: state.current.regions,
+          remainingRegions,
+          attemptNumber: state.wrongAttempts + 1,
+          language: locale,
         });
-        const data = await res.json();
-        dispatch({ type: 'SET_HINT', payload: data.hint });
+        dispatch({ type: 'SET_HINT', payload: hint });
       } catch {
         dispatch({ type: 'SET_HINT', payload: '' });
       }
@@ -233,14 +229,14 @@ export default function GamePage() {
 
       if (state.pendingAutoPlace) return;
 
-      if (remainingRegions.includes(droppedRegionDisplay)) {
-        dispatch({ type: 'CORRECT_DROP', payload: { region: droppedRegionDisplay } });
+      if (remainingRegions.map(regionToSvgId).includes(droppedSvgId)) {
+        dispatch({ type: 'CORRECT_DROP', payload: { region: remainingRegions.find(r => regionToSvgId(r) === droppedSvgId)! } });
       } else {
         dispatch({ type: 'WRONG_DROP', payload: { region: droppedRegionDisplay } });
-        fetchHint(droppedRegionDisplay);
+        fetchHintCallback(droppedRegionDisplay);
       }
     },
-    [state.current, state.foundRegions, fetchHint]
+    [state.current, state.foundRegions, fetchHintCallback]
   );
 
   const endSession = () => {

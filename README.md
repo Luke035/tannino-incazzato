@@ -126,7 +126,7 @@ Tests cover the pure library functions in `src/lib/` (scoring, region mapping, r
 | File | What's tested |
 |------|---------------|
 | `lib/gameLogic.ts` | `scoreForCard`, `maxPossibleScore`, `computeRecapStats` |
-| `lib/regionMapping.ts` | `regionToSvgId`, `svgIdToDisplay` |
+| `lib/regionMapping.ts` | `regionToSvgId`, `svgIdToDisplay`, round-trip invariant against all entries in `denominations.json` |
 
 ---
 
@@ -150,9 +150,10 @@ src/
 ├── data/
 │   └── denominations.json    # 410 DOC/DOCG entries
 ├── lib/
+│   ├── api.ts                # Typed client wrappers for AI endpoints
 │   ├── gameLogic.ts          # Scoring, shuffling, recap stats
-│   ├── gemini.ts             # Gemini client helpers
-│   ├── regionMapping.ts      # Italian name ↔ SVG ID conversion
+│   ├── gemini.ts             # Gemini prompt functions
+│   ├── regionMapping.ts      # JSON name ↔ SVG ID conversion
 │   └── svgCollision.ts       # Pixel-perfect SVG hit detection
 └── messages/
     ├── en.json

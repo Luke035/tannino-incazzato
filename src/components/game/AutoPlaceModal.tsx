@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { Denomination } from '@/types';
+import { fetchMemorizeTip } from '@/lib/api';
 
 interface AutoPlaceModalProps {
   denomination: Denomination;
@@ -15,18 +16,13 @@ export default function AutoPlaceModal({ denomination, onContinue }: AutoPlaceMo
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/memorize', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        denominationName: denomination.name,
-        denominationType: denomination.type,
-        correctRegions: denomination.regions,
-        language: locale,
-      }),
+    fetchMemorizeTip({
+      denominationName: denomination.name,
+      denominationType: denomination.type,
+      correctRegions: denomination.regions,
+      language: locale,
     })
-      .then((r) => r.json())
-      .then((d) => setTip(d.tip))
+      .then(setTip)
       .catch(() => setTip(''))
       .finally(() => setLoading(false));
   }, [denomination.name]);

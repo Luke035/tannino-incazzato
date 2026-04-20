@@ -36,6 +36,27 @@ Use geographic, cultural, or historical clues. Be encouraging.`;
   return result.response.text();
 }
 
+export async function generateMemorizeTip(
+  denominationName: string,
+  denominationType: string,
+  correctRegions: string[],
+  language: string
+): Promise<string> {
+  const genAI = getClient();
+  const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+
+  const regionStr = correctRegions.join(', ');
+  const lang = language === 'it' ? 'Italian' : 'English';
+
+  const prompt = `You are a sommelier tutor helping a student memorize Italian wine denominations.
+The student failed to place "${denominationName} ${denominationType}" — the correct region(s) are: ${regionStr}.
+Write a short, memorable tip (2-3 sentences) in ${lang} that helps them remember this association.
+Use a vivid geographic, historical, cultural, or sensory clue — something that sticks. Be warm and encouraging.`;
+
+  const result = await model.generateContent(prompt);
+  return result.response.text();
+}
+
 export async function generateReview(
   history: Array<{
     name: string;

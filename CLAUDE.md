@@ -36,9 +36,11 @@ Denominations live in `src/data/denominations.json` (410 entries, generated from
 
 ### Region naming
 Two separate namespaces — always use the mapping functions, never hardcode:
-- **Italian display names** (used in `denominations.json` and `placedCards` keys): `"Emilia-Romagna"`, `"Valle d'Aosta"`, `"Puglia"` …
+- **JSON region names** (used in `denominations.json`, `foundRegions`, and `placedCards` keys): `"Emilia Romagna"`, `"Valle D'aosta"`, `"Puglia"` …
 - **SVG IDs** (used by `@svg-maps/italy` and dnd-kit droppable IDs): `"emilia-romagna"`, `"aosta-valley"`, `"apulia"` …
-- Conversion: `regionToSvgId(italian)` and `svgIdToDisplay(svgId)` in `src/lib/regionMapping.ts`
+- Conversion: `regionToSvgId(jsonName)` and `svgIdToDisplay(svgId)` in `src/lib/regionMapping.ts`
+
+**Correctness checking always happens in SVG ID space.** In `handleDragEnd`, convert `denomination.regions` via `regionToSvgId` and compare against the dropped SVG ID directly — never convert the SVG ID to a display name and compare against JSON names. The two string systems are not round-trip-safe (e.g. `"Emilia Romagna"` → `"emilia-romagna"` → `"Emilia-Romagna"` ≠ original). `svgIdToDisplay` is used only for rendering labels.
 
 ### Multi-regional game flow
 A card stays active until the student places it in **all** correct regions. A shared wrong-attempt counter (max 3) applies across all placements for the card. After 3 wrong drops an `AutoPlaceModal` is shown with the correct answer and an AI memory tip before the game advances.
@@ -62,6 +64,8 @@ All three Gemini endpoints live under `src/app/api/`:
 
 All prompts pass a `language` field (`"en"` or `"it"`) so Gemini responds in the correct language.
 
+**Never call these endpoints directly from components.** Use the typed wrappers in `src/lib/api.ts` (`fetchHint`, `fetchMemorizeTip`, `fetchReview`). The prompt logic for all three lives in `src/lib/gemini.ts`.
+
 ### i18n
 - Translation files: `src/messages/en.json`, `src/messages/it.json`
 - Language toggle in the global `Header` component; persists via locale routing
@@ -80,9 +84,10 @@ src/
   data/denominations.json
   i18n/                  # next-intl routing, request config, navigation
   lib/
+    api.ts               # typed client wrappers for all three AI endpoints
     gameLogic.ts         # scoring, shuffling, recap stats
-    gemini.ts            # Gemini client helpers
-    regionMapping.ts     # Italian name <-> SVG ID conversion + centroids
+    gemini.ts            # Gemini prompt functions (hint, memorize, review)
+    regionMapping.ts     # JSON name <-> SVG ID conversion
     svgCollision.ts      # Custom dnd-kit collision detection for SVG maps
     __tests__/           # Vitest unit tests for pure lib functions
   messages/en.json

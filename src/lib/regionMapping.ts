@@ -2,6 +2,7 @@
 export const REGION_TO_SVG_ID: Record<string, string> = {
   'Abruzzo': 'abruzzo',
   "Valle D'Aosta": 'aosta-valley',
+  "Valle D'aosta": 'aosta-valley',
   'Puglia': 'apulia',
   'Basilicata': 'basilicata',
   'Calabria': 'calabria',

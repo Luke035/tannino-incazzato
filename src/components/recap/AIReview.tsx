@@ -1,8 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
-import { useLocale } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { CardAttempt } from '@/types';
+import { fetchReview } from '@/lib/api';
 
 interface AIReviewProps {
   history: CardAttempt[];
@@ -15,21 +15,8 @@ export default function AIReview({ history }: AIReviewProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const payload = history.map((h) => ({
-      name: h.denomination.name,
-      type: h.denomination.type,
-      correctRegions: h.denomination.regions,
-      wrongAttempts: h.wrongAttempts,
-      result: h.result,
-    }));
-
-    fetch('/api/review', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ history: payload, language: locale }),
-    })
-      .then((r) => r.json())
-      .then((d) => setReview(d.review))
+    fetchReview({ history, language: locale })
+      .then(setReview)
       .catch(() => setReview('Could not load review.'))
       .finally(() => setLoading(false));
   }, []);

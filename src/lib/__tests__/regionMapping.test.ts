@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { regionToSvgId, svgIdToDisplay } from '../regionMapping';
+import denominations from '../../data/denominations.json';
 
 describe('regionToSvgId', () => {
   it('maps known Italian names to SVG IDs', () => {
@@ -29,5 +30,21 @@ describe('svgIdToDisplay', () => {
 
   it('falls back to the ID itself for unknown SVG IDs', () => {
     expect(svgIdToDisplay('unknown-region')).toBe('unknown-region');
+  });
+});
+
+describe('regionToSvgId — denominations.json coverage', () => {
+  it('every region name in denominations.json maps to a known SVG ID (no fallback)', () => {
+    const allRegions = new Set(denominations.flatMap((d) => d.regions));
+    const knownSvgIds = new Set([
+      'abruzzo', 'aosta-valley', 'apulia', 'basilicata', 'calabria',
+      'campania', 'emilia-romagna', 'friuli-venezia-giulia', 'lazio',
+      'liguria', 'lombardy', 'marche', 'molise', 'piedmont', 'sardinia',
+      'sicily', 'trentino-south-tyrol', 'tuscany', 'umbria', 'veneto',
+    ]);
+    for (const region of allRegions) {
+      const svgId = regionToSvgId(region);
+      expect(knownSvgIds.has(svgId), `"${region}" mapped to unknown SVG ID "${svgId}"`).toBe(true);
+    }
   });
 });
