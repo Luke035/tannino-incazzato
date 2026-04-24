@@ -44,7 +44,7 @@ export default function RecapPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
-      <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-8 flex flex-col gap-6">
+      <main data-testid="recap-screen" className="flex-1 max-w-2xl mx-auto w-full px-6 py-8 flex flex-col gap-6">
         <h1 className="text-3xl font-bold text-red-900 text-center">{t('title')}</h1>
 
         <RecapStatsPanel stats={stats} />

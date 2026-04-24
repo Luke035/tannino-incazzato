@@ -27,7 +27,7 @@ export default function RecapStatsPanel({ stats }: RecapStatsProps) {
       <div className="bg-white rounded-xl border border-amber-200 p-5 shadow-sm">
         <div className="flex items-baseline justify-between mb-4">
           <h2 className="text-lg font-bold text-red-900">{t('score')}</h2>
-          <span className="text-3xl font-bold text-red-900">
+          <span data-testid="recap-score" className="text-3xl font-bold text-red-900">
             {stats.score}
             <span className="text-base font-normal text-gray-400"> / {stats.maxScore}</span>
           </span>

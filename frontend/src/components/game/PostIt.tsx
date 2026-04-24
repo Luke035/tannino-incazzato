@@ -40,6 +40,7 @@ export default function PostIt({
         style={style}
         {...listeners}
         {...attributes}
+        data-testid="active-card"
         className="bg-yellow-100 border border-yellow-300 rounded-lg shadow-lg w-32 h-32 flex flex-col p-2 select-none"
       >
         <div className="flex justify-end">
@@ -53,7 +54,7 @@ export default function PostIt({
         </div>
 
         <div className="flex-1 flex items-center justify-center px-1">
-          <h2 className="text-sm font-bold text-gray-900 text-center leading-tight">{denomination.name}</h2>
+          <h2 data-testid="card-name" className="text-sm font-bold text-gray-900 text-center leading-tight">{denomination.name}</h2>
         </div>
 
         {isMultiRegion && (
@@ -90,7 +91,7 @@ export default function PostIt({
               <span className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
             </div>
           ) : (
-            <p className="text-sm text-gray-700">{hint}</p>
+            <p data-testid="hint-text" className="text-sm text-gray-700">{hint}</p>
           )}
         </div>
       )}
