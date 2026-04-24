@@ -12,12 +12,13 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from sqlmodel import Session, select
-from app.database import get_engine
+from app.database import get_engine, create_db_and_tables
 from app.denominations.model import Denomination
 
 
 def main(json_path: str) -> None:
     data = json.loads(Path(json_path).read_text())
+    create_db_and_tables()
     engine = get_engine()
 
     with Session(engine) as session:
