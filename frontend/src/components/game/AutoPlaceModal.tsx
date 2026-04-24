@@ -31,7 +31,7 @@ export default function AutoPlaceModal({ denomination, onContinue }: AutoPlaceMo
 
   return (
     /* Backdrop */
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div data-testid="auto-place-modal" className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
 
         {/* Header */}
@@ -79,7 +79,7 @@ export default function AutoPlaceModal({ denomination, onContinue }: AutoPlaceMo
                 <span className="ml-1 text-sm text-gray-400">{t('loadingTip')}</span>
               </div>
             ) : (
-              <p className="text-sm text-gray-700 leading-relaxed">{tip}</p>
+              <p data-testid="memorize-tip" className="text-sm text-gray-700 leading-relaxed">{tip}</p>
             )}
           </div>
         </div>

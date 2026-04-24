@@ -32,7 +32,7 @@ export default function AIReview({ history }: AIReviewProps) {
           <span className="ml-2 text-sm text-gray-400">{t('loadingReview')}</span>
         </div>
       ) : (
-        <p className="text-sm text-gray-700 leading-relaxed">{review}</p>
+        <p data-testid="ai-review-text" className="text-sm text-gray-700 leading-relaxed">{review}</p>
       )}
     </div>
   );

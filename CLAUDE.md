@@ -13,13 +13,27 @@ A web app for sommelier students to learn the regional collocations of Italian D
 # Frontend only (from /frontend)
 npm run dev       # http://localhost:3000
 npm run build     # production build (run this to verify before committing)
-npm run test      # run frontend test suite once
+npm run test      # run frontend unit test suite once
 npm run test:watch  # TDD watch mode
 
 # Backend only (from /backend)
 uv run fastapi dev app/main.py   # http://localhost:8000
 uv run pytest                    # run backend test suite
 ```
+
+### E2E tests (Playwright)
+
+**Prerequisite: full stack must be running** (`./start.sh` or servers started manually on `:3000` and `:8000`).
+
+```bash
+# From /frontend
+npx playwright install --with-deps chromium   # first time only
+npm run test:e2e                               # run all E2E tests headlessly
+npm run test:e2e -- --headed                  # watch with browser visible
+npm run test:e2e -- e2e/happy-path.spec.ts    # single file
+```
+
+**Run `npm run test:e2e` after any change to:** UI components, game flow logic, API routes, or i18n strings. Do not skip this step before committing.
 
 ## Architecture
 

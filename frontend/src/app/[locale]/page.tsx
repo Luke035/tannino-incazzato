@@ -43,6 +43,7 @@ export default function SetupPage() {
           </div>
         </div>
         <button
+          data-testid="start-button"
           onClick={start}
           className="px-10 py-3 bg-red-800 text-white rounded-full font-bold text-lg hover:bg-red-900 transition-colors shadow-md"
         >
