@@ -5,6 +5,7 @@
 
 # dependencies
 /node_modules
+frontend/node_modules
 /.pnp
 .pnp.*
 .yarn/*
@@ -15,13 +16,22 @@
 
 # testing
 /coverage
+frontend/coverage
 
 # next.js
 /.next/
+frontend/.next/
 /out/
 
 # production
 /build
+
+# python
+backend/.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
 
 # misc
 .DS_Store
