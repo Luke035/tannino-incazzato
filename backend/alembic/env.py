@@ -1,10 +1,12 @@
 import os
+from pathlib import Path
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 from dotenv import load_dotenv
 
-load_dotenv()
+# Resolve .env relative to this file so Alembic works from any working directory
+load_dotenv(Path(__file__).parent.parent / ".env")
 
 from app.denominations.model import Denomination  # noqa: F401 — registers table with metadata
 from sqlmodel import SQLModel
