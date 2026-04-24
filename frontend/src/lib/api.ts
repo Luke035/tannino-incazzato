@@ -1,4 +1,13 @@
-import { CardAttempt } from '@/types';
+import { CardAttempt, Denomination } from '@/types';
+
+function apiUrl() {
+  return process.env.NEXT_PUBLIC_API_URL ?? '';
+}
+
+export async function fetchDenominations(): Promise<Denomination[]> {
+  const res = await fetch(`${apiUrl()}/denominations`);
+  return res.json();
+}
 
 export async function fetchHint(params: {
   denominationName: string;
@@ -9,7 +18,7 @@ export async function fetchHint(params: {
   attemptNumber: number;
   language: string;
 }): Promise<string> {
-  const res = await fetch('/api/hint', {
+  const res = await fetch(`${apiUrl()}/hint`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params),
@@ -24,7 +33,7 @@ export async function fetchMemorizeTip(params: {
   correctRegions: string[];
   language: string;
 }): Promise<string> {
-  const res = await fetch('/api/memorize', {
+  const res = await fetch(`${apiUrl()}/memorize`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params),
@@ -44,7 +53,7 @@ export async function fetchReview(params: {
     wrongAttempts: h.wrongAttempts,
     result: h.result,
   }));
-  const res = await fetch('/api/review', {
+  const res = await fetch(`${apiUrl()}/review`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ history: payload, language: params.language }),

@@ -8,13 +8,12 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Denomination, SessionState, CardAttempt, Filter } from '@/types';
 import { shuffleArray, scoreForCard } from '@/lib/gameLogic';
 import { svgIdToDisplay, regionToSvgId } from '@/lib/regionMapping';
-import { fetchHint } from '@/lib/api';
+import { fetchHint, fetchDenominations } from '@/lib/api';
 import ItalyMap from '@/components/map/ItalyMap';
 import PostIt from '@/components/game/PostIt';
 import ScoreCounter from '@/components/game/ScoreCounter';
 import AutoPlaceModal from '@/components/game/AutoPlaceModal';
 import Header from '@/components/Header';
-import allDenominations from '@/data/denominations.json';
 
 type GameAction =
   | { type: 'INIT'; payload: Denomination[] }
@@ -179,14 +178,16 @@ export default function GamePage() {
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
-  // Init session
+  // Init session — fetch denominations from FastAPI
   useEffect(() => {
-    const denominations = (allDenominations as Denomination[]).filter((d) => {
-      if (filter === 'DOC') return d.type === 'DOC';
-      if (filter === 'DOCG') return d.type === 'DOCG';
-      return true;
+    fetchDenominations().then((all) => {
+      const denominations = all.filter((d) => {
+        if (filter === 'DOC') return d.type === 'DOC';
+        if (filter === 'DOCG') return d.type === 'DOCG';
+        return true;
+      });
+      dispatch({ type: 'INIT', payload: shuffleArray(denominations) });
     });
-    dispatch({ type: 'INIT', payload: shuffleArray(denominations) });
   }, [filter]);
 
   // Fetch hint after wrong drop
