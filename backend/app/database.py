@@ -4,7 +4,7 @@ from sqlmodel import SQLModel, Session, create_engine
 from sqlalchemy.engine import Engine
 from dotenv import load_dotenv
 
-load_dotenv(Path(__file__).parent.parent.parent / ".env")
+load_dotenv(Path(__file__).parent.parent / ".env")
 
 _engine: Engine | None = None
 
