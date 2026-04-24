@@ -1,7 +1,7 @@
 import os
 from google import genai
 
-MODEL_NAME = "gemini-2.0-flash-lite"
+MODEL_NAME = "gemini-3.1-flash-lite-preview"
 
 
 def _get_client() -> genai.Client:

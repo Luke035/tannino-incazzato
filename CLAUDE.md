@@ -7,28 +7,50 @@ A web app for sommelier students to learn the regional collocations of Italian D
 ## Running the project
 
 ```bash
-# Requires a Gemini API key
-echo "GEMINI_API_KEY=your_key" > .env.local
+# First run — fill in GEMINI_API_KEY in backend/.env first
+./start.sh        # starts PostgreSQL, runs migrations, ingests data, starts both servers
+
+# Frontend only (from /frontend)
 npm run dev       # http://localhost:3000
 npm run build     # production build (run this to verify before committing)
-npm run test      # run test suite once
-npm run test:watch  # TDD watch mode (re-runs on save)
+npm run test      # run frontend test suite once
+npm run test:watch  # TDD watch mode
+
+# Backend only (from /backend)
+uv run fastapi dev app/main.py   # http://localhost:8000
+uv run pytest                    # run backend test suite
 ```
+
+## Architecture
+
+3-layer monorepo: `/frontend` (Next.js) → `/backend` (FastAPI) → PostgreSQL (Docker via `/infra`).
+
+The browser calls FastAPI directly using `NEXT_PUBLIC_API_URL`. There are no Next.js API routes.
 
 ## Tech stack
 
+### Frontend (`/frontend`)
 - **Next.js 16** (App Router) + TypeScript + Tailwind CSS
 - **dnd-kit** for drag-and-drop (`@dnd-kit/core`, `@dnd-kit/utilities`)
 - **@svg-maps/italy** for the SVG map (20 regions, English kebab-case IDs)
 - **next-intl** for i18n (EN/IT, locale-based routing under `src/app/[locale]/`)
-- **@google/generative-ai** — Gemini model `gemini-3.1-flash-lite-preview`
-- **Vitest** for testing (pure lib functions; no browser/API tests)
-- No backend, no database, no auth
+- **Vitest** for testing (pure lib functions)
+
+### Backend (`/backend`)
+- **FastAPI** + Python 3.12, managed with **uv**
+- **SQLModel** (ORM) + **Alembic** (migrations)
+- **google-genai** — Gemini model `gemini-3.1-flash-lite-preview`
+- **pytest** + **httpx** for testing (SQLite in-memory for DB isolation)
+
+### Infra (`/infra`)
+- **PostgreSQL 16** via Docker Compose
 
 ## Key conventions
 
 ### Data model
-Denominations live in `src/data/denominations.json` (410 entries, generated from `vini_italiani.json`):
+Denominations are stored in PostgreSQL (`denomination` table) and served by `GET /denominations`.
+The source file `frontend/src/data/denominations.json` (410 entries) is the ingestion source only — it is not imported by the app at runtime.
+
 ```json
 { "name": "Prosecco", "type": "DOC", "regions": ["Veneto", "Friuli Venezia Giulia"] }
 ```
@@ -38,7 +60,7 @@ Denominations live in `src/data/denominations.json` (410 entries, generated from
 Two separate namespaces — always use the mapping functions, never hardcode:
 - **JSON region names** (used in `denominations.json`, `foundRegions`, and `placedCards` keys): `"Emilia Romagna"`, `"Valle D'aosta"`, `"Puglia"` …
 - **SVG IDs** (used by `@svg-maps/italy` and dnd-kit droppable IDs): `"emilia-romagna"`, `"aosta-valley"`, `"apulia"` …
-- Conversion: `regionToSvgId(jsonName)` and `svgIdToDisplay(svgId)` in `src/lib/regionMapping.ts`
+- Conversion: `regionToSvgId(jsonName)` and `svgIdToDisplay(svgId)` in `frontend/src/lib/regionMapping.ts`
 
 **Correctness checking always happens in SVG ID space.** In `handleDragEnd`, convert `denomination.regions` via `regionToSvgId` and compare against the dropped SVG ID directly — never convert the SVG ID to a display name and compare against JSON names. The two string systems are not round-trip-safe (e.g. `"Emilia Romagna"` → `"emilia-romagna"` → `"Emilia-Romagna"` ≠ original). `svgIdToDisplay` is used only for rendering labels.
 
@@ -54,44 +76,67 @@ A card stays active until the student places it in **all** correct regions. A sh
 | 3 (auto-placed) | 0 |
 
 ### SVG drag-and-drop precision
-The default dnd-kit bounding-box collision detection is replaced with a custom `svgCollisionDetection` (`src/lib/svgCollision.ts`) that uses `document.elementFromPoint` for pixel-perfect hit-testing on SVG paths. The post-it uses `pointerEvents: none` while dragging so the cursor reaches the SVG beneath it.
+The default dnd-kit bounding-box collision detection is replaced with a custom `svgCollisionDetection` (`frontend/src/lib/svgCollision.ts`) that uses `document.elementFromPoint` for pixel-perfect hit-testing on SVG paths. The post-it uses `pointerEvents: none` while dragging so the cursor reaches the SVG beneath it.
 
 ### AI endpoints
-All three Gemini endpoints live under `src/app/api/`:
-- `POST /api/hint` — hint after a wrong drop (during game)
-- `POST /api/memorize` — memory tip shown in the auto-place modal
-- `POST /api/review` — full session review shown on the recap screen
+All three Gemini endpoints live in the FastAPI backend (`backend/app/ai/`):
+- `POST /hint` — hint after a wrong drop (during game)
+- `POST /memorize` — memory tip shown in the auto-place modal
+- `POST /review` — full session review shown on the recap screen
 
 All prompts pass a `language` field (`"en"` or `"it"`) so Gemini responds in the correct language.
 
-**Never call these endpoints directly from components.** Use the typed wrappers in `src/lib/api.ts` (`fetchHint`, `fetchMemorizeTip`, `fetchReview`). The prompt logic for all three lives in `src/lib/gemini.ts`.
+**Never call these endpoints directly from components.** Use the typed wrappers in `frontend/src/lib/api.ts` (`fetchHint`, `fetchMemorizeTip`, `fetchReview`, `fetchDenominations`). The prompt logic lives in `backend/app/ai/gemini.py`.
 
 ### i18n
-- Translation files: `src/messages/en.json`, `src/messages/it.json`
+- Translation files: `frontend/src/messages/en.json`, `frontend/src/messages/it.json`
 - Language toggle in the global `Header` component; persists via locale routing
 - Denomination names are **always in Italian** regardless of UI language
+
+### Environment variables
+- `backend/.env` — `GEMINI_API_KEY`, `DATABASE_URL` (never committed; copy from `.env.example`)
+- `frontend/.env.local` — `NEXT_PUBLIC_API_URL=http://localhost:8000` (never committed; copy from `.env.local.example`)
 
 ## Project structure
 
 ```
-src/
-  app/[locale]/          # Setup, game, and recap screens
-  app/api/               # hint, memorize, review endpoints
-  components/
-    game/                # PostIt, ScoreCounter, AutoPlaceModal
-    map/                 # ItalyMap, RegionPanel
-    recap/               # RecapStats, AIReview
-  data/denominations.json
-  i18n/                  # next-intl routing, request config, navigation
-  lib/
-    api.ts               # typed client wrappers for all three AI endpoints
-    gameLogic.ts         # scoring, shuffling, recap stats
-    gemini.ts            # Gemini prompt functions (hint, memorize, review)
-    regionMapping.ts     # JSON name <-> SVG ID conversion
-    svgCollision.ts      # Custom dnd-kit collision detection for SVG maps
-    __tests__/           # Vitest unit tests for pure lib functions
-  messages/en.json
-  messages/it.json
-  middleware.ts          # next-intl locale routing
-  types/index.ts         # Denomination, CardAttempt, SessionState, Filter …
+sommelier_game/
+├── frontend/
+│   └── src/
+│       ├── app/[locale]/      # Setup, game, and recap screens
+│       ├── components/
+│       │   ├── game/          # PostIt, ScoreCounter, AutoPlaceModal
+│       │   ├── map/           # ItalyMap, RegionPanel
+│       │   └── recap/         # RecapStats, AIReview
+│       ├── data/denominations.json   # ingestion source only — not imported by app
+│       ├── i18n/              # next-intl routing, request config, navigation
+│       ├── lib/
+│       │   ├── api.ts         # typed client wrappers for all API endpoints
+│       │   ├── gameLogic.ts   # scoring, shuffling, recap stats
+│       │   ├── regionMapping.ts  # JSON name <-> SVG ID conversion
+│       │   ├── svgCollision.ts   # custom dnd-kit collision detection
+│       │   └── __tests__/     # Vitest unit tests
+│       ├── messages/          # en.json, it.json
+│       ├── middleware.ts      # next-intl locale routing
+│       └── types/index.ts     # Denomination, CardAttempt, SessionState, Filter …
+│
+├── backend/
+│   ├── app/
+│   │   ├── ai/
+│   │   │   ├── gemini.py      # Gemini prompt functions
+│   │   │   └── router.py      # POST /hint, /memorize, /review
+│   │   ├── denominations/
+│   │   │   ├── model.py       # SQLModel table + Pydantic response schema
+│   │   │   └── router.py      # GET /denominations
+│   │   ├── database.py        # SQLModel engine + get_session dependency
+│   │   └── main.py            # FastAPI app, CORS, router registration
+│   ├── alembic/               # migration scripts
+│   ├── scripts/
+│   │   └── ingest_denominations.py
+│   └── tests/                 # pytest suite
+│
+├── infra/
+│   └── docker-compose.yml     # PostgreSQL 16
+│
+└── start.sh                   # unified startup script
 ```
