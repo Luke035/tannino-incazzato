@@ -26,13 +26,14 @@ export default function RecapPage() {
 
   if (history.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className="min-h-screen flex flex-col bg-white">
         <Header />
-        <div className="flex-1 flex items-center justify-center flex-col gap-4">
-          <p className="text-gray-500">No session data found.</p>
+        <div className="flex-1 flex items-center justify-center flex-col gap-5">
+          <p className="text-muted" style={{ fontFamily: 'var(--font-dm-sans)' }}>No session data found.</p>
           <button
             onClick={() => router.push('/')}
-            className="px-6 py-2 bg-red-800 text-white rounded-full font-semibold hover:bg-red-900"
+            className="px-8 py-3 bg-crimson text-white font-bold rounded-lg hover:bg-crimson-dark transition-colors"
+            style={{ fontFamily: 'var(--font-bricolage)', fontSize: '0.95rem' }}
           >
             {t('newSession')}
           </button>
@@ -42,10 +43,24 @@ export default function RecapPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-surface">
       <Header />
-      <main data-testid="recap-screen" className="flex-1 max-w-2xl mx-auto w-full px-6 py-8 flex flex-col gap-6">
-        <h1 className="text-3xl font-bold text-red-900 text-center">{t('title')}</h1>
+      <main data-testid="recap-screen" className="flex-1 max-w-2xl mx-auto w-full px-6 py-10 flex flex-col gap-5">
+
+        <div className="mb-2">
+          <p
+            className="text-muted font-medium uppercase mb-3"
+            style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.65rem', letterSpacing: '0.18em' }}
+          >
+            Sessione completata
+          </p>
+          <h1
+            className="font-extrabold text-charcoal leading-none tracking-tight"
+            style={{ fontFamily: 'var(--font-bricolage)', fontSize: 'clamp(2.5rem, 6vw, 3.5rem)', lineHeight: '0.95' }}
+          >
+            {t('title')}
+          </h1>
+        </div>
 
         <RecapStatsPanel stats={stats} />
 
@@ -53,9 +68,10 @@ export default function RecapPage() {
 
         <button
           onClick={() => router.push('/')}
-          className="w-full py-3 bg-red-800 text-white rounded-full font-bold text-lg hover:bg-red-900 transition-colors shadow-md"
+          className="w-full py-4 bg-crimson text-white font-bold rounded-xl hover:bg-crimson-dark transition-colors shadow-lg shadow-crimson/20"
+          style={{ fontFamily: 'var(--font-bricolage)', fontSize: '1rem', letterSpacing: '0.01em' }}
         >
-          {t('newSession')}
+          {t('newSession')} →
         </button>
       </main>
     </div>

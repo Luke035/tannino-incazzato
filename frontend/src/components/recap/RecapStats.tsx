@@ -10,10 +10,10 @@ export default function RecapStatsPanel({ stats }: RecapStatsProps) {
   const t = useTranslations('recap');
 
   const rows = [
-    { label: t('noWrong'), value: stats.noWrong, pts: 3, color: 'bg-green-500' },
-    { label: t('oneWrong'), value: stats.oneWrong, pts: 2, color: 'bg-yellow-400' },
-    { label: t('twoWrong'), value: stats.twoWrong, pts: 1, color: 'bg-orange-400' },
-    { label: t('autoPlaced'), value: stats.autoPlaced, pts: 0, color: 'bg-red-500' },
+    { label: t('noWrong'), value: stats.noWrong, pts: 3, dotClass: 'bg-jade' },
+    { label: t('oneWrong'), value: stats.oneWrong, pts: 2, dotClass: 'bg-charcoal' },
+    { label: t('twoWrong'), value: stats.twoWrong, pts: 1, dotClass: 'bg-subtle' },
+    { label: t('autoPlaced'), value: stats.autoPlaced, pts: 0, dotClass: 'bg-crimson' },
   ];
 
   const weakRegions = Object.entries(stats.byRegion)
@@ -22,23 +22,36 @@ export default function RecapStatsPanel({ stats }: RecapStatsProps) {
     .slice(0, 5);
 
   return (
-    <div className="space-y-6">
-      {/* Score summary */}
-      <div className="bg-white rounded-xl border border-amber-200 p-5 shadow-sm">
-        <div className="flex items-baseline justify-between mb-4">
-          <h2 className="text-lg font-bold text-red-900">{t('score')}</h2>
-          <span data-testid="recap-score" className="text-3xl font-bold text-red-900">
-            {stats.score}
-            <span className="text-base font-normal text-gray-400"> / {stats.maxScore}</span>
-          </span>
+    <div className="space-y-4">
+      {/* Score */}
+      <div className="bg-white border border-border rounded-2xl p-6">
+        <div className="flex items-end justify-between mb-6">
+          <p
+            className="text-muted font-medium uppercase"
+            style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.65rem', letterSpacing: '0.16em' }}
+          >
+            {t('score')}
+          </p>
+          <div className="flex items-baseline gap-1.5">
+            <span
+              data-testid="recap-score"
+              className="font-extrabold text-charcoal leading-none"
+              style={{ fontFamily: 'var(--font-bricolage)', fontSize: '4rem', lineHeight: '1' }}
+            >
+              {stats.score}
+            </span>
+            <span className="text-subtle" style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '1.1rem' }}>
+              /{stats.maxScore}
+            </span>
+          </div>
         </div>
-        <div className="space-y-2">
+        <div className="space-y-2.5 border-t border-border pt-5">
           {rows.map((row) => (
             <div key={row.label} className="flex items-center gap-3">
-              <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${row.color}`} />
-              <span className="text-sm text-gray-700 flex-1">{row.label}</span>
-              <span className="text-sm font-semibold text-gray-900">{row.value}</span>
-              <span className="text-xs text-gray-400 w-10 text-right">{row.pts} pts</span>
+              <span className={`w-2 h-2 rounded-full flex-shrink-0 ${row.dotClass}`} />
+              <span className="text-sm text-muted flex-1" style={{ fontFamily: 'var(--font-dm-sans)' }}>{row.label}</span>
+              <span className="text-sm font-semibold text-charcoal" style={{ fontFamily: 'var(--font-dm-sans)' }}>{row.value}</span>
+              <span className="text-subtle w-12 text-right" style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.75rem' }}>{row.pts} pts</span>
             </div>
           ))}
         </div>
@@ -46,13 +59,18 @@ export default function RecapStatsPanel({ stats }: RecapStatsProps) {
 
       {/* Weak regions */}
       {weakRegions.length > 0 && (
-        <div className="bg-white rounded-xl border border-amber-200 p-5 shadow-sm">
-          <h2 className="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wide">{t('byRegion')}</h2>
-          <ul className="space-y-1">
+        <div className="bg-white border border-border rounded-2xl p-6">
+          <h2
+            className="text-muted font-medium uppercase mb-4"
+            style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.65rem', letterSpacing: '0.16em' }}
+          >
+            {t('byRegion')}
+          </h2>
+          <ul className="space-y-2">
             {weakRegions.map(([region, v]) => (
-              <li key={region} className="flex items-center justify-between text-sm">
-                <span className="text-gray-700">{region}</span>
-                <span className="text-red-500 text-xs">{v.autoPlaced} auto-placed</span>
+              <li key={region} className="flex items-center justify-between">
+                <span className="text-sm text-charcoal" style={{ fontFamily: 'var(--font-dm-sans)' }}>{region}</span>
+                <span className="text-crimson font-semibold" style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.75rem' }}>{v.autoPlaced} auto-placed</span>
               </li>
             ))}
           </ul>

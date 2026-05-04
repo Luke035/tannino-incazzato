@@ -15,7 +15,8 @@ export default function LanguageToggle() {
   return (
     <button
       onClick={toggle}
-      className="px-3 py-1 rounded border border-red-800 text-red-800 text-sm font-medium hover:bg-red-50 transition-colors"
+      className="px-3 py-1.5 text-xs font-semibold text-muted border border-border rounded hover:border-charcoal hover:text-charcoal transition-colors"
+      style={{ fontFamily: 'var(--font-dm-sans)', letterSpacing: '0.06em' }}
     >
       {t('toggle')}
     </button>
