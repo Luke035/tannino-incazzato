@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { getMessages } from 'next-intl/server';
 import { Bricolage_Grotesque, DM_Sans } from 'next/font/google';
+import { AuthProvider } from '@/context/AuthContext';
 import '../globals.css';
 
 const bricolage = Bricolage_Grotesque({
@@ -33,7 +34,9 @@ export default async function LocaleLayout({
     <html lang={locale} className={`${bricolage.variable} ${dmSans.variable}`}>
       <body className="bg-white text-charcoal antialiased">
         <NextIntlClientProvider messages={messages}>
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
         </NextIntlClientProvider>
       </body>
     </html>

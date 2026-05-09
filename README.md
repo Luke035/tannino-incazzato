@@ -12,13 +12,21 @@ Place **DOC** and **DOCG** wine denomination cards onto the correct regions of a
 ┌─────────────────────────────────────────────────────────┐
 │                      Browser                            │
 │            Next.js 16 — localhost:3000                  │
-│   Setup · Game (drag-and-drop) · Recap screens          │
+│   Login · Register · Setup · Game · Recap screens       │
+│   proxy.ts — JWT cookie auth guard on all routes        │
 └────────────────────┬────────────────────────────────────┘
                      │ HTTP (NEXT_PUBLIC_API_URL)
                      ▼
 ┌─────────────────────────────────────────────────────────┐
 │                   FastAPI backend                        │
 │                    localhost:8000                        │
+│                                                         │
+│  POST /auth/register   — create account + set cookie    │
+│  POST /auth/login      — verify credentials + set cookie│
+│  POST /auth/logout     — clear cookie                   │
+│  GET  /auth/me         — return current user            │
+│  GET  /auth/google     — start Google OAuth flow        │
+│  GET  /auth/google/callback — finish OAuth, set cookie  │
 │                                                         │
 │  GET  /denominations   — serve wine catalogue           │
 │  POST /hint            — AI hint after wrong drop       │
@@ -35,6 +43,8 @@ Place **DOC** and **DOCG** wine denomination cards onto the correct regions of a
 │               Docker — localhost:5432                    │
 │                                                         │
 │   denomination(id, name, type, regions)                 │
+│   users(id, email, first_name, last_name,               │
+│         hashed_password, google_id, created_at)         │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -62,17 +72,36 @@ sommelier_game/
 ### First run
 
 ```bash
-# 1. Fill in your Gemini API key
+# 1. Configure backend environment
 cp backend/.env.example backend/.env
-#    then edit backend/.env and set GEMINI_API_KEY
+#    Edit backend/.env and set:
+#      GEMINI_API_KEY   — your Google AI Studio key
+#      JWT_SECRET       — run: openssl rand -hex 32
+#      GOOGLE_*         — see Google OAuth setup below
 
-# 2. Start everything
+# 2. Configure frontend environment
+cp frontend/.env.local.example frontend/.env.local
+#    Set JWT_SECRET to the same value as backend/.env
+
+# 3. Start everything
 ./start.sh
 ```
 
 `start.sh` handles the rest: starts PostgreSQL, runs Alembic migrations, ingests the denomination catalogue, then starts both servers. Frontend on `localhost:3000`, backend on `localhost:8000`.
 
 On subsequent runs `./start.sh` is all you need — migrations and ingestion are idempotent.
+
+### Google OAuth setup
+
+See the step-by-step instructions in `backend/.env.example`. Summary:
+
+1. Create a project in [Google Cloud Console](https://console.cloud.google.com/)
+2. APIs & Services → OAuth consent screen (External, add `email` + `profile` scopes)
+3. Credentials → OAuth client ID (Web application)
+   - Authorized redirect URI: `http://localhost:8000/auth/google/callback`
+4. Copy Client ID and Secret into `backend/.env`
+
+Google OAuth is optional for local development — email/password registration works without it.
 
 ---
 
@@ -112,14 +141,31 @@ uv run alembic upgrade head
 uv run python scripts/ingest_denominations.py ../frontend/src/data/denominations.json
 ```
 
+### E2E tests (Playwright)
+
+**Prerequisite: full stack must be running** (`./start.sh` or servers started manually on `:3000` and `:8000`).
+
+```bash
+# From /frontend
+npx playwright install --with-deps chromium   # first time only
+npm run test:e2e                               # run all E2E tests headlessly
+npm run test:e2e -- --headed                  # watch with browser visible
+npm run test:e2e -- e2e/auth.spec.ts          # single file
+```
+
+The E2E global setup creates a test user and saves the session cookie to `playwright/.auth/user.json` (gitignored). Google OAuth is not covered by E2E tests — test manually.
+
 ---
 
 ## How the game works
 
 ```
-  Start
-    │
-    ▼
+  Login / Register
+       │
+       ▼
+  Start (choose DOC / DOCG / both)
+       │
+       ▼
 ┌─────────┐   correct drop    ┌─────────────────┐
 │  Card   │ ─────────────────►│  Next card / +3 │
 │ active  │                   └─────────────────┘
@@ -148,14 +194,16 @@ Multi-region denominations (e.g. Prosecco spans Veneto + Friuli Venezia Giulia) 
 | Layer | Technology |
 |-------|-----------|
 | Frontend | Next.js 16 (App Router) + TypeScript + Tailwind CSS |
+| Auth (frontend) | `jose` (JWT verification in proxy), `AuthContext` React context |
 | Drag & Drop | dnd-kit with custom SVG collision detection |
 | Map | `@svg-maps/italy` (20 regions) |
 | i18n | next-intl — EN / IT |
 | Backend | FastAPI + Python 3.12 |
+| Auth (backend) | `python-jose` (JWT), `passlib[bcrypt]` (passwords), `authlib` (Google OAuth) |
 | ORM / schema | SQLModel + Alembic |
 | Database | PostgreSQL 16 (Docker) |
 | AI | Google Gemini `gemini-3.1-flash-lite-preview` |
-| Frontend tests | Vitest |
+| Frontend tests | Vitest (unit) + Playwright (E2E) |
 | Backend tests | pytest + httpx |
 
 ---

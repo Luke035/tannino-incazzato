@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 load_dotenv(Path(__file__).parent.parent / ".env")
 
 from app.denominations.model import Denomination  # noqa: F401 — registers table with metadata
+from app.users.model import User  # noqa: F401 — registers table with metadata
 from sqlmodel import SQLModel
 
 config = context.config
