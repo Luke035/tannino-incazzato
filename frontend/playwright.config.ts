@@ -2,10 +2,11 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './e2e',
+  globalSetup: './e2e/global-setup.ts',
   use: {
     baseURL: 'http://localhost:3000',
-    // Keep pointer events available for dnd-kit drag simulation
     hasTouch: false,
+    storageState: 'playwright/.auth/user.json',
   },
   timeout: 30_000,
   reporter: 'list',

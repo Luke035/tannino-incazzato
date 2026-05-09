@@ -31,67 +31,85 @@ export default function PostIt({
   };
 
   const isMultiRegion = denomination.regions.length > 1;
+  const isDocg = denomination.type === 'DOCG';
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      {/* Post-it card */}
+    <div className="flex flex-col items-center gap-3">
+      {/* Flashcard */}
       <div
         ref={setNodeRef}
-        style={style}
         {...listeners}
         {...attributes}
         data-testid="active-card"
-        className="bg-yellow-100 border border-yellow-300 rounded-lg shadow-lg w-32 h-32 flex flex-col p-2 select-none"
+        className="bg-white border border-border rounded-xl w-40 h-40 flex flex-col p-4 select-none"
+        style={{ ...style, boxShadow: '0 4px 20px rgba(0,0,0,0.12), 0 1px 4px rgba(0,0,0,0.08)' }}
       >
-        <div className="flex justify-end">
+        <div className="flex justify-start mb-2">
           <span
-            className={`text-xs font-bold px-1.5 py-0.5 rounded ${
-              denomination.type === 'DOCG' ? 'bg-red-800 text-white' : 'bg-amber-700 text-white'
-            }`}
+            className={`text-white font-bold rounded px-1.5 py-0.5 ${isDocg ? 'bg-crimson' : 'bg-navy'}`}
+            style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.55rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}
           >
             {denomination.type}
           </span>
         </div>
 
         <div className="flex-1 flex items-center justify-center px-1">
-          <h2 data-testid="card-name" className="text-sm font-bold text-gray-900 text-center leading-tight">{denomination.name}</h2>
+          <h2
+            data-testid="card-name"
+            className="font-bold text-charcoal text-center leading-tight"
+            style={{ fontFamily: 'var(--font-bricolage)', fontSize: '0.95rem', lineHeight: '1.2' }}
+          >
+            {denomination.name}
+          </h2>
         </div>
 
         {isMultiRegion && (
-          <div className="flex justify-center gap-1 pb-1">
+          <div className="flex justify-center gap-1.5 pt-1">
             {denomination.regions.map((region) => (
               <span
                 key={region}
-                className={`w-2 h-2 rounded-full ${foundRegions.includes(region) ? 'bg-green-500' : 'bg-gray-300'}`}
+                className={`w-2 h-2 rounded-full transition-colors ${foundRegions.includes(region) ? 'bg-jade' : 'bg-border'}`}
               />
             ))}
           </div>
         )}
       </div>
 
-      {/* Wrong attempt indicator */}
-      <div className="flex items-center gap-1">
-        <span className="text-xs text-gray-500 mr-1">{t('wrongAttempts')}:</span>
+      {/* Wrong attempts */}
+      <div className="flex items-center gap-2">
+        <span
+          className="text-subtle uppercase"
+          style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.6rem', letterSpacing: '0.14em' }}
+        >
+          {t('wrongAttempts')}
+        </span>
         {[0, 1, 2].map((i) => (
           <span
             key={i}
-            className={`w-3 h-3 rounded-full ${i < wrongAttempts ? 'bg-red-500' : 'bg-gray-200'}`}
+            className={`w-2 h-2 rounded-full transition-colors ${i < wrongAttempts ? 'bg-crimson' : 'bg-border'}`}
           />
         ))}
       </div>
 
-      {/* Hint bubble */}
+      {/* Hint */}
       {(hint || isLoadingHint) && (
-        <div className="bg-white border border-amber-200 rounded-xl p-3 shadow-sm">
-          <p className="text-xs font-semibold text-amber-700 mb-1">{t('hint')}</p>
+        <div className="bg-white border-2 border-border rounded-xl p-3 w-full max-w-xs shadow-sm">
+          <p
+            className="text-crimson font-semibold uppercase mb-1.5"
+            style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.6rem', letterSpacing: '0.14em' }}
+          >
+            {t('hint')}
+          </p>
           {isLoadingHint ? (
             <div className="flex gap-1 items-center">
-              <span className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-              <span className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-              <span className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+              <span className="w-1.5 h-1.5 bg-crimson rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+              <span className="w-1.5 h-1.5 bg-crimson rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+              <span className="w-1.5 h-1.5 bg-crimson rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
             </div>
           ) : (
-            <p data-testid="hint-text" className="text-sm text-gray-700">{hint}</p>
+            <p data-testid="hint-text" className="text-sm text-charcoal leading-relaxed" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+              {hint}
+            </p>
           )}
         </div>
       )}

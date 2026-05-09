@@ -31,10 +31,10 @@ interface DroppableRegionProps {
 function DroppableRegion({ location, isFound, isActive, placedCount, centroid, onClick }: DroppableRegionProps) {
   const { isOver, setNodeRef } = useDroppable({ id: location.id });
 
-  let fill = '#f5f0e8';
-  if (isFound) fill = '#16a34a';
-  else if (isOver && isActive) fill = '#fbbf24';
-  else if (isOver) fill = '#e5d5b5';
+  let fill = '#C8D6E5';
+  if (isFound) fill = '#00875A';
+  else if (isOver && isActive) fill = '#F87171';
+  else if (isOver) fill = '#A8BFCF';
 
   return (
     <g ref={setNodeRef as unknown as React.RefCallback<SVGGElement>} onClick={onClick} style={{ cursor: 'pointer' }}>
@@ -42,13 +42,13 @@ function DroppableRegion({ location, isFound, isActive, placedCount, centroid, o
         id={location.id}
         d={location.path}
         fill={fill}
-        stroke="#8b4513"
-        strokeWidth="1"
+        stroke="#7A9BB5"
+        strokeWidth="0.8"
         style={{ transition: 'fill 0.2s' }}
       />
       {placedCount > 0 && centroid && (
         <>
-          <circle cx={centroid.x} cy={centroid.y} r="14" fill="#7c2d12" opacity="0.9" />
+          <circle cx={centroid.x} cy={centroid.y} r="14" fill="#111827" opacity="0.85" />
           <text
             x={centroid.x}
             y={centroid.y}

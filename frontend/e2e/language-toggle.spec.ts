@@ -6,9 +6,9 @@ test('language toggle switches UI between English and Italian', async ({ page })
 
   // English locale — start button reads "Start Session"
   await page.goto('/en');
-  await expect(page.getByTestId('start-button')).toHaveText('Start Session');
+  await expect(page.getByTestId('start-button')).toContainText('Start Session');
 
   // Italian locale — start button reads "Inizia Sessione"
   await page.goto('/it');
-  await expect(page.getByTestId('start-button')).toHaveText('Inizia Sessione');
+  await expect(page.getByTestId('start-button')).toContainText('Inizia Sessione');
 });

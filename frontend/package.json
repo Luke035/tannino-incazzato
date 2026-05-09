@@ -16,6 +16,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@google/generative-ai": "^0.24.1",
     "@svg-maps/italy": "^2.0.0",
+    "jose": "^6.2.3",
     "next": "16.2.3",
     "next-intl": "^4.9.1",
     "react": "19.2.4",

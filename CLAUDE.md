@@ -7,7 +7,7 @@ A web app for sommelier students to learn the regional collocations of Italian D
 ## Running the project
 
 ```bash
-# First run — fill in GEMINI_API_KEY in backend/.env first
+# First run — fill in backend/.env and frontend/.env.local first (see below)
 ./start.sh        # starts PostgreSQL, runs migrations, ingests data, starts both servers
 
 # Frontend only (from /frontend)
@@ -33,7 +33,9 @@ npm run test:e2e -- --headed                  # watch with browser visible
 npm run test:e2e -- e2e/happy-path.spec.ts    # single file
 ```
 
-**Run `npm run test:e2e` after any change to:** UI components, game flow logic, API routes, or i18n strings. Do not skip this step before committing.
+**Run `npm run test:e2e` after any change to:** UI components, game flow logic, API routes, auth flow, or i18n strings. Do not skip this step before committing.
+
+The E2E global setup (`e2e/global-setup.ts`) creates a test user via the real API and saves the session cookie to `playwright/.auth/user.json` (gitignored). All game tests run with that session pre-loaded. Auth tests use `storageState: { cookies: [], origins: [] }` to start without a session.
 
 ## Architecture
 
@@ -48,11 +50,15 @@ The browser calls FastAPI directly using `NEXT_PUBLIC_API_URL`. There are no Nex
 - **dnd-kit** for drag-and-drop (`@dnd-kit/core`, `@dnd-kit/utilities`)
 - **@svg-maps/italy** for the SVG map (20 regions, English kebab-case IDs)
 - **next-intl** for i18n (EN/IT, locale-based routing under `src/app/[locale]/`)
-- **Vitest** for testing (pure lib functions)
+- **jose** for JWT verification inside `proxy.ts` (Next.js 16 edge-compatible)
+- **Vitest** for unit tests; **Playwright** for E2E tests
 
 ### Backend (`/backend`)
 - **FastAPI** + Python 3.12, managed with **uv**
 - **SQLModel** (ORM) + **Alembic** (migrations)
+- **python-jose[cryptography]** — JWT signing/verification
+- **passlib[bcrypt]** — password hashing (bcrypt pinned to `<5.0` for passlib compatibility)
+- **authlib** + **httpx** — Google OAuth2 backend flow
 - **google-genai** — Gemini model `gemini-3.1-flash-lite-preview`
 - **pytest** + **httpx** for testing (SQLite in-memory for DB isolation)
 
@@ -60,6 +66,14 @@ The browser calls FastAPI directly using `NEXT_PUBLIC_API_URL`. There are no Nex
 - **PostgreSQL 16** via Docker Compose
 
 ## Key conventions
+
+### Authentication
+Auth uses **JWT stored in an HttpOnly cookie** (`sommelier_session`, 7-day expiry). The cookie is set by the FastAPI backend on login/register and verified server-side by `proxy.ts`.
+
+- **`proxy.ts`** (Next.js 16 replacement for `middleware.ts`) — protects all routes except `/login` and `/register`. Unauthenticated visits to any other path redirect to `/login?next=<path>`. Authenticated visits to `/login` or `/register` redirect to `/`.
+- **`AuthContext`** (`src/context/AuthContext.tsx`) — calls `GET /auth/me` at mount, exposes `user`, `logout()`, and `setUser()` to all components. Wrap with `AuthProvider` in layout.
+- **Auth API wrappers** live in `src/lib/auth.ts` — `fetchMe`, `apiLogin`, `apiRegister`, `apiLogout`. Always pass `credentials: 'include'` for cookie forwarding.
+- **Google OAuth** is backend-initiated: the "Continua con Google" button is a plain `<a href="/auth/google">` that triggers the FastAPI redirect flow. After callback the backend sets the cookie and redirects to `FRONTEND_URL/en`.
 
 ### Data model
 Denominations are stored in PostgreSQL (`denomination` table) and served by `GET /denominations`.
@@ -108,8 +122,16 @@ All prompts pass a `language` field (`"en"` or `"it"`) so Gemini responds in the
 - Denomination names are **always in Italian** regardless of UI language
 
 ### Environment variables
-- `backend/.env` — `GEMINI_API_KEY`, `DATABASE_URL` (never committed; copy from `.env.example`)
-- `frontend/.env.local` — `NEXT_PUBLIC_API_URL=http://localhost:8000` (never committed; copy from `.env.local.example`)
+**`backend/.env`** (never committed; copy from `.env.example`):
+- `GEMINI_API_KEY` — Google AI Studio key
+- `DATABASE_URL` — PostgreSQL connection string
+- `JWT_SECRET` — random secret for signing JWTs (`openssl rand -hex 32`)
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` — Google OAuth credentials (see `.env.example` for setup steps)
+- `FRONTEND_URL` — where the backend redirects after Google OAuth callback (default: `http://localhost:3000`)
+
+**`frontend/.env.local`** (never committed; copy from `.env.local.example`):
+- `NEXT_PUBLIC_API_URL` — FastAPI base URL (default: `http://localhost:8000`)
+- `JWT_SECRET` — must match `backend/.env` exactly (used by `proxy.ts` to verify cookies server-side)
 
 ## Project structure
 
@@ -117,21 +139,24 @@ All prompts pass a `language` field (`"en"` or `"it"`) so Gemini responds in the
 sommelier_game/
 ├── frontend/
 │   └── src/
-│       ├── app/[locale]/      # Setup, game, and recap screens
+│       ├── app/[locale]/      # Login, register, setup, game, recap, profile screens
 │       ├── components/
 │       │   ├── game/          # PostIt, ScoreCounter, AutoPlaceModal
 │       │   ├── map/           # ItalyMap, RegionPanel
 │       │   └── recap/         # RecapStats, AIReview
+│       ├── context/
+│       │   └── AuthContext.tsx   # AuthProvider + useAuth() hook
 │       ├── data/denominations.json   # ingestion source only — not imported by app
 │       ├── i18n/              # next-intl routing, request config, navigation
 │       ├── lib/
-│       │   ├── api.ts         # typed client wrappers for all API endpoints
+│       │   ├── api.ts         # typed client wrappers for game API endpoints
+│       │   ├── auth.ts        # typed client wrappers for auth endpoints
 │       │   ├── gameLogic.ts   # scoring, shuffling, recap stats
 │       │   ├── regionMapping.ts  # JSON name <-> SVG ID conversion
 │       │   ├── svgCollision.ts   # custom dnd-kit collision detection
 │       │   └── __tests__/     # Vitest unit tests
 │       ├── messages/          # en.json, it.json
-│       ├── middleware.ts      # next-intl locale routing
+│       ├── proxy.ts           # Next.js 16 route guard (JWT verification + i18n)
 │       └── types/index.ts     # Denomination, CardAttempt, SessionState, Filter …
 │
 ├── backend/
@@ -139,15 +164,20 @@ sommelier_game/
 │   │   ├── ai/
 │   │   │   ├── gemini.py      # Gemini prompt functions
 │   │   │   └── router.py      # POST /hint, /memorize, /review
+│   │   ├── auth/
+│   │   │   ├── jwt.py         # create/verify JWT, set/clear HttpOnly cookie
+│   │   │   └── router.py      # POST /auth/register|login|logout, GET /auth/me|google|google/callback
 │   │   ├── denominations/
 │   │   │   ├── model.py       # SQLModel table + Pydantic response schema
 │   │   │   └── router.py      # GET /denominations
+│   │   ├── users/
+│   │   │   └── model.py       # User SQLModel table + UserRead schema
 │   │   ├── database.py        # SQLModel engine + get_session dependency
-│   │   └── main.py            # FastAPI app, CORS, router registration
+│   │   └── main.py            # FastAPI app, CORS (allow_credentials=True), router registration
 │   ├── alembic/               # migration scripts
 │   ├── scripts/
 │   │   └── ingest_denominations.py
-│   └── tests/                 # pytest suite
+│   └── tests/                 # pytest suite (test_auth.py, test_denominations.py, …)
 │
 ├── infra/
 │   └── docker-compose.yml     # PostgreSQL 16

@@ -9,20 +9,32 @@ interface RegionPanelProps {
 
 export default function RegionPanel({ regionName, cards, onClose }: RegionPanelProps) {
   return (
-    <div className="absolute top-4 right-4 bg-white border border-amber-200 rounded-xl shadow-lg p-4 w-64 z-10">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-bold text-red-900">{regionName}</h3>
-        <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
+    <div className="absolute top-4 right-4 bg-white border border-border rounded-xl shadow-lg p-5 w-64 z-10">
+      <div className="flex items-start justify-between mb-4">
+        <h3
+          className="font-bold text-charcoal leading-tight"
+          style={{ fontFamily: 'var(--font-bricolage)', fontSize: '1.05rem' }}
+        >
+          {regionName}
+        </h3>
+        <button
+          onClick={onClose}
+          className="text-subtle hover:text-charcoal transition-colors text-xl leading-none ml-3 mt-0.5"
+        >
+          ×
+        </button>
       </div>
       {cards.length === 0 ? (
-        <p className="text-sm text-gray-500 italic">No denominations placed yet</p>
+        <p className="text-sm text-muted" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+          No denominations placed yet
+        </p>
       ) : (
-        <ul className="space-y-1 max-h-48 overflow-y-auto">
+        <ul className="space-y-1.5 max-h-48 overflow-y-auto">
           {cards.map((card, i) => (
             <li key={i} className="flex items-center gap-2 text-sm">
-              <span className={`w-2 h-2 rounded-full flex-shrink-0 ${card.result === 'auto-placed' ? 'bg-red-500' : 'bg-green-500'}`} />
-              <span className="text-gray-800">{card.denomination.name}</span>
-              <span className="text-gray-400 text-xs">{card.denomination.type}</span>
+              <span className={`w-2 h-2 rounded-full flex-shrink-0 ${card.result === 'auto-placed' ? 'bg-crimson' : 'bg-jade'}`} />
+              <span className="text-charcoal" style={{ fontFamily: 'var(--font-dm-sans)' }}>{card.denomination.name}</span>
+              <span className="text-subtle text-xs ml-auto">{card.denomination.type}</span>
             </li>
           ))}
         </ul>
