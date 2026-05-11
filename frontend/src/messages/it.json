@@ -38,6 +38,29 @@
     "placedCards": "denominazioni posizionate",
     "noCards": "Nessuna denominazione ancora"
   },
+  "profile": {
+    "newSession": "Nuova sessione →",
+    "statsFor": "Statistiche per gioco",
+    "sessions": "Sessioni",
+    "since": "dal",
+    "avgScore": "Punteggio medio",
+    "allSessions": "su tutte le sessioni",
+    "bestSession": "Miglior sessione",
+    "denominationsDiscovered": "Denominazioni scoperte",
+    "of": "di",
+    "total": "totali",
+    "recentSessions": "Sessioni recenti",
+    "items": "elementi",
+    "byType": "Per tipo",
+    "regions": "Regioni",
+    "best": "MIGLIORI",
+    "toImprove": "DA MIGLIORARE",
+    "emptyTitle": "Nessuna sessione",
+    "emptySubtitle": "Completa la tua prima sessione per vedere le statistiche.",
+    "playCta": "Gioca ora →",
+    "comingSoon": "Prossimamente",
+    "comingSoonTagline": "Nuovo gioco in arrivo"
+  },
   "language": {
     "toggle": "English"
   },

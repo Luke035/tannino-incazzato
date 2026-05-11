@@ -1,16 +1,20 @@
 import type { Page } from '@playwright/test';
 import { DENOMINATIONS } from '../fixtures/denominations';
 import { HINT_RESPONSE, MEMORIZE_TIP_RESPONSE, REVIEW_RESPONSE } from '../fixtures/aiResponses';
+import { EMPTY_STATS, ONE_SESSION_STATS } from '../fixtures/sessionStats';
 
 const MOCK_USER = { id: 1, email: 'e2e-test@sommelier.test', first_name: 'Test', last_name: 'User' };
+
+export type StatsVariant = 'empty' | 'one-session';
 
 // Intercepts all backend API calls and returns deterministic fixture data.
 // Call this before navigating to any page.
 export async function mockApi(
   page: Page,
-  options?: { denominations?: typeof DENOMINATIONS }
+  options?: { denominations?: typeof DENOMINATIONS; statsVariant?: StatsVariant }
 ): Promise<void> {
   const denoms = options?.denominations ?? DENOMINATIONS;
+  const statsData = options?.statsVariant === 'one-session' ? ONE_SESSION_STATS : EMPTY_STATS;
 
   await page.route('**/auth/me', (route) =>
     route.fulfill({ contentType: 'application/json', body: JSON.stringify(MOCK_USER) })
@@ -31,4 +35,16 @@ export async function mockApi(
   await page.route('**/review', (route) =>
     route.fulfill({ contentType: 'application/json', body: JSON.stringify(REVIEW_RESPONSE) })
   );
+
+  await page.route('**/session/stats', (route) =>
+    route.fulfill({ contentType: 'application/json', body: JSON.stringify(statsData) })
+  );
+
+  await page.route('**/session', (route) => {
+    if (route.request().method() === 'POST') {
+      route.fulfill({ contentType: 'application/json', body: JSON.stringify({ id: 1 }), status: 201 });
+    } else {
+      route.fallback();
+    }
+  });
 }

@@ -2,7 +2,7 @@
 
 > An interactive learning tool for sommelier students to master Italian wine geography through drag-and-drop.
 
-Place **DOC** and **DOCG** wine denomination cards onto the correct regions of an SVG map of Italy. Get AI-powered hints when you're wrong, earn points for precision, and review your session with a full AI recap.
+Place **DOC** and **DOCG** wine denomination cards onto the correct regions of an SVG map of Italy. Get AI-powered hints when you're wrong, earn points for precision, review your session with a full AI recap, and track your progress over time in the personal area.
 
 ---
 
@@ -32,6 +32,8 @@ Place **DOC** and **DOCG** wine denomination cards onto the correct regions of a
 │  POST /hint            — AI hint after wrong drop       │
 │  POST /memorize        — AI tip in auto-place modal     │
 │  POST /review          — AI recap at session end        │
+│  POST /session         — save completed session         │
+│  GET  /session/stats   — aggregated profile stats       │
 │  GET  /health                                           │
 │                  │                  │                   │
 │           Google Gemini      PostgreSQL (SQLModel)      │
@@ -45,6 +47,12 @@ Place **DOC** and **DOCG** wine denomination cards onto the correct regions of a
 │   denomination(id, name, type, regions)                 │
 │   users(id, email, first_name, last_name,               │
 │         hashed_password, google_id, created_at)         │
+│   game_sessions(id, user_id, game_id, filter,           │
+│         score, max_score, duration_seconds, played_at)  │
+│   session_card_attempts(id, session_id,                 │
+│         denomination_name, denomination_type,           │
+│         wrong_attempts, result,                         │
+│         found_regions, auto_placed_regions)             │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -174,6 +182,12 @@ The E2E global setup creates a test user and saves the session cookie to `playwr
 │         │
 │         │   3rd wrong drop
 └─────────┘ ─────────────────► AutoPlace modal + AI memory tip → next card
+       │
+       ▼ (all cards done)
+  Recap — AI review + stats → session saved to DB
+       │
+       ▼
+  Profile — history, avg score, region & type performance
 ```
 
 ### Scoring
@@ -210,8 +224,14 @@ Multi-region denominations (e.g. Prosecco spans Veneto + Friuli Venezia Giulia) 
 
 ## Data model
 
+**Denomination catalogue** — 410 entries covering all Italian DOC and DOCG appellations:
 ```json
 { "name": "Prosecco", "type": "DOC", "regions": ["Veneto", "Friuli Venezia Giulia"] }
 ```
+`regions` is always an array — many denominations span multiple regions.
 
-410 entries covering all Italian DOC and DOCG appellations. `regions` is always an array — many denominations span multiple regions.
+**Session history** — every completed game is persisted:
+- `game_sessions` records the filter used, final score, max score, and duration.
+- `session_card_attempts` records each denomination played: wrong attempts, result (`correct` / `auto-placed`), and which regions were found vs auto-placed (stored as SVG IDs).
+
+The profile page aggregates this data to show avg/best score, unique denominations discovered, per-type performance (DOC vs DOCG), and top/bottom regions.
