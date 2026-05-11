@@ -186,6 +186,7 @@ export default function GamePage() {
         if (filter === 'DOCG') return d.type === 'DOCG';
         return true;
       });
+      sessionStorage.setItem('game_started_at', Date.now().toString());
       dispatch({ type: 'INIT', payload: shuffleArray(denominations) });
     });
   }, [filter]);
@@ -243,6 +244,7 @@ export default function GamePage() {
   const endSession = () => {
     const params = new URLSearchParams();
     params.set('history', JSON.stringify(state.history));
+    params.set('filter', filter);
     router.push(`/recap?${params.toString()}`);
   };
 

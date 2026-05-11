@@ -1,10 +1,11 @@
 'use client';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
-import { CardAttempt } from '@/types';
+import { CardAttempt, Filter } from '@/types';
 import { computeRecapStats } from '@/lib/gameLogic';
+import { fetchSaveSession } from '@/lib/api';
 import RecapStatsPanel from '@/components/recap/RecapStats';
 import AIReview from '@/components/recap/AIReview';
 import Header from '@/components/Header';
@@ -13,6 +14,7 @@ export default function RecapPage() {
   const t = useTranslations('recap');
   const router = useRouter();
   const searchParams = useSearchParams();
+  const savedRef = useRef(false);
 
   const history = useMemo<CardAttempt[]>(() => {
     try {
@@ -23,6 +25,22 @@ export default function RecapPage() {
   }, [searchParams]);
 
   const stats = useMemo(() => computeRecapStats(history), [history]);
+
+  useEffect(() => {
+    if (savedRef.current || history.length === 0) return;
+    savedRef.current = true;
+
+    const startedAt = sessionStorage.getItem('game_started_at');
+    const filter = (searchParams.get('filter') ?? 'both') as Filter;
+    const startedAtIso = startedAt
+      ? new Date(parseInt(startedAt, 10)).toISOString()
+      : new Date().toISOString();
+
+    fetchSaveSession({ gameId: 'mappa-vini', filter, startedAt: startedAtIso, history })
+      .then(() => sessionStorage.removeItem('game_started_at'))
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (history.length === 0) {
     return (

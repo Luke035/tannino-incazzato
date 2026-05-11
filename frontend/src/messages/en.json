@@ -38,6 +38,29 @@
     "placedCards": "denominations placed",
     "noCards": "No denominations placed yet"
   },
+  "profile": {
+    "newSession": "New Session →",
+    "statsFor": "Statistics by game",
+    "sessions": "Sessions",
+    "since": "since",
+    "avgScore": "Average score",
+    "allSessions": "across all sessions",
+    "bestSession": "Best session",
+    "denominationsDiscovered": "Denominations discovered",
+    "of": "of",
+    "total": "total",
+    "recentSessions": "Recent sessions",
+    "items": "items",
+    "byType": "By type",
+    "regions": "Regions",
+    "best": "BEST",
+    "toImprove": "TO IMPROVE",
+    "emptyTitle": "No sessions yet",
+    "emptySubtitle": "Complete your first session to see your statistics.",
+    "playCta": "Play now →",
+    "comingSoon": "Coming soon",
+    "comingSoonTagline": "New game coming"
+  },
   "language": {
     "toggle": "Italiano"
   },

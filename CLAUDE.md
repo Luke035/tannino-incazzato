@@ -84,6 +84,32 @@ The source file `frontend/src/data/denominations.json` (410 entries) is the inge
 ```
 `regions` is **always an array** — denominations can span multiple regions.
 
+### Session persistence
+When a game ends, the recap page saves the session to the backend before displaying results.
+
+**Frontend flow:**
+1. `game/page.tsx` stores `Date.now()` in `sessionStorage('game_started_at')` when denominations are loaded and adds `filter` to the recap URL params.
+2. `recap/page.tsx` calls `fetchSaveSession` on mount (guarded by a `useRef` flag to prevent React StrictMode double-invocation). Reads `filter` from URL params and `started_at` from sessionStorage. Clears sessionStorage after saving.
+3. `profile/page.tsx` calls `fetchSessionStats` to load aggregated stats.
+
+**Backend endpoints** (both require `sommelier_session` cookie):
+- `POST /session` — receives `{ gameId, filter, startedAt, history[] }`, computes `score`, `max_score`, `duration_seconds`, persists to `game_sessions` + `session_card_attempts`.
+- `GET /session/stats` — returns last-5 session summaries, aggregate stats (total, avg %, best %, unique denominations), type performance (DOC/DOCG %), and top/bottom-4 regions. All aggregations done in Python (works with SQLite in tests).
+
+**DB tables:**
+- `game_sessions(id, user_id FK, game_id, filter, score, max_score, duration_seconds, played_at)`
+- `session_card_attempts(id, session_id FK, denomination_name, denomination_type, wrong_attempts, result, found_regions JSON, auto_placed_regions JSON)`
+
+Regions in `found_regions` / `auto_placed_regions` are stored as **SVG IDs** (same space used by the game logic). The profile page converts them to display names via `svgIdToDisplay()`.
+
+**Formulas:**
+- Session score %: `score / max_score * 100`
+- Region performance: `correct_placements / (correct + auto_placed) * 100`
+- Type performance: average of `score_for_card / 3 * 100` per card, grouped by `denomination_type`
+- "Denominazioni scoperte": `COUNT DISTINCT denomination_name` across all user sessions
+
+**Never call `/session` or `/session/stats` directly from components.** Use `fetchSaveSession` and `fetchSessionStats` in `frontend/src/lib/api.ts`.
+
 ### Region naming
 Two separate namespaces — always use the mapping functions, never hardcode:
 - **JSON region names** (used in `denominations.json`, `foundRegions`, and `placedCards` keys): `"Emilia Romagna"`, `"Valle D'aosta"`, `"Puglia"` …
@@ -114,7 +140,7 @@ All three Gemini endpoints live in the FastAPI backend (`backend/app/ai/`):
 
 All prompts pass a `language` field (`"en"` or `"it"`) so Gemini responds in the correct language.
 
-**Never call these endpoints directly from components.** Use the typed wrappers in `frontend/src/lib/api.ts` (`fetchHint`, `fetchMemorizeTip`, `fetchReview`, `fetchDenominations`). The prompt logic lives in `backend/app/ai/gemini.py`.
+**Never call these endpoints directly from components.** Use the typed wrappers in `frontend/src/lib/api.ts` (`fetchHint`, `fetchMemorizeTip`, `fetchReview`, `fetchDenominations`, `fetchSaveSession`, `fetchSessionStats`). The prompt logic lives in `backend/app/ai/gemini.py`.
 
 ### i18n
 - Translation files: `frontend/src/messages/en.json`, `frontend/src/messages/it.json`
@@ -170,6 +196,9 @@ sommelier_game/
 │   │   ├── denominations/
 │   │   │   ├── model.py       # SQLModel table + Pydantic response schema
 │   │   │   └── router.py      # GET /denominations
+│   │   ├── sessions/
+│   │   │   ├── model.py       # GameSession + SessionCardAttempt SQLModel tables
+│   │   │   └── router.py      # POST /session, GET /session/stats
 │   │   ├── users/
 │   │   │   └── model.py       # User SQLModel table + UserRead schema
 │   │   ├── database.py        # SQLModel engine + get_session dependency
@@ -177,7 +206,7 @@ sommelier_game/
 │   ├── alembic/               # migration scripts
 │   ├── scripts/
 │   │   └── ingest_denominations.py
-│   └── tests/                 # pytest suite (test_auth.py, test_denominations.py, …)
+│   └── tests/                 # pytest suite (test_auth.py, test_denominations.py, test_sessions.py …)
 │
 ├── infra/
 │   └── docker-compose.yml     # PostgreSQL 16
