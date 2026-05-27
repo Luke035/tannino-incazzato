@@ -50,7 +50,7 @@ log "Running Alembic migrations..."
 
 log "Ingesting denominations..."
 (cd "$ROOT/backend" && uv run python scripts/ingest_denominations.py \
-    "$ROOT/frontend/src/data/denominations.json")
+    "$ROOT/backend/data/denominations.json")
 
 # ── services ──────────────────────────────────────────────────────────────────
 log "Starting FastAPI backend  →  http://localhost:8000"

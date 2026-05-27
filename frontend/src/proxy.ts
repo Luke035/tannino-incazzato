@@ -37,7 +37,7 @@ export default async function proxy(req: NextRequest) {
 
     if (isProtected && !loggedIn) {
       const url = req.nextUrl.clone();
-      const locale = pathname.split('/')[1] ?? 'en';
+      const locale = pathname.split('/')[1] || 'en';
       url.pathname = `/${locale}/login`;
       url.searchParams.set('next', pathname);
       return NextResponse.redirect(url);
@@ -45,7 +45,7 @@ export default async function proxy(req: NextRequest) {
 
     if (isAuthOnly && loggedIn) {
       const url = req.nextUrl.clone();
-      const locale = pathname.split('/')[1] ?? 'en';
+      const locale = pathname.split('/')[1] || 'en';
       url.pathname = `/${locale}`;
       url.searchParams.delete('next');
       return NextResponse.redirect(url);
