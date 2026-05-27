@@ -59,7 +59,7 @@ The browser calls FastAPI directly using `NEXT_PUBLIC_API_URL`. There are no Nex
 - **python-jose[cryptography]** — JWT signing/verification
 - **passlib[bcrypt]** — password hashing (bcrypt pinned to `<5.0` for passlib compatibility)
 - **authlib** + **httpx** — Google OAuth2 backend flow
-- **google-genai** — Gemini model `gemini-3.1-flash-lite-preview`
+- **google-genai** — Gemini model `gemini-3.1-flash-lite`
 - **pytest** + **httpx** for testing (SQLite in-memory for DB isolation)
 
 ### Infra (`/infra`)

@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.denominations.router import router as denominations_router
@@ -7,9 +9,11 @@ from app.sessions.router import router as sessions_router
 
 app = FastAPI(title="Sommelier Game API")
 
+_origins = [o.strip() for o in os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=_origins,
     allow_methods=["*"],
     allow_headers=["*"],
     allow_credentials=True,

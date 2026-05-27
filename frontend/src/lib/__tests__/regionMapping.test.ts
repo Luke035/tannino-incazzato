@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { regionToSvgId, svgIdToDisplay } from '../regionMapping';
-import denominations from '../../data/denominations.json';
+import denominations from '../../../../backend/data/denominations.json';
 
 describe('regionToSvgId', () => {
   it('maps known Italian names to SVG IDs', () => {
