@@ -104,3 +104,19 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
+
+  cleanup:
+    needs: [build-backend, build-frontend]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: [sommelier_game/backend, sommelier_game/frontend]
+    permissions:
+      packages: write
+    steps:
+      - uses: actions/delete-package-versions@v5
+        with:
+          package-name: ${{ matrix.package }}
+          package-type: container
+          min-versions-to-keep: 5
+          ignore-versions: '^latest$'
