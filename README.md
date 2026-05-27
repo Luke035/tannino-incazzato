@@ -8,55 +8,39 @@ Place **DOC** and **DOCG** wine denomination cards onto the correct regions of a
 
 ## Architecture
 
+```mermaid
+graph TD
+    Browser(["Browser"])
+    nginx["nginx :80"]
+    frontend["Next.js :3000\nproxy.ts — JWT auth guard\nstandalone build"]
+    backend["FastAPI :8000\nSQLModel · Alembic"]
+    db[("PostgreSQL 16")]
+    gemini["Google Gemini\ngemini-3.1-flash-lite"]
+
+    Browser -->|HTTP| nginx
+    nginx -->|"/ → "| frontend
+    nginx -->|"/api/ → (prefix stripped)"| backend
+    backend --> db
+    backend -.->|AI prompts| gemini
 ```
-┌─────────────────────────────────────────────────────────┐
-│                      Browser                            │
-│            Next.js 16 — localhost (via nginx)           │
-│   Login · Register · Setup · Game · Recap screens       │
-│   proxy.ts — JWT cookie auth guard on all routes        │
-└────────────────────┬────────────────────────────────────┘
-                     │ HTTP /api/* (same origin)
-                     ▼
-┌─────────────────────────────────────────────────────────┐
-│                  nginx reverse proxy                     │
-│                                                         │
-│  /        → frontend:3000 (Next.js)                     │
-│  /api/    → backend:8000  (FastAPI, prefix stripped)    │
-└──────────┬──────────────────────┬───────────────────────┘
-           │                      │
-           ▼                      ▼
-┌──────────────────┐  ┌──────────────────────────────────┐
-│  Next.js 16      │  │         FastAPI backend           │
-│  (standalone)    │  │                                   │
-│                  │  │  POST /auth/register              │
-│  proxy.ts        │  │  POST /auth/login                 │
-│  verifies JWT    │  │  POST /auth/logout                │
-│  from cookie     │  │  GET  /auth/me                    │
-│  server-side     │  │  GET  /auth/google                │
-│                  │  │  GET  /auth/google/callback       │
-└──────────────────┘  │                                   │
-                      │  GET  /denominations              │
-                      │  POST /hint                       │
-                      │  POST /memorize                   │
-                      │  POST /review                     │
-                      │  POST /session                    │
-                      │  GET  /session/stats              │
-                      │  GET  /health                     │
-                      │           │              │        │
-                      │    Google Gemini    PostgreSQL     │
-                      │  gemini-3.1-flash-lite    │
-                      └───────────────────┬───────────────┘
-                                          │
-              ┌───────────────────────────▼───────────────┐
-              │               PostgreSQL 16               │
-              │                                           │
-              │  denomination(id, name, type, regions)    │
-              │  users(id, email, first_name, last_name,  │
-              │        hashed_password, google_id, ...)   │
-              │  game_sessions(id, user_id, game_id, ...) │
-              │  session_card_attempts(id, session_id,...)│
-              └───────────────────────────────────────────┘
-```
+
+### API routes
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/auth/register` | Create account, set cookie |
+| POST | `/auth/login` | Verify credentials, set cookie |
+| POST | `/auth/logout` | Clear cookie |
+| GET | `/auth/me` | Return current user |
+| GET | `/auth/google` | Start Google OAuth flow |
+| GET | `/auth/google/callback` | Finish OAuth, set cookie |
+| GET | `/denominations` | Serve wine catalogue |
+| POST | `/hint` | AI hint after wrong drop |
+| POST | `/memorize` | AI tip in auto-place modal |
+| POST | `/review` | AI recap at session end |
+| POST | `/session` | Save completed session |
+| GET | `/session/stats` | Aggregated profile stats |
+| GET | `/health` | |
 
 ### Repo layout
 
@@ -194,29 +178,50 @@ The E2E global setup creates a test user and saves the session cookie to `playwr
 
 ---
 
+## Auth flow
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant N as nginx
+    participant F as Next.js
+    participant B as FastAPI
+    participant DB as PostgreSQL
+
+    User->>N: GET /
+    N->>F: proxy
+    F->>F: proxy.ts — no JWT cookie
+    F-->>User: 302 /en/login
+
+    User->>N: POST /api/auth/login
+    N->>B: POST /auth/login
+    B->>DB: verify credentials
+    B-->>User: 200 + Set-Cookie: sommelier_session (HttpOnly, 7d)
+
+    User->>N: GET /
+    N->>F: proxy
+    F->>F: proxy.ts — JWT valid
+    F-->>User: 200 /en/
+```
+
+---
+
 ## How the game works
 
-```
-  Login / Register
-       │
-       ▼
-  Start (choose DOC / DOCG / both)
-       │
-       ▼
-┌─────────┐   correct drop    ┌─────────────────┐
-│  Card   │ ─────────────────►│  Next card / +3 │
-│ active  │                   └─────────────────┘
-│         │   wrong drop
-│         │ ─────────────────► AI hint shown, -1 point potential
-│         │
-│         │   3rd wrong drop
-└─────────┘ ─────────────────► AutoPlace modal + AI memory tip → next card
-       │
-       ▼ (all cards done)
-  Recap — AI review + stats → session saved to DB
-       │
-       ▼
-  Profile — history, avg score, region & type performance
+```mermaid
+flowchart TD
+    A([Login / Register]) --> B[Choose filter\nDOC · DOCG · Both]
+    B --> C[Card active]
+    C --> D{Drop on region}
+    D -->|Correct| E[Points awarded\nnext card]
+    D -->|Wrong, attempts < 3| F[AI hint shown\n−1 pt potential]
+    F --> C
+    D -->|3rd wrong| G[AutoPlace modal\nAI memory tip · 0 pts]
+    G --> E
+    E --> H{All cards done?}
+    H -->|No| C
+    H -->|Yes| I[Recap\nAI review · session saved]
+    I --> J[Profile\nStats · history]
 ```
 
 ### Scoring
@@ -254,14 +259,52 @@ Multi-region denominations (e.g. Prosecco spans Veneto + Friuli Venezia Giulia) 
 
 ## Data model
 
+```mermaid
+erDiagram
+    users {
+        int id PK
+        string email
+        string first_name
+        string last_name
+        string hashed_password
+        string google_id
+        datetime created_at
+    }
+    game_sessions {
+        int id PK
+        int user_id FK
+        string game_id
+        string filter
+        int score
+        int max_score
+        int duration_seconds
+        datetime played_at
+    }
+    session_card_attempts {
+        int id PK
+        int session_id FK
+        string denomination_name
+        string denomination_type
+        int wrong_attempts
+        string result
+        json found_regions
+        json auto_placed_regions
+    }
+    denomination {
+        int id PK
+        string name
+        string type
+        json regions
+    }
+
+    users ||--o{ game_sessions : "plays"
+    game_sessions ||--o{ session_card_attempts : "contains"
+```
+
 **Denomination catalogue** — 410 entries covering all Italian DOC and DOCG appellations, stored in `backend/data/denominations.json` and ingested into PostgreSQL at startup:
 ```json
 { "name": "Prosecco", "type": "DOC", "regions": ["Veneto", "Friuli Venezia Giulia"] }
 ```
 `regions` is always an array — many denominations span multiple regions.
 
-**Session history** — every completed game is persisted:
-- `game_sessions` records the filter used, final score, max score, and duration.
-- `session_card_attempts` records each denomination played: wrong attempts, result (`correct` / `auto-placed`), and which regions were found vs auto-placed (stored as SVG IDs).
-
-The profile page aggregates this data to show avg/best score, unique denominations discovered, per-type performance (DOC vs DOCG), and top/bottom regions.
+Regions in `found_regions` / `auto_placed_regions` are stored as SVG IDs (e.g. `"apulia"`, `"tuscany"`). The profile page converts them to display names via `svgIdToDisplay()`.
