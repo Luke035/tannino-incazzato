@@ -1,0 +1,101 @@
+services:
+  backend:
+    image: ghcr.io/luke035/sommelier_game/backend:latest
+    restart: unless-stopped
+    environment:
+      DATABASE_URL:          ${DATABASE_URL}
+      JWT_SECRET:            ${JWT_SECRET}
+      GEMINI_API_KEY:        ${GEMINI_API_KEY}
+      GOOGLE_CLIENT_ID:      ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET:  ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_REDIRECT_URI:   ${GOOGLE_REDIRECT_URI}
+      FRONTEND_URL:          ${FRONTEND_URL}
+      CORS_ORIGINS:          ${CORS_ORIGINS}
+      COOKIE_SECURE:         ${COOKIE_SECURE}
+
+  frontend:
+    image: ghcr.io/luke035/sommelier_game/frontend:latest
+    restart: unless-stopped
+    environment:
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      - backend
+
+  # nginx is the only service exposed to Coolify's shared Traefik proxy. It joins
+  # the external `coolify` network so Traefik can reach it; it stays on `default`
+  # to reach backend/frontend. Traefik terminates TLS (Let's Encrypt) and routes
+  # tanninoincazzato.it (+ www) to this container on port 80; nginx then does
+  # path-based routing internally (ADR 0001).
+  #
+  # Router/middleware names are prefixed `sommelier-` so they never collide with
+  # the other app on this server (salonify / gestionale.hair-garage.it), which
+  # uses the same explicit-label pattern. See ../../hg_migration for that stack.
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    # nginx.conf is embedded via the top-level `configs` block (inline content)
+    # instead of a host bind mount: Coolify materialises no host file, so the
+    # "mount a directory onto a file" failure cannot happen. See ../../hg_migration
+    # MIGRATION.md for the bind-mount gotcha this avoids.
+    configs:
+      - source: nginx_conf
+        target: /etc/nginx/conf.d/default.conf
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - default
+      - coolify
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=coolify"
+      # ── HTTPS router (apex + www; cert covers both SANs) ──────────────────
+      - "traefik.http.routers.sommelier.rule=Host(`tanninoincazzato.it`) || Host(`www.tanninoincazzato.it`)"
+      - "traefik.http.routers.sommelier.entrypoints=https"
+      - "traefik.http.routers.sommelier.tls=true"
+      - "traefik.http.routers.sommelier.tls.certresolver=letsencrypt"
+      - "traefik.http.services.sommelier.loadbalancer.server.port=80"
+      # ── www → apex 301 (applied on the HTTPS router) ──────────────────────
+      - "traefik.http.middlewares.sommelier-www.redirectregex.regex=^https://www\\.tanninoincazzato\\.it/(.*)"
+      - "traefik.http.middlewares.sommelier-www.redirectregex.replacement=https://tanninoincazzato.it/$${1}"
+      - "traefik.http.middlewares.sommelier-www.redirectregex.permanent=true"
+      - "traefik.http.routers.sommelier.middlewares=sommelier-www"
+      # ── HTTP router → 301 to HTTPS ────────────────────────────────────────
+      - "traefik.http.routers.sommelier-http.rule=Host(`tanninoincazzato.it`) || Host(`www.tanninoincazzato.it`)"
+      - "traefik.http.routers.sommelier-http.entrypoints=http"
+      - "traefik.http.routers.sommelier-http.middlewares=sommelier-redirect-to-https"
+      - "traefik.http.middlewares.sommelier-redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.sommelier-redirect-to-https.redirectscheme.permanent=true"
+
+configs:
+  # Inline nginx config (mirrors infra/nginx.conf). nginx runtime variables are
+  # doubled ($$) so Docker Compose does not interpolate them; nginx receives the
+  # single-$ form. Keep this in sync with infra/nginx.conf if that changes.
+  nginx_conf:
+    content: |
+      server {
+          listen 80;
+
+          location /api/ {
+              proxy_pass         http://backend:8000/;
+              proxy_set_header   Host              $$host;
+              proxy_set_header   X-Real-IP         $$remote_addr;
+              proxy_set_header   X-Forwarded-For   $$proxy_add_x_forwarded_for;
+              proxy_set_header   X-Forwarded-Proto $$scheme;
+          }
+
+          location / {
+              proxy_pass         http://frontend:3000;
+              proxy_set_header   Host              $$host;
+              proxy_set_header   X-Real-IP         $$remote_addr;
+              proxy_set_header   X-Forwarded-For   $$proxy_add_x_forwarded_for;
+              proxy_set_header   X-Forwarded-Proto $$scheme;
+              proxy_http_version 1.1;
+              proxy_set_header   Upgrade           $$http_upgrade;
+              proxy_set_header   Connection        "upgrade";
+          }
+      }
+
+networks:
+  coolify:
+    external: true

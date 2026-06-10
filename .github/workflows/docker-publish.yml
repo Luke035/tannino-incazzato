@@ -120,3 +120,12 @@ jobs:
           package-type: container
           min-versions-to-keep: 5
           ignore-versions: '^latest$'
+
+  deploy:
+    needs: [build-backend, build-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Coolify deploy
+        run: |
+          curl --fail --silent --show-error -X GET "${{ secrets.COOLIFY_WEBHOOK_URL }}" \
+            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"

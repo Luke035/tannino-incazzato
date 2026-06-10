@@ -42,15 +42,17 @@ def get_current_user_id(
 
 
 def set_auth_cookie(response, token: str) -> None:
+    secure = os.getenv("COOKIE_SECURE", "false").lower() == "true"
     response.set_cookie(
         key=COOKIE_NAME,
         value=token,
         httponly=True,
         samesite="lax",
         max_age=EXPIRE_DAYS * 24 * 3600,
-        secure=False,  # set True in production behind HTTPS
+        secure=secure,
     )
 
 
 def clear_auth_cookie(response) -> None:
-    response.delete_cookie(key=COOKIE_NAME, httponly=True, samesite="lax")
+    secure = os.getenv("COOKIE_SECURE", "false").lower() == "true"
+    response.delete_cookie(key=COOKIE_NAME, httponly=True, samesite="lax", secure=secure)
