@@ -332,16 +332,28 @@ networks:
 
 ### Image registry
 
-Images are pulled from ghcr.io using a GitHub personal access token with `read:packages` scope, which must be registered as a ghcr.io registry credential in Coolify's UI.
+Images are pulled from ghcr.io:
 
 - `ghcr.io/luke035/sommelier_game/backend:latest`
 - `ghcr.io/luke035/sommelier_game/frontend:latest`
 
 The prod compose stack is defined in `infra/docker-compose.prod.yml`.
 
+**Registry credentials.** Coolify has **no UI for registry credentials** — it reads the host Docker daemon's auth. Authenticate once on the server via SSH (as the user Coolify connects with, usually `root`):
+
+```bash
+echo '<PAT>' | docker login ghcr.io -u luke035 --password-stdin
+```
+
+The packages are private and **linked to a private repository**, so a `read:packages`-only token returns `unauthorized` on pull. The classic PAT must have **both `read:packages` and `repo`** scopes. Verify with `docker pull ghcr.io/luke035/sommelier_game/backend:latest`.
+
 ### Database
 
 The database is a Coolify-managed PostgreSQL 17 instance (not in the compose stack). `DATABASE_URL` is set as a Coolify environment variable and injected into the backend container at runtime. This removes the need to manage backups or upgrades manually.
+
+Use the **internal** connection string (host = the DB container's name, e.g. its Coolify UUID; port `5432`) and make sure the scheme is `postgresql://`, not `postgres://` (psycopg2 requires it). Alembic only creates **tables** inside an existing database — the database itself must already exist (Coolify creates it from the name set when provisioning the resource).
+
+**Network connectivity.** The managed Postgres lives on Coolify's shared `coolify` network and is not published to the host, so the app must share that network to resolve it by name (otherwise the backend fails with `could not translate host name … Temporary failure in name resolution`). Enable **"Connect To Predefined Network"** on the Compose resource so all services join `coolify`. This is safe alongside other apps on the same server — container names are unique and each stack keeps its own internal network for service-to-service DNS.
 
 ### Automated deployment
 
