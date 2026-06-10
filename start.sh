@@ -53,6 +53,9 @@ log "Ingesting denominations..."
     "$ROOT/backend/data/denominations.json")
 
 # ── services ──────────────────────────────────────────────────────────────────
+# local dev runs over HTTP — keep cookies non-Secure
+export COOKIE_SECURE=false
+
 log "Starting FastAPI backend  →  http://localhost:8000"
 (cd "$ROOT/backend" && uv run fastapi dev app/main.py 2>&1 | sed 's/^/[backend] /') &
 BACKEND_PID=$!

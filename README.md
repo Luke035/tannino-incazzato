@@ -14,7 +14,7 @@ graph TD
     nginx["nginx :80"]
     frontend["Next.js :3000\nproxy.ts — JWT auth guard\nstandalone build"]
     backend["FastAPI :8000\nSQLModel · Alembic"]
-    db[("PostgreSQL 16")]
+    db[("PostgreSQL 17")]
     gemini["Google Gemini\ngemini-3.1-flash-lite"]
 
     Browser -->|HTTP| nginx
@@ -250,7 +250,7 @@ Multi-region denominations (e.g. Prosecco spans Veneto + Friuli Venezia Giulia) 
 | Backend | FastAPI + Python 3.12, managed with uv |
 | Auth (backend) | `python-jose` (JWT), `passlib[bcrypt]` (passwords), `authlib` (Google OAuth) |
 | ORM / schema | SQLModel + Alembic |
-| Database | PostgreSQL 16 |
+| Database | PostgreSQL 17 |
 | AI | Google Gemini `gemini-3.1-flash-lite` |
 | Frontend tests | Vitest (unit) + Playwright (E2E) |
 | Backend tests | pytest + httpx |
@@ -306,5 +306,74 @@ erDiagram
 { "name": "Prosecco", "type": "DOC", "regions": ["Veneto", "Friuli Venezia Giulia"] }
 ```
 `regions` is always an array — many denominations span multiple regions.
+
+---
+
+## Deployment (Coolify)
+
+Production is deployed to a self-hosted Coolify server at **tanninoincazzato.it**.
+
+### Architecture
+
+Coolify's built-in Traefik reverse proxy terminates TLS (Let's Encrypt) for the domain and forwards traffic to the app's nginx container on port 80 over the internal Docker network. nginx continues to do path-based routing (`/` → frontend, `/api/` → backend, prefix stripped) as described in [ADR 0001](docs/adr/0001-nginx-path-based-routing.md). This two-proxy design keeps the nginx container decoupled from TLS concerns and the frontend build (which pins `NEXT_PUBLIC_API_URL=/api`) unmodified.
+
+This Coolify server hosts **multiple apps** (also `gestionale.hair-garage.it`), so routing is wired with **explicit Traefik labels** on the nginx service in `infra/docker-compose.prod.yml` — not via Coolify's per-service domain field. The nginx container joins the shared external `coolify` Docker network (where Traefik lives) and declares:
+
+- an HTTPS router matching `Host(tanninoincazzato.it) || Host(www.tanninoincazzato.it)`, with `tls.certresolver=letsencrypt` (one cert, both SANs);
+- a `www → apex` 301 redirect (`redirectregex` middleware) and an `http → https` 301 redirect.
+
+All router/middleware names are prefixed **`sommelier-`** so they never collide with the other app's Traefik config on the same proxy. The external network is declared as:
+
+```yaml
+networks:
+  coolify:
+    external: true
+```
+
+### Image registry
+
+Images are pulled from ghcr.io using a GitHub personal access token with `read:packages` scope, which must be registered as a ghcr.io registry credential in Coolify's UI.
+
+- `ghcr.io/luke035/sommelier_game/backend:latest`
+- `ghcr.io/luke035/sommelier_game/frontend:latest`
+
+The prod compose stack is defined in `infra/docker-compose.prod.yml`.
+
+### Database
+
+The database is a Coolify-managed PostgreSQL 17 instance (not in the compose stack). `DATABASE_URL` is set as a Coolify environment variable and injected into the backend container at runtime. This removes the need to manage backups or upgrades manually.
+
+### Automated deployment
+
+The GitHub Actions workflow `docker-publish.yml` pushes images to ghcr.io after tests pass. Its `deploy` job then calls a Coolify webhook (`COOLIFY_WEBHOOK_URL` + `COOLIFY_TOKEN` secrets) to trigger a fresh deployment using the latest images.
+
+### Required environment variables
+
+Set these in Coolify's environment editor for the app:
+
+| Variable | Value |
+|----------|-------|
+| `JWT_SECRET` | Random 32-byte hex string (shared with frontend) |
+| `DATABASE_URL` | External Postgres connection string (provided by Coolify) |
+| `GEMINI_API_KEY` | Google AI Studio API key |
+| `GOOGLE_CLIENT_ID` | Google OAuth Client ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth Client Secret |
+| `GOOGLE_REDIRECT_URI` | `https://tanninoincazzato.it/api/auth/google/callback` |
+| `FRONTEND_URL` | `https://tanninoincazzato.it` |
+| `CORS_ORIGINS` | `https://tanninoincazzato.it` |
+| `COOKIE_SECURE` | `true` |
+
+### Google Console setup
+
+1. Register the redirect URI `https://tanninoincazzato.it/api/auth/google/callback` in the OAuth consent screen.
+2. Add `tanninoincazzato.it` to **Authorized domains** in the consent screen.
+
+### Local dev note
+
+When switching to PostgreSQL 17 locally, existing volume data from PG16 is incompatible. Run this once:
+```bash
+docker compose -f infra/docker-compose.yml down -v
+```
+This deletes local data only — migrations and ingestion repopulate on the next `./start.sh`.
 
 Regions in `found_regions` / `auto_placed_regions` are stored as SVG IDs (e.g. `"apulia"`, `"tuscany"`). The profile page converts them to display names via `svgIdToDisplay()`.

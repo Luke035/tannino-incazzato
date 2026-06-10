@@ -63,7 +63,7 @@ The browser calls FastAPI directly using `NEXT_PUBLIC_API_URL`. There are no Nex
 - **pytest** + **httpx** for testing (SQLite in-memory for DB isolation)
 
 ### Infra (`/infra`)
-- **PostgreSQL 16** via Docker Compose
+- **PostgreSQL 17** via Docker Compose
 
 ## Key conventions
 
@@ -209,7 +209,7 @@ sommelier_game/
 │   └── tests/                 # pytest suite (test_auth.py, test_denominations.py, test_sessions.py …)
 │
 ├── infra/
-│   └── docker-compose.yml     # PostgreSQL 16
+│   └── docker-compose.yml     # PostgreSQL 17
 │
 └── start.sh                   # unified startup script
 ```
