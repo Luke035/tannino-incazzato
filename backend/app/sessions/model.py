@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from typing import List, Optional
 
-from sqlalchemy import Column
+from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy import JSON as SAJSON
 from sqlmodel import Field, SQLModel
 
@@ -10,7 +10,9 @@ class GameSession(SQLModel, table=True):
     __tablename__ = "game_sessions"
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    user_id: int = Field(foreign_key="users.id", index=True)
+    user_id: int = Field(
+        sa_column=Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
+    )
     game_id: str
     filter: str  # "both" | "DOC" | "DOCG"
     score: int
@@ -23,7 +25,9 @@ class SessionCardAttempt(SQLModel, table=True):
     __tablename__ = "session_card_attempts"
 
     id: Optional[int] = Field(default=None, primary_key=True)
-    session_id: int = Field(foreign_key="game_sessions.id", index=True)
+    session_id: int = Field(
+        sa_column=Column(Integer, ForeignKey("game_sessions.id", ondelete="CASCADE"), index=True, nullable=False)
+    )
     denomination_name: str
     denomination_type: str  # "DOC" | "DOCG"
     wrong_attempts: int
