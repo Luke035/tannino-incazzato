@@ -30,8 +30,10 @@ if [[ ! -d "$ROOT/frontend/node_modules" ]]; then
 fi
 
 # ── PostgreSQL ────────────────────────────────────────────────────────────────
+# Only the `db` service — backend/frontend run locally below via dev servers, so
+# we must NOT bring up their (potentially stale) compose containers here.
 log "Starting PostgreSQL..."
-docker compose -f "$ROOT/infra/docker-compose.yml" up -d
+docker compose -f "$ROOT/infra/docker-compose.yml" up -d db
 
 log "Waiting for PostgreSQL to be ready..."
 for i in $(seq 1 30); do

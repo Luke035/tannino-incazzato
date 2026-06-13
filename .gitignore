@@ -1,6 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-.claude
+# .claude is shared (agents, settings.json) — but local overrides stay out
+.claude/settings.local.json
 .agents
 
 # dependencies
