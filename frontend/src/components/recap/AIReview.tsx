@@ -25,19 +25,19 @@ export default function AIReview({ history }: AIReviewProps) {
     <div className="bg-white border border-border rounded-2xl p-6">
       <h2
         className="text-muted font-medium uppercase mb-4"
-        style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.65rem', letterSpacing: '0.16em' }}
+        style={{ fontFamily: 'var(--font-sans)', fontSize: '0.65rem', letterSpacing: '0.16em' }}
       >
         {t('aiReview')}
       </h2>
       {loading ? (
         <div className="flex gap-1.5 items-center py-1">
-          <span className="w-2 h-2 bg-crimson rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-          <span className="w-2 h-2 bg-crimson rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-          <span className="w-2 h-2 bg-crimson rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-          <span className="ml-2 text-sm text-muted" style={{ fontFamily: 'var(--font-dm-sans)' }}>{t('loadingReview')}</span>
+          <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+          <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+          <span className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+          <span className="ml-2 text-sm text-muted" style={{ fontFamily: 'var(--font-sans)' }}>{t('loadingReview')}</span>
         </div>
       ) : (
-        <p data-testid="ai-review-text" className="text-sm text-charcoal leading-relaxed" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+        <p data-testid="ai-review-text" className="text-sm text-ink leading-relaxed" style={{ fontFamily: 'var(--font-sans)' }}>
           {review}
         </p>
       )}

@@ -24,12 +24,12 @@ const GAMES = [
 /* ─── Sub-components ─────────────────────────────────────────────────────── */
 
 function ScorePill({ score }: { score: number }) {
-  const color = score >= 85 ? 'var(--jade)' : score >= 70 ? 'var(--navy)' : 'var(--crimson)';
-  const bg = score >= 85 ? 'var(--jade-light)' : score >= 70 ? '#EEF2FF' : 'var(--crimson-light)';
+  const color = score >= 85 ? 'var(--correct)' : score >= 70 ? 'var(--rust)' : 'var(--primary)';
+  const bg = score >= 85 ? '#E4F0E6' : score >= 70 ? '#EEF2FF' : '#F4E6E9';
   return (
     <span
       className="font-bold rounded px-2 py-0.5"
-      style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.72rem', color, background: bg }}
+      style={{ fontFamily: 'var(--font-sans)', fontSize: '0.72rem', color, background: bg }}
     >
       {Math.round(score)}%
     </span>
@@ -38,16 +38,16 @@ function ScorePill({ score }: { score: number }) {
 
 function FilterBadge({ filter }: { filter: string }) {
   const map: Record<string, { color: string; bg: string }> = {
-    DOCG:  { color: 'var(--crimson)',  bg: 'var(--crimson-light)' },
-    DOC:   { color: 'var(--navy)',     bg: '#EEF2FF'              },
-    both:  { color: 'var(--charcoal)', bg: 'var(--surface)'      },
+    DOCG:  { color: 'var(--primary)',  bg: '#F4E6E9' },
+    DOC:   { color: 'var(--rust)',     bg: '#EEF2FF'              },
+    both:  { color: 'var(--ink)', bg: 'var(--surface)'      },
   };
   const s = map[filter] ?? map.both;
   const label = filter === 'both' ? 'Tutti' : filter;
   return (
     <span
       className="font-semibold rounded px-2 py-0.5 uppercase"
-      style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.58rem', letterSpacing: '0.1em', color: s.color, background: s.bg }}
+      style={{ fontFamily: 'var(--font-sans)', fontSize: '0.58rem', letterSpacing: '0.1em', color: s.color, background: s.bg }}
     >
       {label}
     </span>
@@ -101,8 +101,8 @@ export default function ProfilePage() {
               className="flex items-center justify-center rounded-2xl font-extrabold text-white flex-shrink-0"
               style={{
                 width: 64, height: 64,
-                background: 'linear-gradient(135deg, var(--crimson) 0%, var(--crimson-dark) 100%)',
-                fontFamily: 'var(--font-bricolage)', fontSize: '1.4rem',
+                background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary) 100%)',
+                fontFamily: 'var(--font-display)', fontSize: '1.4rem',
                 boxShadow: '0 4px 16px rgba(193,0,31,0.3)',
               }}
             >
@@ -110,12 +110,12 @@ export default function ProfilePage() {
             </div>
             <div>
               <h1
-                className="font-extrabold text-charcoal"
-                style={{ fontFamily: 'var(--font-bricolage)', fontSize: '1.6rem', lineHeight: 1.05 }}
+                className="font-extrabold text-ink"
+                style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', lineHeight: 1.05 }}
               >
                 {user ? `${user.first_name} ${user.last_name}` : ''}
               </h1>
-              <p className="text-muted mt-0.5" style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.8rem' }}>
+              <p className="text-muted mt-0.5" style={{ fontFamily: 'var(--font-sans)', fontSize: '0.8rem' }}>
                 {user?.email}
               </p>
             </div>
@@ -123,8 +123,8 @@ export default function ProfilePage() {
 
           <Link
             href="/"
-            className="px-6 py-3 bg-crimson text-white font-bold rounded-lg hover:bg-crimson-dark transition-colors shadow-lg shadow-crimson/20 text-center flex-shrink-0"
-            style={{ fontFamily: 'var(--font-bricolage)', fontSize: '0.9rem', letterSpacing: '0.02em' }}
+            className="px-6 py-3 bg-accent text-white font-bold rounded-full hover:opacity-90 transition-colors shadow-lg text-center flex-shrink-0"
+            style={{ fontFamily: 'var(--font-display)', fontSize: '0.9rem', letterSpacing: '0.02em' }}
           >
             {t('newSession')}
           </Link>
@@ -134,7 +134,7 @@ export default function ProfilePage() {
         <div className="animate-fade-up" style={{ animationDelay: '60ms' }}>
           <p
             className="uppercase mb-3"
-            style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.58rem', letterSpacing: '0.2em', color: 'var(--muted)' }}
+            style={{ fontFamily: 'var(--font-sans)', fontSize: '0.58rem', letterSpacing: '0.2em', color: 'var(--muted)' }}
           >
             {t('statsFor')}
           </p>
@@ -151,7 +151,7 @@ export default function ProfilePage() {
                   style={{
                     minWidth: 200,
                     background: 'white',
-                    border: isSelected ? '1.5px solid var(--crimson)' : '1.5px solid var(--border)',
+                    border: isSelected ? '1.5px solid var(--primary)' : '1.5px solid var(--border)',
                     boxShadow: isSelected ? '0 4px 16px rgba(193,0,31,0.1)' : 'none',
                     opacity: g.available ? 1 : 0.45,
                     cursor: g.available ? 'pointer' : 'default',
@@ -162,22 +162,22 @@ export default function ProfilePage() {
                     <p
                       className="font-bold truncate"
                       style={{
-                        fontFamily: 'var(--font-bricolage)', fontSize: '0.9rem',
-                        color: isSelected ? 'var(--crimson)' : 'var(--charcoal)',
+                        fontFamily: 'var(--font-display)', fontSize: '0.9rem',
+                        color: isSelected ? 'var(--primary)' : 'var(--ink)',
                       }}
                     >
                       {g.available ? g.nameKey : t('comingSoon')}
                     </p>
                     <p
                       className="truncate mt-0.5"
-                      style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.7rem', color: 'var(--subtle)' }}
+                      style={{ fontFamily: 'var(--font-sans)', fontSize: '0.7rem', color: 'var(--faint)' }}
                     >
                       {g.available ? g.tagline : t('comingSoonTagline')}
                     </p>
                     {sessionCount !== null && (
                       <p
                         className="mt-1.5 font-semibold"
-                        style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.68rem', color: 'var(--muted)' }}
+                        style={{ fontFamily: 'var(--font-sans)', fontSize: '0.68rem', color: 'var(--muted)' }}
                       >
                         {sessionCount} {t('sessions').toLowerCase()}
                       </p>
@@ -185,9 +185,9 @@ export default function ProfilePage() {
                   </div>
                   {isSelected && (
                     <div className="ml-auto flex-shrink-0 mt-0.5">
-                      <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{ background: 'var(--crimson-light)' }}>
+                      <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{ background: '#F4E6E9' }}>
                         <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-                          <path d="M1.5 4.5L3 6L6.5 2.5" stroke="var(--crimson)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M1.5 4.5L3 6L6.5 2.5" stroke="var(--primary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </div>
                     </div>
@@ -206,18 +206,18 @@ export default function ProfilePage() {
             style={{ animationDelay: '120ms' }}
           >
             <p
-              className="font-extrabold text-charcoal"
-              style={{ fontFamily: 'var(--font-bricolage)', fontSize: '1.4rem' }}
+              className="font-extrabold text-ink"
+              style={{ fontFamily: 'var(--font-display)', fontSize: '1.4rem' }}
             >
               {t('emptyTitle')}
             </p>
-            <p style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.85rem', color: 'var(--muted)' }}>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.85rem', color: 'var(--muted)' }}>
               {t('emptySubtitle')}
             </p>
             <Link
               href="/"
-              className="mt-2 px-6 py-3 bg-crimson text-white font-bold rounded-lg hover:bg-crimson-dark transition-colors"
-              style={{ fontFamily: 'var(--font-bricolage)', fontSize: '0.9rem' }}
+              className="mt-2 px-6 py-3 bg-accent text-white font-bold rounded-full hover:opacity-90 transition-colors"
+              style={{ fontFamily: 'var(--font-display)', fontSize: '0.9rem' }}
             >
               {t('playCta')}
             </Link>
@@ -237,13 +237,13 @@ export default function ProfilePage() {
                   label: t('sessions'),
                   value: stats.aggregate.total_sessions.toString(),
                   sub: sinceYear ? `${t('since')} ${sinceYear}` : '',
-                  accent: 'var(--charcoal)',
+                  accent: 'var(--ink)',
                 },
                 {
                   label: t('avgScore'),
                   value: `${Math.round(stats.aggregate.avg_score_pct)}%`,
                   sub: t('allSessions'),
-                  accent: 'var(--navy)',
+                  accent: 'var(--rust)',
                 },
                 {
                   label: t('bestSession'),
@@ -251,23 +251,23 @@ export default function ProfilePage() {
                   sub: stats.aggregate.best_session
                     ? `${formatDate(stats.aggregate.best_session.played_at)} · ${stats.aggregate.best_session.filter === 'both' ? 'Tutti' : stats.aggregate.best_session.filter}`
                     : '',
-                  accent: 'var(--jade)',
+                  accent: 'var(--correct)',
                 },
                 {
                   label: t('denominationsDiscovered'),
                   value: stats.aggregate.unique_denoms.toString(),
                   sub: `${t('of')} ${stats.aggregate.total_denoms} ${t('total')}`,
-                  accent: 'var(--crimson)',
+                  accent: 'var(--primary)',
                 },
               ].map(({ label, value, sub, accent }) => (
                 <div key={label} className="profile-stat-card">
-                  <p className="uppercase mb-3" style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.58rem', letterSpacing: '0.18em', color: 'var(--muted)' }}>
+                  <p className="uppercase mb-3" style={{ fontFamily: 'var(--font-sans)', fontSize: '0.58rem', letterSpacing: '0.18em', color: 'var(--muted)' }}>
                     {label}
                   </p>
-                  <p className="font-extrabold leading-none mb-1.5" style={{ fontFamily: 'var(--font-bricolage)', fontSize: '2.2rem', color: accent, lineHeight: 1 }}>
+                  <p className="font-extrabold leading-none mb-1.5" style={{ fontFamily: 'var(--font-display)', fontSize: '2.2rem', color: accent, lineHeight: 1 }}>
                     {value}
                   </p>
-                  <p style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.72rem', color: 'var(--subtle)' }}>
+                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.72rem', color: 'var(--faint)' }}>
                     {sub}
                   </p>
                 </div>
@@ -279,7 +279,7 @@ export default function ProfilePage() {
 
               {/* Recent sessions */}
               <div className="flex flex-col gap-4">
-                <h2 className="font-extrabold text-charcoal" style={{ fontFamily: 'var(--font-bricolage)', fontSize: '1.1rem' }}>
+                <h2 className="font-extrabold text-ink" style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem' }}>
                   {t('recentSessions')}
                 </h2>
                 <div data-testid="profile-sessions" className="flex flex-col gap-2">
@@ -287,12 +287,12 @@ export default function ProfilePage() {
                     <div key={s.id} data-testid="session-row" className="session-row">
                       <div className="flex items-center gap-3">
                         <FilterBadge filter={s.filter} />
-                        <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.82rem', color: 'var(--muted)' }}>
+                        <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.82rem', color: 'var(--muted)' }}>
                           {formatDate(s.played_at)}
                         </span>
                       </div>
                       <div className="flex items-center gap-4">
-                        <span className="hidden sm:block" style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.75rem', color: 'var(--subtle)' }}>
+                        <span className="hidden sm:block" style={{ fontFamily: 'var(--font-sans)', fontSize: '0.75rem', color: 'var(--faint)' }}>
                           {s.items} {t('items')} · {formatDuration(s.duration_seconds)}
                         </span>
                         <ScorePill score={s.score_pct} />
@@ -308,22 +308,22 @@ export default function ProfilePage() {
                 {/* Type performance */}
                 {(stats.type_performance.doc_pct !== null || stats.type_performance.docg_pct !== null) && (
                   <div className="bg-white rounded-xl border border-border p-5">
-                    <h3 className="font-extrabold text-charcoal mb-4" style={{ fontFamily: 'var(--font-bricolage)', fontSize: '1rem' }}>
+                    <h3 className="font-extrabold text-ink mb-4" style={{ fontFamily: 'var(--font-display)', fontSize: '1rem' }}>
                       {t('byType')}
                     </h3>
                     <div className="flex flex-col gap-3.5">
                       {[
-                        { label: 'DOCG', score: stats.type_performance.docg_pct, color: 'var(--crimson)' },
-                        { label: 'DOC',  score: stats.type_performance.doc_pct,  color: 'var(--navy)'    },
+                        { label: 'DOCG', score: stats.type_performance.docg_pct, color: 'var(--primary)' },
+                        { label: 'DOC',  score: stats.type_performance.doc_pct,  color: 'var(--rust)'    },
                       ]
                         .filter((row) => row.score !== null)
                         .map(({ label, score, color }) => (
                           <div key={label}>
                             <div className="flex items-center justify-between mb-1.5">
-                              <span className="font-semibold uppercase" style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.65rem', letterSpacing: '0.12em', color: 'var(--charcoal)' }}>
+                              <span className="font-semibold uppercase" style={{ fontFamily: 'var(--font-sans)', fontSize: '0.65rem', letterSpacing: '0.12em', color: 'var(--ink)' }}>
                                 {label}
                               </span>
-                              <span className="font-bold" style={{ fontFamily: 'var(--font-bricolage)', fontSize: '0.9rem', color }}>
+                              <span className="font-bold" style={{ fontFamily: 'var(--font-display)', fontSize: '0.9rem', color }}>
                                 {Math.round(score!)}%
                               </span>
                             </div>
@@ -339,21 +339,21 @@ export default function ProfilePage() {
                 {/* Region performance */}
                 {(stats.top_regions.length > 0 || stats.low_regions.length > 0) && (
                   <div className="bg-white rounded-xl border border-border p-5">
-                    <h3 className="font-extrabold text-charcoal mb-4" style={{ fontFamily: 'var(--font-bricolage)', fontSize: '1rem' }}>
+                    <h3 className="font-extrabold text-ink mb-4" style={{ fontFamily: 'var(--font-display)', fontSize: '1rem' }}>
                       {t('regions')}
                     </h3>
                     <div className="flex flex-col gap-2.5">
                       {stats.top_regions.length > 0 && (
                         <>
-                          <p className="uppercase" style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.57rem', letterSpacing: '0.16em', color: 'var(--jade)' }}>
+                          <p className="uppercase" style={{ fontFamily: 'var(--font-sans)', fontSize: '0.57rem', letterSpacing: '0.16em', color: 'var(--correct)' }}>
                             {t('best')}
                           </p>
                           {stats.top_regions.map(({ region, score_pct }) => (
                             <div key={region} className="flex items-center justify-between">
-                              <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.78rem', color: 'var(--charcoal)' }}>
+                              <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.78rem', color: 'var(--ink)' }}>
                                 {svgIdToDisplay(region)}
                               </span>
-                              <span className="font-bold" style={{ fontFamily: 'var(--font-bricolage)', fontSize: '0.85rem', color: 'var(--jade)' }}>
+                              <span className="font-bold" style={{ fontFamily: 'var(--font-display)', fontSize: '0.85rem', color: 'var(--correct)' }}>
                                 {Math.round(score_pct)}%
                               </span>
                             </div>
@@ -365,15 +365,15 @@ export default function ProfilePage() {
                       )}
                       {stats.low_regions.length > 0 && (
                         <>
-                          <p className="uppercase" style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.57rem', letterSpacing: '0.16em', color: 'var(--crimson)' }}>
+                          <p className="uppercase" style={{ fontFamily: 'var(--font-sans)', fontSize: '0.57rem', letterSpacing: '0.16em', color: 'var(--primary)' }}>
                             {t('toImprove')}
                           </p>
                           {stats.low_regions.map(({ region, score_pct }) => (
                             <div key={region} className="flex items-center justify-between">
-                              <span style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.78rem', color: 'var(--charcoal)' }}>
+                              <span style={{ fontFamily: 'var(--font-sans)', fontSize: '0.78rem', color: 'var(--ink)' }}>
                                 {svgIdToDisplay(region)}
                               </span>
-                              <span className="font-bold" style={{ fontFamily: 'var(--font-bricolage)', fontSize: '0.85rem', color: 'var(--crimson)' }}>
+                              <span className="font-bold" style={{ fontFamily: 'var(--font-display)', fontSize: '0.85rem', color: 'var(--primary)' }}>
                                 {Math.round(score_pct)}%
                               </span>
                             </div>

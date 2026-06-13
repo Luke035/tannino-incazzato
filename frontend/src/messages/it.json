@@ -1,12 +1,39 @@
 {
+  "home": {
+    "welcome": "Bentornato, {name} 👋",
+    "title": "Scegli il gioco",
+    "subtitle": "Niente pose. Solo vino.",
+    "profileChip": "Profilo",
+    "profileCta": "Le tue statistiche →",
+    "games": {
+      "wineMap": {
+        "title": "Mappa dei Vini",
+        "badge": "Disponibile",
+        "cta": "Versa e gioca →"
+      },
+      "comingSoon": {
+        "badge": "Presto"
+      },
+      "pairing": {
+        "title": "Abbinamenti"
+      },
+      "vitigni": {
+        "title": "Vitigni d'Italia"
+      },
+      "annate": {
+        "title": "Annate"
+      }
+    },
+    "backToGames": "← Giochi"
+  },
   "setup": {
-    "title": "Gioco del Sommelier",
-    "subtitle": "Metti alla prova la tua conoscenza delle denominazioni vinicole italiane",
+    "title": "Mappa dei Vini",
+    "subtitle": "Niente pose. Solo vino.",
     "filterLabel": "Mostra denominazioni:",
     "filterBoth": "DOC e DOCG",
     "filterDocg": "Solo DOCG",
     "filterDoc": "Solo DOC",
-    "startButton": "Inizia Sessione"
+    "startButton": "Versa e gioca →"
   },
   "game": {
     "endSession": "Termina Sessione",
@@ -18,11 +45,11 @@
     "regionsRemaining": "rimanenti",
     "correctFeedback": "Corretto!",
     "allFoundFeedback": "Tutte le regioni trovate!",
-    "wrongFeedback": "Non esatto, riprova!",
+    "wrongFeedback": "Eh no. Il tannino s'incazza.",
     "autoPlacedFeedback": "Posizionato automaticamente in"
   },
   "recap": {
-    "title": "Sessione Completata",
+    "title": "Il verdetto del tannino",
     "totalAttempted": "Schede tentate",
     "score": "Punteggio",
     "noWrong": "Perfetto (nessun errore)",
@@ -31,7 +58,7 @@
     "autoPlaced": "Posizionato automaticamente",
     "byRegion": "Performance per regione",
     "aiReview": "Valutazione del Tutore",
-    "newSession": "Inizia Nuova Sessione",
+    "newSession": "Ancora un giro →",
     "loadingReview": "Generazione della valutazione..."
   },
   "map": {

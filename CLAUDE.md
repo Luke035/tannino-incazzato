@@ -35,6 +35,15 @@ npm run test:e2e -- e2e/happy-path.spec.ts    # single file
 
 **Run `npm run test:e2e` after any change to:** UI components, game flow logic, API routes, auth flow, or i18n strings. Do not skip this step before committing.
 
+### Mandatory QA gate — launch the `qa-sommelier` agent
+
+**After ANY change that touches the frontend, backend, game flow, auth, i18n, or API routes, you MUST launch the `qa-sommelier` subagent as the quality gate before reporting the work as done or committing.** This is not optional and not satisfied by running tests yourself: the `qa-sommelier` agent owns the full gate (boots the stack, runs pytest + Vitest + production build + Playwright E2E) and returns a verdict it produced itself.
+
+- Launch it via the Agent tool with `subagent_type: qa-sommelier` once implementation is complete and the working tree is in the state to be verified.
+- This applies to changes made directly or by spawned implementation teammates — the QA gate runs on the integrated result.
+- Only skip if the change is purely non-code (docs, comments, CONTEXT.md/ADRs) with zero impact on the running app. When skipping, say so explicitly and why.
+- If the agent reports failures, fix them (or surface them) before declaring done — do not present a green result you did not get from the gate.
+
 The E2E global setup (`e2e/global-setup.ts`) creates a test user via the real API and saves the session cookie to `playwright/.auth/user.json` (gitignored). All game tests run with that session pre-loaded. Auth tests use `storageState: { cookies: [], origins: [] }` to start without a session.
 
 ## Architecture

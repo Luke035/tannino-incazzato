@@ -2,23 +2,28 @@ import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { notFound } from 'next/navigation';
 import { routing } from '@/i18n/routing';
 import { getMessages } from 'next-intl/server';
-import { Bricolage_Grotesque, DM_Sans } from 'next/font/google';
+import { Baloo_2, Nunito } from 'next/font/google';
 import { AuthProvider } from '@/context/AuthContext';
 import '../globals.css';
 
-const bricolage = Bricolage_Grotesque({
+const baloo = Baloo_2({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800'],
-  variable: '--font-bricolage',
+  variable: '--font-display',
   display: 'swap',
 });
 
-const dmSans = DM_Sans({
+const nunito = Nunito({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600'],
-  variable: '--font-dm-sans',
+  weight: ['400', '500', '600', '700', '800', '900'],
+  variable: '--font-sans',
   display: 'swap',
 });
+
+export const metadata = {
+  title: 'Tannino Incazzato',
+  description: 'Learn Italian wine denominations through drag-and-drop mastery.',
+};
 
 export default async function LocaleLayout({
   children,
@@ -31,8 +36,11 @@ export default async function LocaleLayout({
   if (!hasLocale(routing.locales, locale)) notFound();
   const messages = await getMessages();
   return (
-    <html lang={locale} className={`${bricolage.variable} ${dmSans.variable}`}>
-      <body className="bg-white text-charcoal antialiased">
+    <html lang={locale} className={`${baloo.variable} ${nunito.variable}`}>
+      <head>
+        <title>Tannino Incazzato</title>
+      </head>
+      <body className="bg-bg text-ink antialiased">
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
             {children}

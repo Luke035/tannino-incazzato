@@ -1,44 +1,65 @@
 @import "tailwindcss";
 
 :root {
-  --crimson: #C1001F;
-  --crimson-dark: #8A0016;
-  --crimson-light: #FFF0F2;
-  --navy: #0D1B2A;
-  --jade: #00875A;
-  --jade-light: #E6F6F1;
-  --charcoal: #111827;
-  --muted: #6B7280;
-  --subtle: #9CA3AF;
-  --border: #E5E7EB;
-  --surface: #F9FAFB;
-  --bg: #FFFFFF;
+  /* Aperitivo Palette */
+  --bg: #F2EDE4;
+  --surface: #FBF8F2;
+  --surface-2: #F8F3EA;
+  --soon: #EFE8DC;
+  --card: #FFFFFF;
+  --ink: #241016;
+  --muted: #6F6356;
+  --faint: #9A8A78;
+  --border: #E2DACE;
+  --primary: #7A132A;
+  --primary-bright: #E0566A;
+  --accent: #2438FF;
+  --rust: #C2562B;
+  --correct: #3F7A47;
+  --dark: #241016;
+  --topbar: #E8E2D7;
+
+  /* Aliases for compatibility */
   --background: var(--bg);
-  --foreground: var(--charcoal);
+  --foreground: var(--ink);
+  --charcoal: var(--ink);
+  --subtle: var(--faint);
+  --navy: var(--accent);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-crimson: var(--crimson);
-  --color-crimson-dark: var(--crimson-dark);
-  --color-crimson-light: var(--crimson-light);
-  --color-navy: var(--navy);
-  --color-jade: var(--jade);
-  --color-jade-light: var(--jade-light);
-  --color-charcoal: var(--charcoal);
-  --color-muted: var(--muted);
-  --color-subtle: var(--subtle);
-  --color-border: var(--border);
+  --color-bg: var(--bg);
   --color-surface: var(--surface);
-  --font-display: var(--font-bricolage);
-  --font-sans: var(--font-dm-sans);
+  --color-surface-2: var(--surface-2);
+  --color-soon: var(--soon);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-bright: var(--primary-bright);
+  --color-accent: var(--accent);
+  --color-rust: var(--rust);
+  --color-correct: var(--correct);
+  --color-dark: var(--dark);
+  --color-topbar: var(--topbar);
+  --font-display: var(--font-display, 'Baloo 2', sans-serif);
+  --font-sans: var(--font-sans, 'Nunito', sans-serif);
+}
+
+/* Font aliases for backward compatibility */
+:root {
+  --font-baloo: var(--font-display);
+  --font-nunito: var(--font-sans);
 }
 
 body {
   background-color: var(--bg);
-  color: var(--charcoal);
-  font-family: var(--font-dm-sans, 'Helvetica Neue', sans-serif);
+  color: var(--ink);
+  font-family: var(--font-sans, 'Nunito', sans-serif);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -46,38 +67,38 @@ body {
 
 .auth-panel {
   background:
-    radial-gradient(ellipse 85% 60% at 85% 5%,  rgba(193, 0, 31, 0.55) 0%, transparent 55%),
-    radial-gradient(ellipse 55% 65% at 10% 92%, rgba(120, 15, 40, 0.55) 0%, transparent 58%),
-    #3A0F1C;
+    radial-gradient(ellipse 85% 60% at 85% 5%, rgba(122, 19, 42, 0.55) 0%, transparent 55%),
+    radial-gradient(ellipse 55% 65% at 10% 92%, rgba(122, 19, 42, 0.55) 0%, transparent 58%),
+    var(--dark);
 }
 
 .auth-input {
   width: 100%;
   padding: 0.75rem 1rem;
-  background: transparent;
+  background: var(--surface);
   border: 1.5px solid var(--border);
-  border-radius: 4px;
-  color: var(--charcoal);
+  border-radius: 12px;
+  color: var(--ink);
   font-size: 0.875rem;
-  font-family: var(--font-dm-sans, sans-serif);
+  font-family: var(--font-sans, sans-serif);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   outline: none;
 }
 
 .auth-input:focus {
-  border-color: var(--crimson);
-  box-shadow: 0 0 0 3px rgba(193, 0, 31, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(36, 56, 255, 0.12);
 }
 
 .auth-input::placeholder {
-  color: var(--subtle);
+  color: var(--faint);
 }
 
 .auth-label {
-  font-family: var(--font-dm-sans, sans-serif);
+  font-family: var(--font-sans, sans-serif);
   font-size: 0.575rem;
-  font-weight: 500;
-  color: var(--charcoal);
+  font-weight: 800;
+  color: var(--ink);
   text-transform: uppercase;
   letter-spacing: 0.18em;
 }
@@ -100,16 +121,16 @@ body {
 }
 
 .profile-stat-card {
-  background: white;
+  background: var(--card);
   border: 1.5px solid var(--border);
-  border-radius: 14px;
+  border-radius: 18px;
   padding: 1.4rem 1.5rem;
   transition: border-color 0.25s ease, box-shadow 0.25s ease, translate 0.25s ease;
 }
 
 .profile-stat-card:hover {
-  border-color: rgba(193, 0, 31, 0.35);
-  box-shadow: 0 6px 24px rgba(193, 0, 31, 0.08);
+  border-color: rgba(122, 19, 42, 0.35);
+  box-shadow: 0 6px 24px rgba(122, 19, 42, 0.08);
   translate: 0 -2px;
 }
 
@@ -118,7 +139,7 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 0.85rem 1.1rem;
-  border-radius: 9px;
+  border-radius: 14px;
   border: 1.5px solid var(--border);
   transition: background-color 0.2s ease, border-color 0.2s ease;
   cursor: default;
@@ -126,6 +147,28 @@ body {
 
 .session-row:hover {
   background-color: var(--surface);
-  border-color: var(--charcoal);
+  border-color: var(--ink);
+}
+
+/* ───── SHAPE UTILITIES ───── */
+
+.card-rounded {
+  border-radius: 20px;
+}
+
+.pill {
+  border-radius: 999px;
+}
+
+.soft-shadow {
+  box-shadow: 0 14px 44px rgba(36, 16, 22, 0.14);
+}
+
+.cta-shadow {
+  box-shadow: 0 8px 22px rgba(36, 56, 255, 0.3);
+}
+
+.card-shadow {
+  box-shadow: 0 12px 28px rgba(36, 16, 22, 0.16);
 }
 

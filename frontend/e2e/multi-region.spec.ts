@@ -9,7 +9,7 @@ const PROSECCO = [DENOMINATIONS[8]]; // { name: 'Prosecco', regions: ['Veneto', 
 
 test('multi-region card stays active until all regions are placed', async ({ page }) => {
   await mockApi(page, { denominations: PROSECCO });
-  await page.goto('/en');
+  await page.goto('/en/wine-map');
 
   await page.getByTestId('start-button').click();
   await page.getByTestId('active-card').waitFor();

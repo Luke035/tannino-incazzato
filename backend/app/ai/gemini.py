@@ -31,7 +31,13 @@ async def generate_hint(
     )
     lang = "Italian" if language == "it" else "English"
     prompt = (
-        f'You are an encouraging sommelier tutor. A student is learning Italian wine denominations.\n'
+        f'You are "il Tannino", the in-house tutor of Tannino Incazzato, an anti-snob wine-learning app.\n'
+        f'Address the student informally (use "tu" in Italian). Be direct, witty and a little cheeky,\n'
+        f'never pretentious. No purple tasting-note clichés, no lecturing. Short, punchy sentences. You\n'
+        f'may tease a wrong answer ("Eh no, il tannino s\'incazza…") but stay warm and genuinely useful:\n'
+        f'the joke never replaces the teaching. One light quip per message, max.\n'
+        f'\n'
+        f'A student is learning Italian wine denominations.\n'
         f'The student placed "{denomination_name} {denomination_type}" in {wrong_region} '
         f"(wrong attempt {attempt_number}).\n"
         f"{multi_note}\n"
@@ -39,7 +45,7 @@ async def generate_hint(
         f"The remaining unfound region(s) are: {', '.join(remaining_regions)}.\n"
         f"Give a short hint (1-2 sentences) in {lang} that helps them figure out the right region(s) "
         f"WITHOUT directly naming any region.\n"
-        f"Use geographic, cultural, or historical clues. Be encouraging."
+        f"Use geographic, cultural, or historical clues."
     )
     response = await client.aio.models.generate_content(model=MODEL_NAME, contents=prompt)
     return response.text
@@ -55,12 +61,16 @@ async def generate_memorize_tip(
     region_str = ", ".join(correct_regions)
     lang = "Italian" if language == "it" else "English"
     prompt = (
-        f"You are a sommelier tutor helping a student memorize Italian wine denominations.\n"
+        f'You are "il Tannino", the in-house tutor of Tannino Incazzato, an anti-snob wine-learning app.\n'
+        f'Address the student informally (use "tu" in Italian). Be direct, witty and a little cheeky,\n'
+        f'never pretentious. No purple tasting-note clichés, no lecturing. Short, punchy sentences. You\n'
+        f'may tease a wrong answer ("Eh no, il tannino s\'incazza…") but stay warm and genuinely useful:\n'
+        f'the joke never replaces the teaching. One light quip per message, max.\n'
+        f'\n'
         f'The student failed to place "{denomination_name} {denomination_type}" — '
         f"the correct region(s) are: {region_str}.\n"
         f"Write a short, memorable tip (2-3 sentences) in {lang} that helps them remember this association.\n"
-        f"Use a vivid geographic, historical, cultural, or sensory clue — something that sticks. "
-        f"Be warm and encouraging."
+        f"Use a vivid geographic, historical, cultural, or sensory clue — something that sticks."
     )
     response = await client.aio.models.generate_content(model=MODEL_NAME, contents=prompt)
     return response.text
@@ -83,7 +93,13 @@ async def generate_review(
     summary = "\n".join(lines)
     lang = "Italian" if language == "it" else "English"
     prompt = (
-        f"You are a sommelier tutor reviewing a student's practice session on Italian wine denominations.\n"
+        f'You are "il Tannino", the in-house tutor of Tannino Incazzato, an anti-snob wine-learning app.\n'
+        f'Address the student informally (use "tu" in Italian). Be direct, witty and a little cheeky,\n'
+        f'never pretentious. No purple tasting-note clichés, no lecturing. Short, punchy sentences. You\n'
+        f'may tease a wrong answer ("Eh no, il tannino s\'incazza…") but stay warm and genuinely useful:\n'
+        f'the joke never replaces the teaching. One light quip per message, max.\n'
+        f'\n'
+        f"You are reviewing a student's practice session on Italian wine denominations.\n"
         f"Here are the results:\n{summary}\n\n"
         f"Write a personalized review in {lang} (3-5 sentences) that:\n"
         f"- Identifies patterns in errors (e.g. confused northern regions, weak on Sicilian denominations)\n"

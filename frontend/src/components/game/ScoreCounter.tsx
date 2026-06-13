@@ -9,21 +9,34 @@ interface ScoreCounterProps {
 export default function ScoreCounter({ score, total }: ScoreCounterProps) {
   const t = useTranslations('game');
   return (
-    <div data-testid="score-counter" className="flex items-center justify-between bg-white rounded-xl px-4 py-3 border-2 border-border shadow-sm">
+    <div
+      data-testid="score-counter"
+      className="flex items-center justify-between rounded-2xl px-5 py-4 border border-border shadow-md"
+      style={{ backgroundColor: 'var(--card)' }}
+    >
       <span
-        className="text-muted font-medium uppercase"
-        style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.65rem', letterSpacing: '0.14em' }}
+        className="font-bold uppercase"
+        style={{
+          fontFamily: 'var(--font-nunito)',
+          fontSize: '0.66rem',
+          letterSpacing: '0.14em',
+          color: 'var(--muted)',
+        }}
       >
         {t('score')}
       </span>
       <div className="flex items-baseline gap-1">
         <span
-          className="font-extrabold text-charcoal leading-none"
-          style={{ fontFamily: 'var(--font-bricolage)', fontSize: '2rem' }}
+          className="font-extrabold leading-none"
+          style={{
+            fontFamily: 'var(--font-baloo)',
+            fontSize: '2rem',
+            color: 'var(--primary)',
+          }}
         >
           {score}
         </span>
-        <span className="text-subtle text-sm" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+        <span style={{ fontFamily: 'var(--font-nunito)', fontSize: '0.75rem', color: 'var(--muted)' }}>
           /{total * 3}
         </span>
       </div>

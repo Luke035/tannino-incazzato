@@ -1,12 +1,39 @@
 {
+  "home": {
+    "welcome": "Welcome back, {name} 👋",
+    "title": "Choose a game",
+    "subtitle": "No poses. Just wine.",
+    "profileChip": "Profile",
+    "profileCta": "Your stats →",
+    "games": {
+      "wineMap": {
+        "title": "Wine Map",
+        "badge": "Available",
+        "cta": "Pour & play →"
+      },
+      "comingSoon": {
+        "badge": "Soon"
+      },
+      "pairing": {
+        "title": "Pairings"
+      },
+      "vitigni": {
+        "title": "Grape Varieties"
+      },
+      "annate": {
+        "title": "Vintages"
+      }
+    },
+    "backToGames": "← Games"
+  },
   "setup": {
-    "title": "Sommelier Game",
-    "subtitle": "Test your knowledge of Italian wine denominations",
+    "title": "Wine Map",
+    "subtitle": "No poses. Just wine.",
     "filterLabel": "Show denominations:",
     "filterBoth": "DOC & DOCG",
     "filterDocg": "DOCG only",
     "filterDoc": "DOC only",
-    "startButton": "Start Session"
+    "startButton": "Pour & play →"
   },
   "game": {
     "endSession": "End Session",
@@ -18,11 +45,11 @@
     "regionsRemaining": "remaining",
     "correctFeedback": "Correct!",
     "allFoundFeedback": "All regions found!",
-    "wrongFeedback": "Not quite, try again!",
+    "wrongFeedback": "Nope — the tannin's fuming.",
     "autoPlacedFeedback": "Auto-placed in"
   },
   "recap": {
-    "title": "Session Complete",
+    "title": "The tannin's verdict",
     "totalAttempted": "Cards attempted",
     "score": "Score",
     "noWrong": "Perfect (no wrong attempts)",
@@ -31,7 +58,7 @@
     "autoPlaced": "Auto-placed",
     "byRegion": "Performance by region",
     "aiReview": "Tutor's Assessment",
-    "newSession": "Start New Session",
+    "newSession": "One more round →",
     "loadingReview": "Generating your assessment..."
   },
   "map": {

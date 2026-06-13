@@ -10,7 +10,7 @@ test('complete game with 10 cards all correct reaches recap with perfect score',
   page,
 }) => {
   await mockApi(page);
-  await page.goto('/en');
+  await page.goto('/en/wine-map');
 
   await page.getByTestId('start-button').click();
 
