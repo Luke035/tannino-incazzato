@@ -156,6 +156,17 @@ All prompts pass a `language` field (`"en"` or `"it"`) so Gemini responds in the
 - Language toggle in the global `Header` component; persists via locale routing
 - Denomination names are **always in Italian** regardless of UI language
 
+### Design system (Tannino Incazzato)
+The frontend follows the **Tannino Incazzato** brand ("Bun" style: soft mascot, round chunky type,
+pill shapes, anti-snob voice). **Full spec: [`frontend/DESIGN.md`](frontend/DESIGN.md) — read it before building or restyling any UI.** Hard rules:
+- **Never hardcode colors/radii/fonts** — use the CSS tokens in `frontend/src/app/globals.css`
+  (`var(--primary)`, `var(--accent)`, …) or their Tailwind theme colors (`text-ink`, `bg-surface`).
+- **Pill (`border-radius:999px`) all buttons/badges/chips/progress bars; large radii on cards.**
+- **Cobalt `--accent` = actions only** (CTAs, links, focus, active segments); **bordeaux `--primary` = identity/data** (brand, badges, scores).
+- **Fonts:** Baloo 2 (display) + Nunito (body) via `--font-display`/`--font-sans`.
+- **Use `Mascot` (`src/components/Mascot.tsx`)** for the brand — pick the mood (`angry`/`skeptical`/`happy`/`lost`) matching the state; never inline a new mascot SVG.
+- **Copy uses the Tannino voice** and lives in `src/messages/{en,it}.json` — never hardcoded.
+
 ### Environment variables
 **`backend/.env`** (never committed; copy from `.env.example`):
 - `GEMINI_API_KEY` — Google AI Studio key

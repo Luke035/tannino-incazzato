@@ -55,3 +55,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# design handoff — mockups kept locally, not in repo
+design_handoff_tannino_incazzato/
