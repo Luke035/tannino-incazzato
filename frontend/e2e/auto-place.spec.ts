@@ -8,7 +8,7 @@ const ONE_CARD = [DENOMINATIONS[0]]; // Barolo → Piemonte
 
 test('3 wrong drops show AutoPlaceModal with memorize tip', async ({ page }) => {
   await mockApi(page, { denominations: ONE_CARD });
-  await page.goto('/en');
+  await page.goto('/en/wine-map');
 
   await page.getByTestId('start-button').click();
   await page.getByTestId('active-card').waitFor();

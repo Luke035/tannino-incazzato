@@ -63,7 +63,7 @@ test('completing a game session calls POST /session', async ({ page }) => {
     }
   });
 
-  await page.goto('/en');
+  await page.goto('/en/wine-map');
   await page.getByTestId('start-button').click();
   await page.getByTestId('active-card').waitFor();
 

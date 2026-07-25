@@ -1,76 +1,198 @@
 'use client';
-import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
+import { useAuth } from '@/context/AuthContext';
 import Header from '@/components/Header';
-import { Filter } from '@/types';
+import { Mascot } from '@/components/Mascot';
 
-export default function SetupPage() {
-  const t = useTranslations('setup');
+export default function HomePage() {
+  const t = useTranslations();
   const router = useRouter();
-  const [filter, setFilter] = useState<Filter>('both');
-
-  const start = () => {
-    router.push(`/game?filter=${filter}`);
-  };
+  const { user } = useAuth();
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--bg)' }}>
       <Header />
-      <main className="flex-1 flex flex-col items-center justify-center gap-12 px-8 py-16">
-
-        {/* Hero */}
-        <div className="text-center max-w-xl">
-          <p
-            className="text-crimson font-semibold mb-4 tracking-widest uppercase"
-            style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.7rem', letterSpacing: '0.22em' }}
+      <main className="flex-1 flex flex-col px-8 py-12">
+        {/* Top utility bar: profile chip + CTA */}
+        <div className="flex items-center justify-end mb-8 gap-3">
+          <button
+            onClick={() => router.push('/profile')}
+            className="flex items-center gap-3 px-6 py-3 rounded-full transition-transform hover:scale-105"
+            style={{
+              backgroundColor: 'var(--surface)',
+              color: 'var(--ink)',
+              fontSize: '0.92rem',
+              fontFamily: 'var(--font-nunito)',
+              fontWeight: '600',
+              border: `1px solid var(--border)`,
+            }}
           >
-            {t('subtitle')}
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+            </svg>
+            {t('home.profileChip')}
+          </button>
+          <button
+            onClick={() => router.push('/profile')}
+            className="px-5 py-2 rounded-full font-bold transition-opacity hover:opacity-80"
+            style={{
+              backgroundColor: 'var(--accent)',
+              color: 'white',
+              fontSize: '0.92rem',
+              fontFamily: 'var(--font-nunito)',
+            }}
+          >
+            {t('home.profileCta')}
+          </button>
+        </div>
+
+        {/* Eyebrow + name */}
+        <div className="mb-8">
+          <p
+            className="font-bold tracking-widest uppercase mb-4"
+            style={{
+              fontFamily: 'var(--font-nunito)',
+              fontSize: '0.66rem',
+              letterSpacing: '0.18em',
+              color: 'var(--accent)',
+            }}
+          >
+            {t('home.welcome', { name: user?.first_name ?? 'Guest' })}
           </p>
           <h1
-            className="font-extrabold text-charcoal leading-none tracking-tight"
-            style={{ fontFamily: 'var(--font-bricolage)', fontSize: 'clamp(3rem, 8vw, 5.5rem)', lineHeight: '0.95' }}
+            className="leading-tight tracking-tight mb-2"
+            style={{
+              fontFamily: 'var(--font-baloo)',
+              fontSize: 'clamp(2.4rem, 6vw, 4rem)',
+              lineHeight: '0.95',
+              color: 'var(--ink)',
+            }}
           >
-            {t('title')}
+            {t('home.title')}
           </h1>
-        </div>
-
-        {/* Filter */}
-        <div className="flex flex-col items-center gap-3">
           <p
-            className="text-muted text-xs font-medium uppercase tracking-widest"
-            style={{ fontFamily: 'var(--font-dm-sans)', letterSpacing: '0.18em' }}
+            style={{
+              fontFamily: 'var(--font-nunito)',
+              fontSize: '0.92rem',
+              color: 'var(--muted)',
+            }}
           >
-            {t('filterLabel')}
+            {t('home.subtitle')}
           </p>
-          <div className="flex rounded-lg overflow-hidden border border-border">
-            {(['both', 'DOCG', 'DOC'] as Filter[]).map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={`px-6 py-2.5 text-sm font-semibold transition-all border-r last:border-r-0 border-border ${
-                  filter === f
-                    ? 'bg-charcoal text-white'
-                    : 'bg-white text-charcoal hover:bg-surface'
-                }`}
-                style={{ fontFamily: 'var(--font-dm-sans)', letterSpacing: '0.03em' }}
-              >
-                {f === 'both' ? t('filterBoth') : f === 'DOCG' ? t('filterDocg') : t('filterDoc')}
-              </button>
-            ))}
-          </div>
         </div>
 
-        {/* CTA */}
-        <button
-          data-testid="start-button"
-          onClick={start}
-          className="px-12 py-4 bg-crimson text-white font-bold rounded-lg hover:bg-crimson-dark transition-colors shadow-lg shadow-crimson/20"
-          style={{ fontFamily: 'var(--font-bricolage)', fontSize: '1rem', letterSpacing: '0.02em' }}
+        {/* Games Grid */}
+        <div
+          className="grid gap-6 mb-12"
+          style={{
+            gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+          }}
         >
-          {t('startButton')} →
-        </button>
+          {/* Wine Map - Live Game */}
+          <button
+            onClick={() => router.push('/wine-map')}
+            className="flex flex-col p-6 rounded-3xl transition-all hover:shadow-lg hover:-translate-y-0.5 cursor-pointer group"
+            style={{
+              backgroundColor: 'var(--surface)',
+              border: '2px solid var(--primary)',
+            }}
+          >
+            <div className="flex-1 flex items-center justify-center mb-4 h-24">
+              <Mascot mood="skeptical" size={48} />
+            </div>
+            <div className="flex justify-between items-start mb-4 w-full">
+              <h2
+                style={{
+                  fontFamily: 'var(--font-baloo)',
+                  fontSize: '1.5rem',
+                  fontWeight: '700',
+                  color: 'var(--ink)',
+                }}
+              >
+                {t('home.games.wineMap.title')}
+              </h2>
+              <span
+                className="px-3 py-1 rounded-full text-white font-bold text-sm"
+                style={{
+                  backgroundColor: 'var(--correct)',
+                  fontFamily: 'var(--font-nunito)',
+                  fontSize: '0.66rem',
+                  letterSpacing: '0.08em',
+                }}
+              >
+                {t('home.games.wineMap.badge')}
+              </span>
+            </div>
+            <div
+              className="w-full px-4 py-2.5 rounded-full text-center font-bold transition-opacity group-hover:opacity-80"
+              style={{
+                backgroundColor: 'var(--accent)',
+                color: 'white',
+                fontFamily: 'var(--font-nunito)',
+                fontSize: '0.92rem',
+              }}
+            >
+              {t('home.games.wineMap.cta')}
+            </div>
+          </button>
 
+          {/* Coming Soon Cards */}
+          {[
+            { title: 'home.games.pairing.title', icon: '🍷' },
+            { title: 'home.games.vitigni.title', icon: '🍇' },
+            { title: 'home.games.annate.title', icon: '📅' },
+          ].map((game, idx) => (
+            <div
+              key={idx}
+              className="flex flex-col p-6 rounded-3xl cursor-not-allowed"
+              style={{
+                backgroundColor: 'var(--soon)',
+                opacity: 0.78,
+              }}
+            >
+              <div className="flex-1 flex items-center justify-center mb-4 h-24 text-3xl">
+                {game.icon}
+              </div>
+              <div className="flex justify-between items-start mb-4 w-full">
+                <h2
+                  style={{
+                    fontFamily: 'var(--font-baloo)',
+                    fontSize: '1.5rem',
+                    fontWeight: '700',
+                    color: 'var(--ink)',
+                  }}
+                >
+                  {t(game.title)}
+                </h2>
+                <span
+                  className="px-3 py-1 rounded-full text-xs font-bold"
+                  style={{
+                    backgroundColor: '#B8ADA0',
+                    color: 'white',
+                    fontFamily: 'var(--font-nunito)',
+                    fontSize: '0.66rem',
+                    letterSpacing: '0.08em',
+                  }}
+                >
+                  {t('home.games.comingSoon.badge')}
+                </span>
+              </div>
+              <div
+                className="w-full px-4 py-2.5 rounded-full text-center font-bold opacity-60"
+                style={{
+                  backgroundColor: '#B8ADA0',
+                  color: 'white',
+                  fontFamily: 'var(--font-nunito)',
+                  fontSize: '0.92rem',
+                }}
+              >
+                {t('home.games.comingSoon.badge')}
+              </div>
+            </div>
+          ))}
+        </div>
       </main>
     </div>
   );

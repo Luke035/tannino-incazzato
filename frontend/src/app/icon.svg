@@ -1,0 +1,34 @@
+<svg viewBox="0 0 180 180" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .mascot-body { fill: #7A132A; }
+      .mascot-stroke { stroke: #F2EDE4; stroke-width: 6; stroke-linecap: round; fill: none; }
+      .mascot-eye-white { fill: #F8F2E8; opacity: 0.2; }
+      .mascot-pupil { fill: #F8F2E8; }
+    </style>
+  </defs>
+
+  <!-- Rounded tile background -->
+  <rect width="180" height="180" rx="30" fill="#7A132A"/>
+
+  <!-- Mascot centered in tile -->
+  <g transform="translate(90, 90)">
+    <!-- Body -->
+    <path d="M0 -50 C-25 -25 -40 -5 -40 20 a40 40 0 0 0 80 0 C40 -5 25 -25 0 -50 Z" class="mascot-body"/>
+
+    <!-- Eyes whites -->
+    <circle cx="-15" cy="15" r="12" class="mascot-eye-white"/>
+    <circle cx="15" cy="15" r="12" class="mascot-eye-white"/>
+
+    <!-- Eye pupils -->
+    <circle cx="-14" cy="18" r="5.5" class="mascot-pupil"/>
+    <circle cx="16" cy="18" r="5.5" class="mascot-pupil"/>
+
+    <!-- Eyebrows (angry mood) -->
+    <path d="M-26 8 L-8 16" class="mascot-stroke"/>
+    <path d="M26 8 L8 16" class="mascot-stroke"/>
+
+    <!-- Mouth (frown) -->
+    <path d="M-15 35 Q0 28 15 35" class="mascot-stroke"/>
+  </g>
+</svg>

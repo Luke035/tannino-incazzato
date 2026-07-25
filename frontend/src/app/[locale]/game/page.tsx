@@ -257,17 +257,17 @@ export default function GamePage() {
 
   if (!state.current && state.history.length === 0) {
     return (
-      <div className="min-h-screen flex flex-col bg-white">
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--bg)' }}>
         <Header />
-        <div className="flex-1 flex items-center justify-center">
-          <p className="text-muted" style={{ fontFamily: 'var(--font-dm-sans)' }}>Loading...</p>
+        <div className="flex-1 flex items-center justify-center flex-col gap-3">
+          <div style={{ color: 'var(--muted)', fontFamily: 'var(--font-nunito)' }}>Loading game...</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="h-screen flex flex-col">
+    <div className="h-screen flex flex-col" style={{ backgroundColor: 'var(--bg)' }}>
       <Header />
 
       {/* Auto-place modal — shown when 3 wrong attempts are reached */}
@@ -279,9 +279,9 @@ export default function GamePage() {
       )}
 
       <DndContext sensors={sensors} collisionDetection={svgCollisionDetection} onDragStart={() => setDragging(true)} onDragEnd={handleDragEnd}>
-        <main className="flex-1 flex gap-0 overflow-hidden">
+        <main className="flex-1 flex flex-col md:flex-row gap-0 overflow-y-auto md:overflow-hidden">
           {/* Left: Map */}
-          <div className="flex-1 flex items-start justify-center p-6 overflow-auto">
+          <div className="shrink-0 h-[60vh] md:h-auto md:flex-1 md:min-h-0 flex items-start justify-center p-6 overflow-auto">
             <ItalyMap
               currentDenomination={state.current}
               foundRegions={state.foundRegions}
@@ -290,10 +290,13 @@ export default function GamePage() {
           </div>
 
           {/* Right: Post-it + controls */}
-          <div className="w-80 flex flex-col gap-4 p-6 border-l-2 border-border bg-surface overflow-hidden">
+          <div
+            className="w-full md:w-80 shrink-0 md:shrink flex flex-col gap-4 p-6 border-t-2 md:border-t-0 md:border-l-2 md:overflow-hidden"
+            style={{ backgroundColor: 'var(--surface-2)', borderColor: 'var(--border)' }}
+          >
             <ScoreCounter score={state.score} total={state.history.length + (state.current ? 1 : 0)} />
 
-            <div className="flex-1 overflow-y-auto">
+            <div className="md:flex-1 md:overflow-y-auto">
               {state.current ? (
                 <PostIt
                   denomination={state.current}
@@ -303,20 +306,37 @@ export default function GamePage() {
                   isLoadingHint={state.isLoadingHint}
                 />
               ) : (
-                <div className="bg-surface border border-border rounded-xl p-5 text-center text-muted italic" style={{ fontFamily: 'var(--font-dm-sans)' }}>
+                <div
+                  className="border border-border rounded-2xl p-5 text-center italic"
+                  style={{ backgroundColor: 'var(--card)', color: 'var(--muted)', fontFamily: 'var(--font-nunito)' }}
+                >
                   Session complete!
                 </div>
               )}
             </div>
 
             <div>
-              <p className="text-muted mb-2 text-center" style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.72rem' }}>
+              <p
+                className="mb-2 text-center"
+                style={{
+                  fontFamily: 'var(--font-nunito)',
+                  fontSize: '0.72rem',
+                  color: 'var(--muted)',
+                  fontWeight: '600',
+                }}
+              >
                 {state.history.length} completed · {state.queue.length + (state.current ? 1 : 0)} remaining
               </p>
               <button
                 onClick={endSession}
-                className="w-full py-2.5 border-2 border-charcoal text-charcoal font-semibold rounded-lg hover:bg-charcoal hover:text-white transition-colors"
-                style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.8rem' }}
+                className="w-full py-2.5 font-bold rounded-full transition-all hover:opacity-90"
+                style={{
+                  fontFamily: 'var(--font-nunito)',
+                  fontSize: '0.8rem',
+                  backgroundColor: 'transparent',
+                  color: 'var(--ink)',
+                  border: '2px solid var(--ink)',
+                }}
               >
                 {t('endSession')}
               </button>
@@ -327,21 +347,39 @@ export default function GamePage() {
         <DragOverlay dropAnimation={null}>
           {dragging && state.current ? (
             <div
-              className="bg-white border border-border rounded-xl w-40 h-40 flex flex-col p-4 select-none"
-              style={{ rotate: '2deg', opacity: 0.93, boxShadow: '0 8px 32px rgba(0,0,0,0.15)' }}
+              className="w-40 h-40 flex flex-col p-4 select-none rounded-2xl"
+              style={{
+                backgroundColor: 'var(--card)',
+                rotate: '2deg',
+                opacity: 0.93,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                border: '1px solid var(--border)',
+              }}
             >
               <div className="flex justify-start mb-2">
                 <span
-                  className={`text-white font-bold rounded px-1.5 py-0.5 ${state.current.type === 'DOCG' ? 'bg-crimson' : 'bg-navy'}`}
-                  style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.55rem', letterSpacing: '0.1em', textTransform: 'uppercase' }}
+                  className="text-white font-bold rounded-full px-2 py-1"
+                  style={{
+                    fontFamily: 'var(--font-nunito)',
+                    fontSize: '0.55rem',
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    backgroundColor:
+                      state.current.type === 'DOCG' ? 'var(--primary)' : 'var(--accent)',
+                  }}
                 >
                   {state.current.type}
                 </span>
               </div>
               <div className="flex-1 flex items-center justify-center px-1">
                 <h2
-                  className="font-bold text-charcoal text-center"
-                  style={{ fontFamily: 'var(--font-bricolage)', fontSize: '0.95rem', lineHeight: '1.2' }}
+                  className="font-bold text-center"
+                  style={{
+                    fontFamily: 'var(--font-baloo)',
+                    fontSize: '0.95rem',
+                    lineHeight: '1.2',
+                    color: 'var(--ink)',
+                  }}
                 >
                   {state.current.name}
                 </h2>
@@ -351,7 +389,12 @@ export default function GamePage() {
                   {state.current.regions.map((region) => (
                     <span
                       key={region}
-                      className={`w-2 h-2 rounded-full ${state.foundRegions.includes(region) ? 'bg-jade' : 'bg-border'}`}
+                      className="w-2 h-2 rounded-full"
+                      style={{
+                        backgroundColor: state.foundRegions.includes(region)
+                          ? 'var(--correct)'
+                          : 'var(--border)',
+                      }}
                     />
                   ))}
                 </div>

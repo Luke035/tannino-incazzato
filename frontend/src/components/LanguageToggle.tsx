@@ -15,10 +15,11 @@ export default function LanguageToggle() {
   return (
     <button
       onClick={toggle}
-      className="px-3 py-1.5 text-xs font-semibold text-muted border border-border rounded hover:border-charcoal hover:text-charcoal transition-colors"
-      style={{ fontFamily: 'var(--font-dm-sans)', letterSpacing: '0.06em' }}
+      className="flex gap-2 items-center transition-colors duration-150"
+      style={{ fontFamily: 'var(--font-sans)' }}
     >
-      {t('toggle')}
+      <span className={`text-sm font-bold ${locale === 'en' ? 'text-ink' : 'text-muted'}`}>EN</span>
+      <span className={`text-sm font-bold ${locale === 'it' ? 'text-ink' : 'text-muted'}`}>IT</span>
     </button>
   );
 }

@@ -1,5 +1,6 @@
 'use client';
 import LanguageToggle from './LanguageToggle';
+import { Mascot } from './Mascot';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter, Link } from '@/i18n/navigation';
 
@@ -13,44 +14,46 @@ export default function Header() {
   };
 
   return (
-    <header className="w-full flex items-center justify-between px-8 py-4 bg-white border-b border-border">
-      <div className="flex items-baseline gap-3">
-        <span
-          className="font-extrabold tracking-tight text-charcoal leading-none"
-          style={{ fontFamily: 'var(--font-bricolage)', fontSize: '1.25rem' }}
-        >
-          Sommelier
-        </span>
-        <span
-          className="font-medium text-crimson text-xs tracking-widest uppercase"
-          style={{ fontFamily: 'var(--font-dm-sans)', letterSpacing: '0.14em' }}
-        >
-          Italia
-        </span>
-        {user && (
-          <Link
-            href="/profile"
-            className="flex items-center gap-1.5 text-muted hover:text-charcoal transition-colors"
-            style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.8rem' }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="8" r="4" />
-              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-            </svg>
-            — Ciao, <span className="font-semibold text-charcoal">{user.first_name}</span>
-          </Link>
-        )}
+    <header className="w-full flex items-center justify-between px-8 py-4 bg-surface border-b border-border">
+      <div className="flex items-center gap-6">
+        <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <Mascot mood="skeptical" size={36} />
+          <div className="flex items-baseline gap-2">
+            <span
+              className="font-extrabold tracking-tight text-ink leading-none lowercase"
+              style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem' }}
+            >
+              tannino
+            </span>
+            <span
+              className="font-extrabold text-primary text-sm tracking-tight leading-none lowercase"
+              style={{ fontFamily: 'var(--font-display)' }}
+            >
+              incazzato
+            </span>
+          </div>
+        </Link>
       </div>
-      <div className="flex items-center gap-4">
+
+      <div className="flex items-center gap-6">
         <LanguageToggle />
         {user && (
-          <button
-            onClick={handleLogout}
-            className="text-muted hover:text-charcoal transition-colors"
-            style={{ fontFamily: 'var(--font-dm-sans)', fontSize: '0.8rem' }}
-          >
-            Esci
-          </button>
+          <>
+            <Link
+              href="/profile"
+              className="px-4 py-2 rounded-full bg-surface-2 text-ink text-sm font-semibold hover:bg-border transition-colors"
+              style={{ fontFamily: 'var(--font-sans)' }}
+            >
+              Profilo
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="text-muted hover:text-ink transition-colors"
+              style={{ fontFamily: 'var(--font-sans)', fontSize: '0.9rem' }}
+            >
+              Esci
+            </button>
+          </>
         )}
       </div>
     </header>
