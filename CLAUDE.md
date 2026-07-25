@@ -103,8 +103,9 @@ The browser calls FastAPI directly using `NEXT_PUBLIC_API_URL`. There are no Nex
 
 ## Key conventions
 
-### Language: chat in Italian, publish in English
-Conversation between the user and Claude happens in Italian. **Everything that gets published —
+### Language: chat in any language, publish in English
+The conversation *might* be in Italian, or it might be in English — follow whatever language the user
+opens in. **Regardless of the conversation language, everything that gets published —
 i.e. anything another person or system reads — is written in English**, with no exceptions:
 PR titles and descriptions, commit messages, issue and review comments, code comments,
 identifiers, docs (README/ADRs/CLAUDE.md), log and error strings.
