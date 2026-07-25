@@ -46,6 +46,33 @@ npm run test:e2e -- e2e/happy-path.spec.ts    # single file
 
 The E2E global setup (`e2e/global-setup.ts`) creates a test user via the real API and saves the session cookie to `playwright/.auth/user.json` (gitignored). All game tests run with that session pre-loaded. Auth tests use `storageState: { cookies: [], origins: [] }` to start without a session.
 
+## Session handoffs (Obsidian vault)
+
+Development sessions are bookended by handoff notes in the user's **local** Obsidian vault at
+`/Users/lucagrazioli/Documents/claude-vault/claude-vault/` (the real vault root — the nested folder
+containing `.obsidian/`; outside the repo, paths machine-specific — solo local workflow). Notes live
+at `tannino-incazzato/<section>/YYYYMMDD_<slug>.md`, following `tannino-incazzato/_TEMPLATE_handoff.md`.
+
+**At session start:** read the most recent handoff(s) for the area you're about to work on, to pick
+up open threads and avoid repeating dead-ends.
+
+**Writing the end-of-session handoff is USER-TRIGGERED** — the user gives the dump signal; do not
+auto-run it (same posture as the QA gate). But **proactively remind the user** to dump the handoff
+when a chunk of work is wrapping up or before ending the session, exactly like you remind about the
+`qa-sommelier` gate. When triggered, the note MUST record — **per problem — the symptom, the attempts
+made (including dead-ends and why they failed), the root cause, and the resolution**, not just the
+final fix; that trail is the whole point.
+
+### obsidian-cli cheat-sheet (don't re-discover it each session)
+- Binary: `/opt/homebrew/bin/obsidian-cli` (v0.2.3, Yakitrak). **Not on the non-interactive shell
+  PATH — always call by full path.** Default vault is already set to the path above.
+- Read / navigate: `obsidian-cli list <folder>` · `obsidian-cli print <note>` ·
+  `obsidian-cli frontmatter <note> --print` · `obsidian-cli search-content <term>` ·
+  `obsidian-cli open <note>`. Note names are vault-relative; no `.md` extension needed.
+- **Write notes by hand, NOT via the CLI:** `create` does not create intermediate folders, and its
+  `--content` flag mangles rich markdown (backticks, `$`, apostrophes) through the shell. So `mkdir -p`
+  the section folder, then write the `.md` with the Write tool.
+
 ## Architecture
 
 3-layer monorepo: `/frontend` (Next.js) → `/backend` (FastAPI) → PostgreSQL (Docker via `/infra`).
