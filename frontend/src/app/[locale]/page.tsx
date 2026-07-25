@@ -14,6 +14,40 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--bg)' }}>
       <Header />
       <main className="flex-1 flex flex-col px-8 py-12">
+        {/* Top utility bar: profile chip + CTA */}
+        <div className="flex items-center justify-end mb-8 gap-3">
+          <button
+            onClick={() => router.push('/profile')}
+            className="flex items-center gap-3 px-6 py-3 rounded-full transition-transform hover:scale-105"
+            style={{
+              backgroundColor: 'var(--surface)',
+              color: 'var(--ink)',
+              fontSize: '0.92rem',
+              fontFamily: 'var(--font-nunito)',
+              fontWeight: '600',
+              border: `1px solid var(--border)`,
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+            </svg>
+            {t('home.profileChip')}
+          </button>
+          <button
+            onClick={() => router.push('/profile')}
+            className="px-5 py-2 rounded-full font-bold transition-opacity hover:opacity-80"
+            style={{
+              backgroundColor: 'var(--accent)',
+              color: 'white',
+              fontSize: '0.92rem',
+              fontFamily: 'var(--font-nunito)',
+            }}
+          >
+            {t('home.profileCta')}
+          </button>
+        </div>
+
         {/* Eyebrow + name */}
         <div className="mb-8">
           <p
@@ -49,47 +83,11 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* Profile chip + button row */}
-        <div className="flex items-center justify-between mb-12 gap-6">
-          <div />
-          <button
-            onClick={() => router.push('/profile')}
-            className="flex items-center gap-3 px-6 py-3 rounded-full transition-transform hover:scale-105"
-            style={{
-              backgroundColor: 'var(--surface)',
-              color: 'var(--ink)',
-              fontSize: '0.92rem',
-              fontFamily: 'var(--font-nunito)',
-              fontWeight: '600',
-              border: `1px solid var(--border)`,
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="8" r="4" />
-              <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-            </svg>
-            {t('home.profileChip')}
-          </button>
-          <button
-            onClick={() => router.push('/profile')}
-            className="px-5 py-2 rounded-full font-bold transition-opacity hover:opacity-80"
-            style={{
-              backgroundColor: 'var(--accent)',
-              color: 'white',
-              fontSize: '0.92rem',
-              fontFamily: 'var(--font-nunito)',
-            }}
-          >
-            {t('home.profileCta')}
-          </button>
-        </div>
-
         {/* Games Grid */}
         <div
           className="grid gap-6 mb-12"
           style={{
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-            maxWidth: '800px',
+            gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
           }}
         >
           {/* Wine Map - Live Game */}
@@ -127,8 +125,8 @@ export default function HomePage() {
                 {t('home.games.wineMap.badge')}
               </span>
             </div>
-            <button
-              className="w-full px-4 py-2.5 rounded-full font-bold transition-opacity hover:opacity-80"
+            <div
+              className="w-full px-4 py-2.5 rounded-full text-center font-bold transition-opacity group-hover:opacity-80"
               style={{
                 backgroundColor: 'var(--accent)',
                 color: 'white',
@@ -137,7 +135,7 @@ export default function HomePage() {
               }}
             >
               {t('home.games.wineMap.cta')}
-            </button>
+            </div>
           </button>
 
           {/* Coming Soon Cards */}

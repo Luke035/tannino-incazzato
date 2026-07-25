@@ -29,6 +29,7 @@
   "setup": {
     "title": "Wine Map",
     "subtitle": "No poses. Just wine.",
+    "description": "Drag each denomination onto its region. Learn the map of Italian wine, one card at a time.",
     "filterLabel": "Show denominations:",
     "filterBoth": "DOC & DOCG",
     "filterDocg": "DOCG only",

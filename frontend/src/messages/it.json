@@ -29,6 +29,7 @@
   "setup": {
     "title": "Mappa dei Vini",
     "subtitle": "Niente pose. Solo vino.",
+    "description": "Trascina ogni denominazione sulla sua regione. Impara la mappa del vino italiano, una scheda alla volta.",
     "filterLabel": "Mostra denominazioni:",
     "filterBoth": "DOC e DOCG",
     "filterDocg": "Solo DOCG",

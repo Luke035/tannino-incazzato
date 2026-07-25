@@ -86,6 +86,15 @@ export default function ItalyMap({ currentDenomination, foundRegions, placedCard
 
   const foundSvgIds = foundRegions.map(regionToSvgId);
 
+  const placedBySvgId = React.useMemo(() => {
+    const acc: Record<string, CardAttempt[]> = {};
+    for (const [regionName, attempts] of Object.entries(placedCards)) {
+      const id = regionToSvgId(regionName);
+      acc[id] = [...(acc[id] ?? []), ...attempts];
+    }
+    return acc;
+  }, [placedCards]);
+
   return (
     <div className="relative w-full h-full flex flex-col items-center">
       <svg
@@ -95,8 +104,7 @@ export default function ItalyMap({ currentDenomination, foundRegions, placedCard
         style={{ filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))' }}
       >
         {(Italy.locations as MapLocation[]).map((location) => {
-          const displayName = svgIdToDisplay(location.id);
-          const placed = placedCards[displayName] ?? [];
+          const placed = placedBySvgId[location.id] ?? [];
 
           return (
             <DroppableRegion
@@ -115,7 +123,7 @@ export default function ItalyMap({ currentDenomination, foundRegions, placedCard
       {selectedRegionId && (
         <RegionPanel
           regionName={svgIdToDisplay(selectedRegionId)}
-          cards={placedCards[svgIdToDisplay(selectedRegionId)] ?? []}
+          cards={placedBySvgId[selectedRegionId] ?? []}
           onClose={() => setSelectedRegionId(null)}
         />
       )}

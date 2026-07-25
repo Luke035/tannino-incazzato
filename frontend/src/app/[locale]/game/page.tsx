@@ -279,9 +279,9 @@ export default function GamePage() {
       )}
 
       <DndContext sensors={sensors} collisionDetection={svgCollisionDetection} onDragStart={() => setDragging(true)} onDragEnd={handleDragEnd}>
-        <main className="flex-1 flex gap-0 overflow-hidden">
+        <main className="flex-1 flex flex-col md:flex-row gap-0 overflow-y-auto md:overflow-hidden">
           {/* Left: Map */}
-          <div className="flex-1 flex items-start justify-center p-6 overflow-auto">
+          <div className="shrink-0 h-[60vh] md:h-auto md:flex-1 md:min-h-0 flex items-start justify-center p-6 overflow-auto">
             <ItalyMap
               currentDenomination={state.current}
               foundRegions={state.foundRegions}
@@ -291,12 +291,12 @@ export default function GamePage() {
 
           {/* Right: Post-it + controls */}
           <div
-            className="w-80 flex flex-col gap-4 p-6 border-l-2 overflow-hidden"
+            className="w-full md:w-80 shrink-0 md:shrink flex flex-col gap-4 p-6 border-t-2 md:border-t-0 md:border-l-2 md:overflow-hidden"
             style={{ backgroundColor: 'var(--surface-2)', borderColor: 'var(--border)' }}
           >
             <ScoreCounter score={state.score} total={state.history.length + (state.current ? 1 : 0)} />
 
-            <div className="flex-1 overflow-y-auto">
+            <div className="md:flex-1 md:overflow-y-auto">
               {state.current ? (
                 <PostIt
                   denomination={state.current}
