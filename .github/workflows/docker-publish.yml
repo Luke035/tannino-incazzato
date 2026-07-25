@@ -126,6 +126,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Coolify deploy
+        env:
+          # Passed via env (not inline ${{ }}) so a trailing newline or shell
+          # metacharacter in the secret can't break/inject into the command line.
+          COOLIFY_WEBHOOK_URL: ${{ secrets.COOLIFY_WEBHOOK_URL }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
         run: |
-          curl --fail --silent --show-error -X GET "${{ secrets.COOLIFY_WEBHOOK_URL }}" \
-            -H "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
+          set -euo pipefail
+
+          missing=()
+          [ -n "${COOLIFY_WEBHOOK_URL:-}" ] || missing+=("COOLIFY_WEBHOOK_URL")
+          [ -n "${COOLIFY_TOKEN:-}" ] || missing+=("COOLIFY_TOKEN")
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "::error::Missing repository secret(s): ${missing[*]}"
+            echo "Set them under Settings → Secrets and variables → Actions."
+            echo "If they live in an Environment, add 'environment: <name>' to this job."
+            exit 1
+          fi
+
+          # Never echo the URL itself: GitHub only masks exact secret matches,
+          # so a substring (host, uuid) would leak into the log.
+          case "$COOLIFY_WEBHOOK_URL" in
+            https://*|http://*) ;;
+            *) echo "::error::COOLIFY_WEBHOOK_URL is set but has no http(s):// scheme"; exit 1 ;;
+          esac
+
+          curl --fail-with-body --silent --show-error \
+            --retry 3 --retry-connrefused --max-time 60 \
+            -H "Authorization: Bearer $COOLIFY_TOKEN" \
+            "$COOLIFY_WEBHOOK_URL"
