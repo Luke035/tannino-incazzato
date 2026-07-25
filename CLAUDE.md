@@ -103,6 +103,15 @@ The browser calls FastAPI directly using `NEXT_PUBLIC_API_URL`. There are no Nex
 
 ## Key conventions
 
+### Language: chat in Italian, publish in English
+Conversation between the user and Claude happens in Italian. **Everything that gets published —
+i.e. anything another person or system reads — is written in English**, with no exceptions:
+PR titles and descriptions, commit messages, issue and review comments, code comments,
+identifiers, docs (README/ADRs/CLAUDE.md), log and error strings.
+
+The only exception is **user-facing product copy**, which is localised through
+`src/messages/{en,it}.json` — never hardcoded (see the design-system and i18n sections).
+
 ### Authentication
 Auth uses **JWT stored in an HttpOnly cookie** (`sommelier_session`, 7-day expiry). The cookie is set by the FastAPI backend on login/register and verified server-side by `proxy.ts`.
 
