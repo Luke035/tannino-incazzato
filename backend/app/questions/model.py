@@ -8,9 +8,26 @@ FORMAT_TRUE_FALSE = "true_false"
 FORMAT_MULTIPLE_CHOICE = "multiple_choice"
 FORMAT_OPEN = "open"
 
-# Open Question subtypes — produced offline (see issue #14), empty until then.
+# Open Question subtypes, produced offline (docs/question-bank-classification.md).
 SUBTYPE_CONCEPTUAL = "conceptual"
 SUBTYPE_LIST = "list"
+
+# Topic taxonomy, produced offline (docs/question-bank-classification.md). Every
+# question carries exactly one topic, chosen from this fixed set — the single
+# source of truth read by backend/scripts/merge_classification.py and by the
+# data-integrity test over the committed seed CSV.
+TOPICS = (
+    "viticulture",
+    "winemaking",
+    "sparkling_wines",
+    "italian_regions",
+    "foreign_regions",
+    "tasting",
+    "service",
+    "food_pairing",
+    "spirits",
+    "legislation",
+)
 
 
 class Question(SQLModel, table=True):

@@ -79,12 +79,57 @@ def test_the_correct_answer_is_among_the_multiple_choice_options(bank: list[Ques
             assert question.reference_answer in question.options
 
 
-def test_topic_and_open_subtype_are_empty_until_issue_14_lands(bank: list[Question]):
-    """They are read from the sheet when it supplies them, and their absence
-    must not block the load."""
-    assert all(q.topic is None for q in bank)
-    assert all(q.open_subtype is None for q in bank)
-
-
 def test_every_question_starts_active(bank: list[Question]):
     assert all(q.active for q in bank)
+
+
+# ── topic / open_subtype columns (docs/question-bank-classification.md) ───────
+#
+# These exercise `parse_questions` against a small fixture of our own rather
+# than the committed CSV: the committed-CSV data-integrity check (with real
+# taxonomy/coverage assertions) lives in test_question_bank_classification.py,
+# and is expected to fail until backend/scripts/merge_classification.py has
+# actually been run over the real sheet.
+
+FIXTURE_HEADER = "n,formato,tipo_codice,domanda,opzione_1,opzione_2,opzione_3,risposta_corretta,spiegazione"
+
+
+def _write_fixture_csv(tmp_path, rows: list[str], header: str = FIXTURE_HEADER):
+    path = tmp_path / "fixture.csv"
+    path.write_text("\n".join([header, *rows]) + "\n", encoding="utf-8")
+    return path
+
+
+def test_topic_and_open_subtype_are_read_when_the_sheet_supplies_them(tmp_path):
+    csv_path = _write_fixture_csv(
+        tmp_path,
+        [
+            "1,Vero/Falso,1,Il Bicchiere ISO è normato?,,,,VERO,spiegazione,legislation,",
+            "2,Aperta,2,Example question 1?,,,,Soave Piave,spiegazione,italian_regions,list",
+        ],
+        header=(
+            "n,formato,tipo_codice,domanda,opzione_1,opzione_2,opzione_3,"
+            "risposta_corretta,spiegazione,topic,open_subtype"
+        ),
+    )
+
+    bank = parse_questions(csv_path)
+
+    assert bank[0].topic == "legislation"
+    assert bank[0].open_subtype is None
+    assert bank[1].topic == "italian_regions"
+    assert bank[1].open_subtype == "list"
+
+
+def test_topic_and_open_subtype_are_absent_when_the_sheet_predates_the_merge(tmp_path):
+    """A sheet without the two columns still loads — their absence must not
+    block the load (docs/question-bank-classification.md)."""
+    csv_path = _write_fixture_csv(
+        tmp_path,
+        ['1,Vero/Falso,1,Il Bicchiere ISO è normato?,,,,VERO,spiegazione'],
+    )
+
+    bank = parse_questions(csv_path)
+
+    assert bank[0].topic is None
+    assert bank[0].open_subtype is None

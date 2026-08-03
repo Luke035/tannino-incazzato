@@ -22,7 +22,10 @@ FORMAT_BY_CSV_LABEL = {
 
 OPTION_COLUMNS = ("opzione_1", "opzione_2", "opzione_3")
 
-# Columns issue #14 adds to the sheet. Absent for now; read when present.
+# Classification columns, appended to the sheet by
+# backend/scripts/merge_classification.py (docs/question-bank-classification.md).
+# Read when present; their absence must not block the load, since a freshly
+# checked-out sheet may predate the merge.
 TOPIC_COLUMN = "topic"
 SUBTYPE_COLUMN = "open_subtype"
 

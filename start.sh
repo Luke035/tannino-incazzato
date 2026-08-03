@@ -58,6 +58,10 @@ log "Seeding the question bank (no-op if already loaded)..."
 (cd "$ROOT/backend" && uv run python scripts/seed_questions.py \
     "$ROOT/backend/data/question_bank.csv")
 
+log "Backfilling topic/open_subtype for already-seeded questions (no-op if none are missing)..."
+(cd "$ROOT/backend" && uv run python scripts/backfill_question_classification.py \
+    "$ROOT/backend/data/question_bank.csv")
+
 # ── services ──────────────────────────────────────────────────────────────────
 # local dev runs over HTTP — keep cookies non-Secure
 export COOKIE_SECURE=false
