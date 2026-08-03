@@ -141,7 +141,9 @@ deactivated (`active = false`), never deleted.
 
 A question carries: `text`, `format` (`true_false` | `multiple_choice` | `open`), `level` (1/2/3),
 `reference_answer`, `options`, `explanation`, `topic`, `open_subtype` (`conceptual` | `list`) and
-`active`. `topic` and `open_subtype` are produced offline (issue #14) and are empty until then.
+`active`. `topic` and `open_subtype` are produced offline and committed as seed data — see
+[`docs/question-bank-classification.md`](docs/question-bank-classification.md) for the taxonomy,
+how the classification was produced, and how a correction is made.
 
 **`GET /quiz/question`** (requires the `sommelier_session` cookie) serves one random active
 question through `QuestionRead`, which deliberately omits `reference_answer` **and**

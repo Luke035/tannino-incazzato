@@ -55,6 +55,13 @@ The sommelier course level a question belongs to: 1 (viticulture, oenology, tast
 _Avoid_: difficulty — a Level 3 question is not harder than a Level 1 one, it is about
 different material.
 
+**Topic**:
+What a question is about, distinct from its Level — one of a fixed ten-slug taxonomy (see
+[`docs/question-bank-classification.md`](docs/question-bank-classification.md)), classified
+offline and committed as seed data. Every question carries exactly one. Drives profile
+statistics by subject ("40% on sparkling wine production" rather than "40% on Level 1").
+_Avoid_: Level (Level is course material grouping, Topic is subject matter).
+
 **Session**:
 One run of one mode, from its first question to the moment it is submitted or abandoned.
 _Avoid_: game, round, attempt.
