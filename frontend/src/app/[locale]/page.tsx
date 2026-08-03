@@ -145,7 +145,7 @@ export default function HomePage() {
             }}
           >
             <div className="flex-1 flex items-center justify-center mb-4 h-24">
-              <Mascot mood="angry" size={48} />
+              <Mascot mood="skeptical" size={48} />
             </div>
             <div className="flex justify-between items-start mb-4 w-full gap-3">
               <h2

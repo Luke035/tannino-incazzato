@@ -1,6 +1,6 @@
 // Questions served by the mocked `GET /quiz/question`. One of each format, so
 // a spec can assert the three input shapes without depending on the real bank.
-// Options arrive already shuffled — the backend shuffles them, never the browser.
+// Options arrive already shuffled, as the backend serves them.
 export const QUIZ_MULTIPLE_CHOICE = {
   id: 1176,
   text: '[question text removed]',

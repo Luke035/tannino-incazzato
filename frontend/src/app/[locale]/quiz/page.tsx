@@ -85,12 +85,15 @@ export default function QuizPage() {
         </div>
 
         {loading && (
-          <p
+          <div
             data-testid="quiz-loading"
-            style={{ fontFamily: 'var(--font-sans)', color: 'var(--muted)' }}
+            className="flex flex-col items-center gap-4 text-center py-10"
           >
-            {t('quiz.loading')}
-          </p>
+            <Mascot mood="lost" size={72} />
+            <p style={{ fontFamily: 'var(--font-sans)', color: 'var(--muted)' }}>
+              {t('quiz.loading')}
+            </p>
+          </div>
         )}
 
         {!loading && !question && (
@@ -98,7 +101,7 @@ export default function QuizPage() {
             data-testid="quiz-empty"
             className="flex flex-col items-center gap-4 text-center py-10"
           >
-            <Mascot mood="lost" size={72} />
+            <Mascot mood="skeptical" size={72} />
             <h2
               style={{
                 fontFamily: 'var(--font-display)',
@@ -230,9 +233,9 @@ function QuestionInput({
     );
   }
 
-  // True/false is two short labels — a proper pill pair, side by side.
-  // Multiple-choice options are prose that wraps, so they take the large card
-  // radius instead: a 999px radius on three wrapped lines eats the width.
+  // True/false is two short labels — a proper `.pill` pair, side by side.
+  // Multiple-choice options are prose that wraps, so they take `.card-rounded`
+  // instead: a 999px radius on three wrapped lines eats the width.
   const isTrueFalse = question.format === 'true_false';
   const choices = isTrueFalse ? [t('quiz.true'), t('quiz.false')] : question.options;
 
@@ -248,13 +251,12 @@ function QuestionInput({
             onClick={() => onAnswer(choice)}
             // generous tap target — this game is played standing on a bus
             className={`w-full px-5 py-4 font-semibold transition-colors ${
-              isTrueFalse ? 'text-center' : 'text-left'
+              isTrueFalse ? 'pill text-center' : 'card-rounded text-left'
             }`}
             style={{
               fontFamily: 'var(--font-sans)',
               fontSize: '0.95rem',
               minHeight: '3.25rem',
-              borderRadius: isTrueFalse ? '999px' : '1.5rem',
               backgroundColor: selected ? 'var(--accent)' : 'var(--surface-2)',
               color: selected ? 'white' : 'var(--ink)',
               border: `2px solid ${selected ? 'var(--accent)' : 'var(--border)'}`,
