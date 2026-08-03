@@ -13,7 +13,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--bg)' }}>
       <Header />
-      <main className="flex-1 flex flex-col px-8 py-12">
+      <main className="flex-1 flex flex-col px-5 py-8 sm:px-8 sm:py-12">
         {/* Top utility bar: profile chip + CTA */}
         <div className="flex items-center justify-end mb-8 gap-3">
           <button
@@ -84,12 +84,8 @@ export default function HomePage() {
         </div>
 
         {/* Games Grid */}
-        <div
-          className="grid gap-6 mb-12"
-          style={{
-            gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-          }}
-        >
+        {/* One column on a phone — Promossi o Cirrotici is played there */}
+        <div className="grid gap-6 mb-12 grid-cols-1 sm:grid-cols-2">
           {/* Wine Map - Live Game */}
           <button
             onClick={() => router.push('/wine-map')}
@@ -135,6 +131,56 @@ export default function HomePage() {
               }}
             >
               {t('home.games.wineMap.cta')}
+            </div>
+          </button>
+
+          {/* Promossi o Cirrotici - Live Game */}
+          <button
+            data-testid="quiz-game-card"
+            onClick={() => router.push('/quiz')}
+            className="flex flex-col p-6 rounded-3xl transition-all hover:shadow-lg hover:-translate-y-0.5 cursor-pointer group"
+            style={{
+              backgroundColor: 'var(--surface)',
+              border: '2px solid var(--primary)',
+            }}
+          >
+            <div className="flex-1 flex items-center justify-center mb-4 h-24">
+              <Mascot mood="skeptical" size={48} />
+            </div>
+            <div className="flex justify-between items-start mb-4 w-full gap-3">
+              <h2
+                className="text-left"
+                style={{
+                  fontFamily: 'var(--font-baloo)',
+                  fontSize: '1.5rem',
+                  fontWeight: '700',
+                  color: 'var(--ink)',
+                }}
+              >
+                {t('home.games.quiz.title')}
+              </h2>
+              <span
+                className="px-3 py-1 rounded-full text-white font-bold text-sm whitespace-nowrap"
+                style={{
+                  backgroundColor: 'var(--correct)',
+                  fontFamily: 'var(--font-nunito)',
+                  fontSize: '0.66rem',
+                  letterSpacing: '0.08em',
+                }}
+              >
+                {t('home.games.quiz.badge')}
+              </span>
+            </div>
+            <div
+              className="w-full px-4 py-2.5 rounded-full text-center font-bold transition-opacity group-hover:opacity-80"
+              style={{
+                backgroundColor: 'var(--accent)',
+                color: 'white',
+                fontFamily: 'var(--font-nunito)',
+                fontSize: '0.92rem',
+              }}
+            >
+              {t('home.games.quiz.cta')}
             </div>
           </button>
 

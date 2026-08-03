@@ -54,6 +54,10 @@ log "Ingesting denominations..."
 (cd "$ROOT/backend" && uv run python scripts/ingest_denominations.py \
     "$ROOT/backend/data/denominations.json")
 
+log "Seeding the question bank (no-op if already loaded)..."
+(cd "$ROOT/backend" && uv run python scripts/seed_questions.py \
+    "$ROOT/backend/data/question_bank.csv")
+
 # ── services ──────────────────────────────────────────────────────────────────
 # local dev runs over HTTP — keep cookies non-Secure
 export COOKIE_SECURE=false

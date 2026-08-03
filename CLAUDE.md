@@ -130,6 +130,26 @@ The source file `frontend/src/data/denominations.json` (410 entries) is the inge
 ```
 `regions` is **always an array** — denominations can span multiple regions.
 
+### Question Bank (Promossi o Cirrotici)
+Questions live in PostgreSQL (`question` table) and are the source of truth once seeded
+(ADR 0009). `backend/data/question_bank.csv` seeds them **once** via
+`scripts/seed_questions.py`, which no-ops if the table already holds a row, so it runs safely on
+every boot from `entrypoint.sh` and `start.sh` (ADR 0011). The check-and-load is held by a
+Postgres advisory lock — concurrent boots would otherwise both find an empty table and double the
+bank. Corrections are made in the database, never by re-ingesting the file. Questions are
+deactivated (`active = false`), never deleted.
+
+A question carries: `text`, `format` (`true_false` | `multiple_choice` | `open`), `level` (1/2/3),
+`reference_answer`, `options`, `explanation`, `topic`, `open_subtype` (`conceptual` | `list`) and
+`active`. `topic` and `open_subtype` are produced offline (issue #14) and are empty until then.
+
+**`GET /quiz/question`** (requires the `sommelier_session` cookie) serves one random active
+question through `QuestionRead`, which deliberately omits `reference_answer` **and**
+`explanation` — the explanation spells the answer out in prose. **Multiple-choice options are
+shuffled by the backend**, never the browser: in the source bank the correct answer is always the
+first option. Use `fetchQuizQuestion` in `frontend/src/lib/api.ts`; never call the endpoint from a
+component.
+
 ### Session persistence
 When a game ends, the recap page saves the session to the backend before displaying results.
 
@@ -222,7 +242,7 @@ pill shapes, anti-snob voice). **Full spec: [`frontend/DESIGN.md`](frontend/DESI
 sommelier_game/
 ├── frontend/
 │   └── src/
-│       ├── app/[locale]/      # Login, register, setup, game, recap, profile screens
+│       ├── app/[locale]/      # Login, register, setup, game, recap, profile, quiz screens
 │       ├── components/
 │       │   ├── game/          # PostIt, ScoreCounter, AutoPlaceModal
 │       │   ├── map/           # ItalyMap, RegionPanel
@@ -253,6 +273,10 @@ sommelier_game/
 │   │   ├── denominations/
 │   │   │   ├── model.py       # SQLModel table + Pydantic response schema
 │   │   │   └── router.py      # GET /denominations
+│   │   ├── questions/
+│   │   │   ├── model.py       # Question SQLModel table + QuestionRead schema
+│   │   │   ├── seed.py        # seed CSV → Question rows
+│   │   │   └── router.py      # GET /quiz/question
 │   │   ├── sessions/
 │   │   │   ├── model.py       # GameSession + SessionCardAttempt SQLModel tables
 │   │   │   └── router.py      # POST /session, GET /session/stats
@@ -261,8 +285,12 @@ sommelier_game/
 │   │   ├── database.py        # SQLModel engine + get_session dependency
 │   │   └── main.py            # FastAPI app, CORS (allow_credentials=True), router registration
 │   ├── alembic/               # migration scripts
+│   ├── data/                  # ingestion sources (ADR 0003, ADR 0011)
+│   │   ├── denominations.json
+│   │   └── question_bank.csv   # question bank seed — loaded once
 │   ├── scripts/
-│   │   └── ingest_denominations.py
+│   │   ├── ingest_denominations.py
+│   │   └── seed_questions.py  # seed-once loader (no-op if the bank is loaded)
 │   └── tests/                 # pytest suite (test_auth.py, test_denominations.py, test_sessions.py …)
 │
 ├── infra/

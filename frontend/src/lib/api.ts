@@ -1,4 +1,4 @@
-import { CardAttempt, Denomination, Filter } from '@/types';
+import { CardAttempt, Denomination, Filter, QuizQuestion } from '@/types';
 
 function apiUrl() {
   return process.env.NEXT_PUBLIC_API_URL ?? '';
@@ -119,5 +119,14 @@ export async function fetchSessionStats(): Promise<SessionStats> {
   const res = await fetch(`${apiUrl()}/session/stats`, {
     credentials: 'include',
   });
+  return res.json();
+}
+
+// Returns null when the bank holds no question to serve.
+export async function fetchQuizQuestion(): Promise<QuizQuestion | null> {
+  const res = await fetch(`${apiUrl()}/quiz/question`, {
+    credentials: 'include',
+  });
+  if (!res.ok) return null;
   return res.json();
 }
