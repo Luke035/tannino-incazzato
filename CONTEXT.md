@@ -22,7 +22,7 @@ shows "Mappa dei Vini"). Drag-and-drop confines it to the desktop.
 _Avoid_: "the game" (ambiguous — there is more than one), Sommelier Game.
 
 **Promossi o Cirrotici: Il Gioco Finale** / **Graduated or Decanted?**:
-The question-bank game, in which students answer sommelier exam questions. The display
+The question-bank game, in which students answer certified sommelier-course exam questions. The display
 title is localized and deliberately asymmetric — the Italian carries a subtitle, "Il Gioco
 Finale", that the English does not — while the URL slug is always the English `quiz`. Unlike
 Mappa dei Vini it is **mobile-first**.
@@ -40,17 +40,17 @@ no light/dark toggle — one theme only.
 
 ### Promossi o Cirrotici
 
-**Certification**:
-The sommelier certification this game prepares for. Its final written exam is
-a single sitting covering all three course levels at once.
-
+**Written Exam**:
+The final written exam of the sommelier certification course this game prepares for — a single
+sitting covering all three course levels at once.
+_Avoid_: naming the certifying body anywhere in the product, the code or the docs.
 
 **Question Bank**:
-The body of sommelier exam questions the game draws from. The database is its source of truth.
+The body of certified course questions the game draws from. The database is its source of truth.
 _Avoid_: "the CSV", "the questions file" — the CSV only ever seeded the bank.
 
 **Level**:
-The course level a question belongs to: 1 (viticulture, oenology, tasting, service),
+The sommelier course level a question belongs to: 1 (viticulture, oenology, tasting, service),
 2 (Italian and world wine regions), 3 (food pairing and nutrition).
 _Avoid_: difficulty — a Level 3 question is not harder than a Level 1 one, it is about
 different material.

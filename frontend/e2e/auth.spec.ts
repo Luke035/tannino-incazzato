@@ -93,6 +93,13 @@ test('visiting /game without session redirects to login with next param', async 
   expect(page.url()).toContain('next=');
 });
 
+test('visiting /quiz without session redirects to login with next param', async ({ page }) => {
+  await page.goto('/en/quiz');
+  await page.waitForURL('**/login**', { timeout: 5_000 });
+  expect(page.url()).toContain('/login');
+  expect(page.url()).toContain('next=');
+});
+
 test('visiting home / without session redirects to login', async ({ page }) => {
   await page.goto('/en');
   await page.waitForURL('**/login**', { timeout: 5_000 });

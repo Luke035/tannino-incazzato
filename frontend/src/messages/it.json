@@ -11,6 +11,11 @@
         "badge": "Disponibile",
         "cta": "Versa e gioca →"
       },
+      "quiz": {
+        "title": "Promossi o Cirrotici: Il Gioco Finale",
+        "badge": "Disponibile",
+        "cta": "Mettiti alla prova →"
+      },
       "comingSoon": {
         "badge": "Presto"
       },
@@ -100,5 +105,23 @@
     "memorizeTip": "Come ricordarlo",
     "loadingTip": "Generazione del suggerimento...",
     "continue": "Capito, continua"
+  },
+  "quiz": {
+    "eyebrow": "Una domanda alla volta",
+    "description": "Domande vere dell'esame, dal banco del corso. Nessuna risposta nascosta nella pagina.",
+    "level": "Livello {level}",
+    "formats": {
+      "true_false": "Vero o falso",
+      "multiple_choice": "Scelta multipla",
+      "open": "Domanda aperta"
+    },
+    "true": "Vero",
+    "false": "Falso",
+    "openPlaceholder": "Scrivi la tua risposta…",
+    "another": "Un’altra domanda →",
+    "loading": "Pesco una domanda…",
+    "notGradedYet": "Il Tannino sta ancora affilando la matita rossa — per ora non si corregge.",
+    "emptyTitle": "Il banco è a secco",
+    "emptySubtitle": "Nessuna domanda caricata. Torna quando il banco sarà pieno."
   }
 }

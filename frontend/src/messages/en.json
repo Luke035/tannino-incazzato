@@ -11,6 +11,11 @@
         "badge": "Available",
         "cta": "Pour & play →"
       },
+      "quiz": {
+        "title": "Graduated or Decanted?",
+        "badge": "Available",
+        "cta": "Take the test →"
+      },
       "comingSoon": {
         "badge": "Soon"
       },
@@ -100,5 +105,23 @@
     "memorizeTip": "How to remember it",
     "loadingTip": "Generating a memory tip...",
     "continue": "Got it, continue"
+  },
+  "quiz": {
+    "eyebrow": "One question at a time",
+    "description": "Real exam questions from the course bank. No answers hiding in the page.",
+    "level": "Level {level}",
+    "formats": {
+      "true_false": "True or false",
+      "multiple_choice": "Multiple choice",
+      "open": "Open question"
+    },
+    "true": "True",
+    "false": "False",
+    "openPlaceholder": "Write your answer…",
+    "another": "Another question →",
+    "loading": "Pulling a question…",
+    "notGradedYet": "The tannin is still sharpening its red pencil — no marks yet.",
+    "emptyTitle": "The bank is dry",
+    "emptySubtitle": "No questions loaded yet. Come back once the bank has been filled."
   }
 }
