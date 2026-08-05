@@ -119,6 +119,8 @@
     "loading": "Preparo il compito…",
     "emptyTitle": "Il banco è a secco",
     "emptySubtitle": "Non ci sono abbastanza domande caricate per mettere insieme un compito. Torna quando il banco sarà pieno.",
+      "unavailableTitle": "Il Tannino non risponde",
+      "unavailableSubtitle": "Non sono riuscito a raggiungere la cantina per pescarti un compito. Non si è perso niente: riprova tra un attimo.",
     "start": {
       "title": "Lo passeresti adesso?",
       "subtitle": "Una prova sola, {count} domande, tutto il corso. Il Tannino corregge e te lo dice in faccia.",
@@ -131,6 +133,19 @@
       "composition": "{open} domande aperte, {multipleChoice} a scelta multipla, {trueFalse} vero o falso. Le aperte le scrivi tu, e il Tannino se le legge tutte.",
       "cta": "Fai l'esame",
       "starting": "Pesco il compito…"
+    },
+    "resume": {
+      "title": "Hai un compito aperto",
+      "progress": "{answered} risposte su {total}. Non si è perso niente: ti aspetta finché vuoi.",
+      "cta": "Riprendilo",
+      "abandon": "Buttalo e iniziane uno nuovo",
+      "warn": {
+        "title": "Butti tutto il compito?",
+        "body": "{count, plural, =0 {È ancora intatto, quindi non c'è granché da piangere. Però sparisce per sempre.} one {Se ne va anche # risposta, per sempre.} other {Se ne vanno anche # risposte, per sempre.}}",
+        "confirm": "Buttalo",
+        "abandoning": "Lo butto…",
+        "cancel": "Tienilo"
+      }
     },
     "exam": {
       "progress": "{current} di {total}",

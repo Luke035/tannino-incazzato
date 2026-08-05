@@ -34,7 +34,9 @@ export type Filter = 'both' | 'DOC' | 'DOCG';
 export type QuestionFormat = 'true_false' | 'multiple_choice' | 'open';
 export type QuestionLevel = 1 | 2 | 3;
 
-export type ExamStatus = 'in_progress' | 'submitted';
+// `abandoned` is a paper walked away from on purpose. It frees the one
+// in-progress slot, keeps no score, and never enters statistics.
+export type ExamStatus = 'in_progress' | 'submitted' | 'abandoned';
 export type ExamVerdict = 'correct' | 'wrong';
 
 // One question of the paper as the browser is allowed to see it. `verdict` and

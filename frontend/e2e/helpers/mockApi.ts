@@ -26,6 +26,11 @@ export async function mockApi(
     exam?: ExamFixture | null;
     // Makes the bank look too thin to fill a paper.
     examRefused?: boolean;
+    // Makes the backend fail rather than refuse — a different thing to be told.
+    examBroken?: boolean;
+    // The paper is binned somewhere else in the moment before it is handed in,
+    // so the submission is refused and the paper is gone.
+    abandonedElsewhere?: boolean;
     // How the grading agent behaves on the written answers: 'down' never grades
     // them, 'downOnce' fails the first request and grades on the retry.
     grader?: 'ok' | 'down' | 'downOnce';
@@ -62,9 +67,23 @@ export async function mockApi(
     const json = (body: unknown, status = 200) =>
       route.fulfill({ contentType: 'application/json', status, body: JSON.stringify(body) });
 
+    // The Session in progress, or nothing. Only an in-progress paper holds the
+    // slot: a submitted or an abandoned one has already freed it.
+    if (method === 'GET' && path.endsWith('/quiz/exams/current')) {
+      return json(exam && exam.status === 'in_progress' ? exam : null);
+    }
+
     if (method === 'POST' && path.endsWith('/quiz/exams')) {
+      if (options?.examBroken) {
+        return json({ detail: 'internal_server_error' }, 500);
+      }
       if (options?.examRefused) {
         return json({ detail: 'question_bank_too_small' }, 409);
+      }
+      // Refused rather than replacing it: one Session in progress at a time,
+      // and no tap destroys the paper the player already has open.
+      if (exam && exam.status === 'in_progress') {
+        return json({ detail: 'exam_in_progress' }, 409);
       }
       exam = examInProgress();
       return json(exam, 201);
@@ -82,10 +101,22 @@ export async function mockApi(
       return json({ question_id: questionId, answer });
     }
 
+    if (method === 'POST' && path.endsWith('/abandon')) {
+      if (exam.status !== 'in_progress') {
+        return json({ detail: 'exam_not_in_progress' }, 409);
+      }
+      exam.status = 'abandoned';
+      return json(exam);
+    }
+
     // Handing in grades the Closed Questions and nothing else: a written answer
     // that was actually written goes to the agent, a blank one is wrong on
     // the spot.
     if (method === 'POST' && path.endsWith('/submit')) {
+      if (options?.abandonedElsewhere) {
+        exam.status = 'abandoned';
+        return json({ detail: 'exam_not_in_progress' }, 409);
+      }
       for (const question of exam.questions) {
         question.correct_answer = CORRECT_OPTION[question.question_id];
         if (question.format === 'open' && question.answer) continue;

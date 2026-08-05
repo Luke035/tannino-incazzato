@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fetchHint, fetchMemorizeTip, fetchReview, gradeExam } from '../api';
+import { fetchHint, fetchMemorizeTip, fetchReview, gradeExam, startExam } from '../api';
 
 const BASE = 'http://localhost:8000';
 
@@ -61,6 +61,45 @@ describe('fetchReview', () => {
     });
     expect(spy).toHaveBeenCalledWith(`${BASE}/review`, expect.objectContaining({ method: 'POST' }));
     expect(result).toBe('Good session.');
+  });
+});
+
+// Being refused a paper because one is already open is nothing like being
+// refused because the bank is empty: one offers the player a choice, the other
+// is a dead end. The wrapper is where the two are told apart.
+describe('startExam', () => {
+  it('reads a paper already in progress as its own refusal', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ detail: 'exam_in_progress' }), { status: 409 })
+    );
+
+    expect(await startExam()).toEqual({ refused: 'in_progress' });
+  });
+
+  it('claims the bank is too thin only when the backend says so', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ detail: 'question_bank_too_small' }), { status: 409 })
+    );
+
+    expect(await startExam()).toEqual({ refused: 'bank_too_small' });
+  });
+
+  it('does not blame the bank for a backend that broke', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce(new Response('boom', { status: 500 }));
+
+    expect(await startExam()).toEqual({ refused: 'unavailable' });
+  });
+
+  it('does not blame the bank for a request that never arrived', async () => {
+    vi.spyOn(global, 'fetch').mockRejectedValueOnce(new TypeError('network down'));
+
+    expect(await startExam()).toEqual({ refused: 'unavailable' });
+  });
+
+  it('hands back the paper it drew', async () => {
+    mockFetch({ id: 7, status: 'in_progress' });
+
+    expect(await startExam()).toEqual({ started: { id: 7, status: 'in_progress' } });
   });
 });
 

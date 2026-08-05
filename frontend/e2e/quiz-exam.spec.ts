@@ -1,5 +1,6 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
 import { mockApi } from './helpers/mockApi';
+import { answerCurrent, sitExam, startExam } from './helpers/exam';
 import {
   CORRECT_OPTION,
   EXAM_ID,
@@ -12,53 +13,6 @@ import {
 // Sitting an Exam on a phone, one thumb, from Home to the verdict. Running at
 // a mobile viewport is the point of this file.
 test.use({ viewport: { width: 393, height: 852 }, hasTouch: true });
-
-/** Answer the question on screen. `right` decides whether the student knows
- *  their material; the option to tap — or the answer to type — is read off the
- *  screen, exactly as a player reads it. */
-async function answerCurrent(page: Page, right: boolean) {
-  const questionId = await currentQuestionId(page);
-  const correct = CORRECT_OPTION[questionId];
-
-  const written = page.getByTestId('exam-open-answer');
-  if (await written.count()) {
-    await written.fill(right ? correct : 'boh, il tannino, direi');
-    return;
-  }
-
-  const options = page.getByTestId('exam-option');
-  const count = await options.count();
-
-  for (let i = 0; i < count; i += 1) {
-    const option = options.nth(i);
-    const value = await option.getAttribute('data-option');
-    if (right === (value === correct)) {
-      await option.tap();
-      return;
-    }
-  }
-}
-
-async function currentQuestionId(page: Page): Promise<number> {
-  const text = await page.getByTestId('exam-question-text').innerText();
-  const position = Number(text.replace(/\D+/g, '')) - 1;
-  return 100 + position;
-}
-
-/** Walk the whole paper, answering `correct` of the questions right. */
-async function sitExam(page: Page, correct: number) {
-  for (let position = 0; position < EXAM_LENGTH; position += 1) {
-    await answerCurrent(page, position < correct);
-    await page.getByTestId('exam-next').tap();
-  }
-}
-
-async function startExam(page: Page) {
-  await page.goto('/en/quiz');
-  await page.getByTestId('exam-start').tap();
-  await page.waitForURL(`**/quiz/exam/${EXAM_ID}`);
-  await page.getByTestId('exam-question').waitFor();
-}
 
 test('a student sits an exam through to a passing verdict', async ({ page }) => {
   await mockApi(page);

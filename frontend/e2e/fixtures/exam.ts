@@ -108,7 +108,7 @@ export const EXAM_ID = 7;
 export interface ExamFixture {
   id: number;
   mode: string;
-  status: 'in_progress' | 'submitted';
+  status: 'in_progress' | 'submitted' | 'abandoned';
   max_score: number;
   score: number | null;
   score_pct: number | null;

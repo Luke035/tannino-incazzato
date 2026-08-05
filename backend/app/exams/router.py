@@ -12,6 +12,7 @@ from typing import Annotated, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select
 
 from app.ai.grading import OpenAnswerToGrade, grade_open_answers
@@ -23,6 +24,7 @@ from app.exams.model import (
     MAX_OPEN_ANSWER_CHARS,
     MODE_EXAM,
     PASS_MARK_PCT,
+    STATUS_ABANDONED,
     STATUS_IN_PROGRESS,
     STATUS_SUBMITTED,
     TRUE_FALSE_OPTIONS,
@@ -175,6 +177,18 @@ def _load_exam(db: Session, exam_id: int, user_id: int) -> ExamSession:
     return exam
 
 
+def _in_progress_exam(db: Session, user_id: int) -> Optional[ExamSession]:
+    """The one Session the player has open, if any. There is at most one across
+    every mode of the game: starting a second requires handing the first in or
+    abandoning it, so no tap can ever silently destroy work."""
+    return db.exec(
+        select(ExamSession)
+        .where(ExamSession.user_id == user_id, ExamSession.status == STATUS_IN_PROGRESS)
+        .order_by(ExamSession.id.desc())  # type: ignore[union-attr]
+        .limit(1)
+    ).first()
+
+
 def _load_answers(db: Session, exam_id: int) -> List[ExamAnswer]:
     return list(
         db.exec(
@@ -198,7 +212,8 @@ def _load_questions(db: Session, answers: List[ExamAnswer]) -> Dict[int, Questio
 def _previous_exam_question_ids(db: Session, user_id: int) -> List[int]:
     """The questions of the player's immediately preceding Exam, which this one
     must not repeat. Only the last one: an Exam that avoided everything ever
-    seen would drain the bank rather than measure anything."""
+    seen would drain the bank rather than measure anything. Status does not
+    matter — a paper walked away from is still one the player has just read."""
     previous = db.exec(
         select(ExamSession)
         .where(ExamSession.user_id == user_id, ExamSession.mode == MODE_EXAM)
@@ -281,6 +296,13 @@ def start_exam(
     user_id: Annotated[int, Depends(get_current_user_id)],
     db: Session = Depends(get_session),
 ):
+    """Draws a paper — unless the player already has one open, in which case
+    nothing is drawn and nothing is destroyed. The caller is told which of the
+    two refusals it hit and offers the choice: resume, or abandon and start
+    again."""
+    if _in_progress_exam(db, user_id) is not None:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="exam_in_progress")
+
     excluded = _previous_exam_question_ids(db, user_id)
 
     drawn: List[Question] = []
@@ -304,10 +326,41 @@ def start_exam(
     for answer in answers:
         db.add(answer)
 
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        # The other tab got there a moment earlier and the partial unique index
+        # refused this paper. Same answer as the check above: nothing drawn,
+        # nothing destroyed.
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="exam_in_progress")
+
     db.refresh(exam)
 
     return _read_exam(exam, answers, {q.id: q for q in drawn})
+
+
+# ── GET /quiz/exams/current ───────────────────────────────────────────────────
+# Declared before `/{exam_id}`: routes match in the order they are written, and
+# "current" is not an integer.
+
+@router.get("/current", response_model=Optional[ExamRead])
+def get_current_exam(
+    user_id: Annotated[int, Depends(get_current_user_id)],
+    db: Session = Depends(get_session),
+):
+    """The Session the player left open, or `null` when the slot is free.
+
+    It carries the whole paper with the answers already given, so returning to
+    the game can say what is in progress and how far it got without the player
+    having to open it to find out. In-progress Sessions do not expire: the one
+    left in February is still here in August."""
+    exam = _in_progress_exam(db, user_id)
+    if exam is None:
+        return None
+
+    answers = _load_answers(db, exam.id)
+    return _read_exam(exam, answers, _load_questions(db, answers))
 
 
 # ── GET /quiz/exams/{exam_id} ─────────────────────────────────────────────────
@@ -338,7 +391,7 @@ def record_answer(
 ):
     exam = _load_exam(db, exam_id, user_id)
     if exam.status != STATUS_IN_PROGRESS:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="exam_already_submitted")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="exam_not_in_progress")
 
     answer = db.exec(
         select(ExamAnswer).where(
@@ -387,7 +440,7 @@ def submit_exam(
     that hangs must not hold the paper the student has already handed in."""
     exam = _load_exam(db, exam_id, user_id)
     if exam.status != STATUS_IN_PROGRESS:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="exam_already_submitted")
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="exam_not_in_progress")
 
     answers = _load_answers(db, exam_id)
     questions = _load_questions(db, answers)
@@ -416,6 +469,35 @@ def submit_exam(
     db.refresh(exam)
 
     return _read_exam(exam, answers, questions)
+
+
+# ── POST /quiz/exams/{exam_id}/abandon ────────────────────────────────────────
+
+@router.post("/{exam_id}/abandon", response_model=ExamRead)
+def abandon_exam(
+    exam_id: int,
+    user_id: Annotated[int, Depends(get_current_user_id)],
+    db: Session = Depends(get_session),
+):
+    """Walk away from the paper on purpose, freeing the slot.
+
+    It is never a side effect of starting another one: throwing away twenty
+    minutes of work is a decision the player makes explicitly, and the screen
+    asks again before this is called. The row stays — its questions still keep
+    the next paper from repeating them — but it has no score and no submission
+    time, which is what keeps it out of statistics.
+    """
+    exam = _load_exam(db, exam_id, user_id)
+    if exam.status != STATUS_IN_PROGRESS:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="exam_not_in_progress")
+
+    exam.status = STATUS_ABANDONED
+    db.add(exam)
+    db.commit()
+    db.refresh(exam)
+
+    answers = _load_answers(db, exam_id)
+    return _read_exam(exam, answers, _load_questions(db, answers))
 
 
 # ── POST /quiz/exams/{exam_id}/grade ──────────────────────────────────────────

@@ -4,9 +4,10 @@ import { useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/i18n/navigation';
 import Header from '@/components/Header';
 import { Mascot } from '@/components/Mascot';
+import { ConfirmSheet } from '@/components/quiz/ConfirmSheet';
 import { QuestionCard } from '@/components/quiz/QuestionCard';
 import { fetchExam, saveExamAnswer, submitExam } from '@/lib/api';
-import { OPEN_ANSWER_SAVE_DELAY_MS } from '@/lib/exam';
+import { isBlank, OPEN_ANSWER_SAVE_DELAY_MS } from '@/lib/exam';
 import { formatDuration, useElapsedSeconds } from '@/lib/examTime';
 import { Exam } from '@/types';
 
@@ -44,6 +45,12 @@ export default function ExamSittingPage({
         router.replace(`/quiz/exam/${examId}/result`);
         return;
       }
+      // Binned from the landing screen, or from another tab. There is nothing
+      // to sit and nothing to show: back to where a new paper is drawn.
+      if (loaded?.status === 'abandoned') {
+        router.replace('/quiz');
+        return;
+      }
       // Whatever was already answered comes back with the paper, so an Exam
       // interrupted by a phone call resumes where it was left.
       if (loaded) {
@@ -61,10 +68,8 @@ export default function ExamSittingPage({
   }, [examId, router]);
 
   const questions = useMemo(() => exam?.questions ?? [], [exam]);
-  // Whitespace is a blank. The backend trims before grading, so a written
-  // answer of three spaces is wrong there and has to look wrong here too.
   const blanks = useMemo(
-    () => questions.filter((q) => !answers[q.question_id]?.trim()),
+    () => questions.filter((q) => isBlank(answers[q.question_id])),
     [questions, answers]
   );
 
@@ -123,6 +128,24 @@ export default function ExamSittingPage({
     };
   }, [index, view, flushTyping]);
 
+  // The tab being closed, the phone being locked, the student switching apps:
+  // none of those run a React cleanup, and all of them are exactly the
+  // interruption this game promises to survive. A written answer typed in the
+  // last breath before one of them is sent here — `saveExamAnswer` marks the
+  // request `keepalive`, which is what lets it outlive the page.
+  useEffect(() => {
+    const flush = () => void flushTyping();
+    const flushIfHidden = () => {
+      if (document.visibilityState === 'hidden') flush();
+    };
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', flushIfHidden);
+    return () => {
+      window.removeEventListener('pagehide', flush);
+      document.removeEventListener('visibilitychange', flushIfHidden);
+    };
+  }, [flushTyping]);
+
   const handIn = useCallback(async () => {
     setSubmitting(true);
     await flushTyping();
@@ -138,6 +161,18 @@ export default function ExamSittingPage({
 
     const result = await submitExam(Number(examId));
     if (!result) {
+      // The paper would not be taken. Usually that is the same paper having
+      // been handed in or binned in another tab, so ask what became of it
+      // rather than leaving a tapped button that does nothing.
+      const paper = await fetchExam(Number(examId));
+      if (paper?.status === 'submitted') {
+        router.replace(`/quiz/exam/${examId}/result`);
+        return;
+      }
+      if (!paper || paper.status === 'abandoned') {
+        router.replace('/quiz');
+        return;
+      }
       setSubmitting(false);
       setWarning(false);
       return;
@@ -312,11 +347,17 @@ export default function ExamSittingPage({
       )}
 
       {warning && (
-        <BlanksWarning
-          blanks={blanks.length}
-          submitting={submitting}
-          onCancel={() => setWarning(false)}
+        <ConfirmSheet
+          testId="exam-blanks-warning"
+          confirmTestId="exam-submit-anyway"
+          cancelTestId="exam-cancel-submit"
+          title={t('quiz.exam.warn.title')}
+          body={t('quiz.exam.warn.body', { count: blanks.length })}
+          confirmLabel={t('quiz.exam.warn.confirm')}
+          cancelLabel={t('quiz.exam.warn.cancel')}
+          busy={submitting}
           onConfirm={() => void handIn()}
+          onCancel={() => setWarning(false)}
         />
       )}
     </ExamShell>
@@ -443,80 +484,5 @@ function ReviewPanel({
         </button>
       </div>
     </section>
-  );
-}
-
-function BlanksWarning({
-  blanks,
-  submitting,
-  onCancel,
-  onConfirm,
-}: {
-  blanks: number;
-  submitting: boolean;
-  onCancel: () => void;
-  onConfirm: () => void;
-}) {
-  const t = useTranslations();
-
-  return (
-    <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-dark/60 backdrop-blur-sm"
-    >
-      <div
-        data-testid="exam-blanks-warning"
-        role="alertdialog"
-        aria-modal="true"
-        className="w-full max-w-md flex flex-col gap-4 card-rounded p-6 card-shadow"
-        style={{ backgroundColor: 'var(--surface)' }}
-      >
-        <div className="flex items-center gap-3">
-          <Mascot mood="angry" size={52} />
-          <h2
-            style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: '1.3rem',
-              color: 'var(--ink)',
-            }}
-          >
-            {t('quiz.exam.warn.title')}
-          </h2>
-        </div>
-        <p style={{ fontFamily: 'var(--font-sans)', fontSize: '0.95rem', color: 'var(--muted)' }}>
-          {t('quiz.exam.warn.body', { count: blanks })}
-        </p>
-        <div className="flex flex-col gap-3">
-          <button
-            data-testid="exam-submit-anyway"
-            onClick={onConfirm}
-            disabled={submitting}
-            className="w-full px-6 py-4 pill font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-            style={{
-              fontFamily: 'var(--font-sans)',
-              fontSize: '0.95rem',
-              minHeight: '3.5rem',
-              backgroundColor: 'var(--primary)',
-            }}
-          >
-            {t('quiz.exam.warn.confirm')}
-          </button>
-          <button
-            data-testid="exam-cancel-submit"
-            onClick={onCancel}
-            className="w-full px-6 py-4 pill font-bold"
-            style={{
-              fontFamily: 'var(--font-sans)',
-              fontSize: '0.95rem',
-              minHeight: '3.5rem',
-              backgroundColor: 'var(--surface-2)',
-              color: 'var(--ink)',
-              border: '2px solid var(--border)',
-            }}
-          >
-            {t('quiz.exam.warn.cancel')}
-          </button>
-        </div>
-      </div>
-    </div>
   );
 }

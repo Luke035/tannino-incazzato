@@ -81,11 +81,15 @@ export default function ExamResultPage({
   const again = async () => {
     setStarting(true);
     const next = await startExam();
-    if (!next) {
+    if (!('started' in next)) {
+      // Either the bank cannot fill a paper or another tab has one open. The
+      // landing screen is where both are explained and where the second is
+      // resolved, so that is where the player goes rather than nowhere.
       setStarting(false);
+      router.push('/quiz');
       return;
     }
-    router.push(`/quiz/exam/${next.id}`);
+    router.push(`/quiz/exam/${next.started.id}`);
   };
 
   if (loading || !exam) {

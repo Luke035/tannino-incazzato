@@ -7,10 +7,13 @@ payload, the pass mark — so that is where it is tested. Prior art:
 """
 import os
 from contextlib import contextmanager
+from datetime import datetime, timedelta, timezone
 from typing import Iterable, List, Optional
 from unittest.mock import AsyncMock, patch
 
+import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select
 
 os.environ.setdefault("JWT_SECRET", "test-secret-for-pytest")
@@ -23,11 +26,14 @@ from app.exams.model import (  # noqa: E402
     EXAM_COMPOSITION,
     EXAM_LENGTH,
     MAX_OPEN_ANSWER_CHARS,
+    MODE_EXAM,
     PASS_MARK_PCT,
+    STATUS_ABANDONED,
     STATUS_IN_PROGRESS,
     STATUS_SUBMITTED,
     VERDICT_CORRECT,
     VERDICT_WRONG,
+    ExamSession,
 )
 from app.questions.model import (  # noqa: E402
     FORMAT_MULTIPLE_CHOICE,
@@ -192,6 +198,19 @@ def _submit(client: TestClient, exam_id: int) -> dict:
     return response.json()
 
 
+def _abandon(client: TestClient, exam_id: int, expect: int = 200):
+    response = client.post(f"/quiz/exams/{exam_id}/abandon")
+    assert response.status_code == expect, response.text
+    return response.json()
+
+
+def _current(client: TestClient) -> Optional[dict]:
+    """The Session in progress, or `None` when the slot is free."""
+    response = client.get("/quiz/exams/current")
+    assert response.status_code == 200, response.text
+    return response.json()
+
+
 def _grade(client: TestClient, exam_id: int, language: str = "en", expect: int = 200):
     response = client.post(f"/quiz/exams/{exam_id}/grade", json={"language": language})
     assert response.status_code == expect, response.text
@@ -341,6 +360,9 @@ def test_no_question_of_the_preceding_exam_appears_in_the_next_one(
     _authenticate(client)
 
     first = _start_exam(client)
+    # The slot has to be freed before a second paper can be drawn, and an
+    # abandoned paper still counts as the one just seen.
+    _abandon(client, first["id"])
     second = _start_exam(client)
 
     first_ids = {q["question_id"] for q in first["questions"]}
@@ -955,6 +977,257 @@ def test_the_time_taken_is_stored_with_the_exam(client: TestClient, session: Ses
 
     assert result["duration_seconds"] >= 0
     assert result["submitted_at"]
+
+
+# ── Being interrupted ─────────────────────────────────────────────────────────
+# A phone call must not cost twenty minutes of work, and a stray tap must not
+# destroy the paper the call interrupted.
+
+def test_reading_the_exam_in_progress_requires_authentication(
+    client: TestClient, session: Session
+):
+    _seed_bank(session)
+    client.cookies.clear()
+
+    assert client.get("/quiz/exams/current").status_code == 401
+
+
+def test_nothing_is_in_progress_before_the_first_exam(
+    client: TestClient, session: Session
+):
+    _seed_bank(session)
+    _authenticate(client)
+
+    assert _current(client) is None
+
+
+def test_the_exam_in_progress_is_surfaced_with_the_answers_already_given(
+    client: TestClient, session: Session
+):
+    _seed_bank(session)
+    _authenticate(client)
+    exam = _start_exam(client)
+    answered = _first(exam, FORMAT_MULTIPLE_CHOICE)
+    given = _correct_answer(answered)
+    _answer(client, exam["id"], answered, given)
+
+    current = _current(client)
+
+    assert current["id"] == exam["id"]
+    assert current["status"] == STATUS_IN_PROGRESS
+    assert _find(current, answered["question_id"])["answer"] == given
+    # Everything else is still blank: how far the paper got is readable from
+    # the paper itself rather than from a count the backend keeps separately.
+    assert sum(1 for q in current["questions"] if q["answer"]) == 1
+
+
+def test_resuming_shows_the_same_served_option_order(
+    client: TestClient, session: Session
+):
+    _seed_bank(session)
+    _authenticate(client)
+    exam = _start_exam(client)
+
+    current = _current(client)
+
+    for question in exam["questions"]:
+        assert _find(current, question["question_id"])["options"] == question["options"]
+
+
+def test_the_exam_in_progress_of_another_player_is_never_surfaced(
+    client: TestClient, session: Session
+):
+    _seed_bank(session)
+    _authenticate(client)
+    _start_exam(client)
+
+    _authenticate(client, OTHER_USER_PAYLOAD)
+
+    assert _current(client) is None
+
+
+def test_an_exam_in_progress_does_not_expire(client: TestClient, session: Session):
+    _seed_bank(session)
+    _authenticate(client)
+    exam = _start_exam(client)
+
+    row = session.get(ExamSession, exam["id"])
+    row.started_at = datetime.now(timezone.utc) - timedelta(days=400)
+    session.add(row)
+    session.commit()
+
+    current = _current(client)
+    assert current["id"] == exam["id"]
+
+    question = _first(exam, FORMAT_TRUE_FALSE)
+    assert _answer(client, exam["id"], question, _correct_answer(question)).status_code == 200
+    assert _submit(client, exam["id"])["status"] == STATUS_SUBMITTED
+
+
+# ── One Session in progress at a time ─────────────────────────────────────────
+
+def test_starting_a_second_exam_while_one_is_open_is_refused(
+    client: TestClient, session: Session
+):
+    _seed_bank(session)
+    _authenticate(client)
+    exam = _start_exam(client)
+
+    response = client.post("/quiz/exams")
+
+    assert response.status_code == 409
+    assert response.json()["detail"] == "exam_in_progress"
+    # Refused, not replaced: the paper the player was sitting is untouched.
+    assert _current(client)["id"] == exam["id"]
+
+
+def test_two_sessions_in_progress_are_refused_by_the_database_itself(
+    client: TestClient, session: Session
+):
+    """The router checks before it draws, but a check followed by an insert is
+    not a rule — two taps in two tabs both pass it. This is the rule."""
+    _seed_bank(session)
+    _authenticate(client)
+    exam = _start_exam(client)
+    owner = session.get(ExamSession, exam["id"]).user_id
+
+    session.add(ExamSession(user_id=owner, mode=MODE_EXAM, max_score=EXAM_LENGTH))
+    with pytest.raises(IntegrityError):
+        session.commit()
+    session.rollback()
+
+
+def test_a_second_session_is_allowed_once_the_first_is_no_longer_in_progress(
+    client: TestClient, session: Session
+):
+    """The index constrains papers in progress and nothing else: a player has
+    as many finished and abandoned papers as they have sat."""
+    _seed_bank(session)
+    _authenticate(client)
+    first = _start_exam(client)
+    _abandon(client, first["id"])
+    second = _start_exam(client)
+    _submit(client, second["id"])
+
+    third = _start_exam(client)
+
+    assert len({first["id"], second["id"], third["id"]}) == 3
+
+
+def test_one_player_in_progress_does_not_block_another(
+    client: TestClient, session: Session
+):
+    _seed_bank(session)
+    _authenticate(client)
+    _start_exam(client)
+
+    _authenticate(client, OTHER_USER_PAYLOAD)
+
+    _start_exam(client)
+
+
+def test_abandoning_frees_the_slot(client: TestClient, session: Session):
+    _seed_bank(session)
+    _authenticate(client)
+    first = _start_exam(client)
+
+    abandoned = _abandon(client, first["id"])
+
+    assert abandoned["status"] == "abandoned"
+    assert _current(client) is None
+    assert _start_exam(client)["id"] != first["id"]
+
+
+def test_handing_in_frees_the_slot(client: TestClient, session: Session):
+    _seed_bank(session)
+    _authenticate(client)
+    first = _start_exam(client)
+
+    _submit(client, first["id"])
+
+    assert _current(client) is None
+    assert _start_exam(client)["id"] != first["id"]
+
+
+def test_an_abandoned_exam_can_no_longer_be_answered_or_submitted(
+    client: TestClient, session: Session
+):
+    _seed_bank(session)
+    _authenticate(client)
+    exam = _start_exam(client)
+    question = _first(exam, FORMAT_TRUE_FALSE)
+
+    _abandon(client, exam["id"])
+
+    assert _answer(client, exam["id"], question, _correct_answer(question)).status_code == 409
+    assert client.post(f"/quiz/exams/{exam['id']}/submit").status_code == 409
+
+
+def test_an_abandoned_exam_never_reveals_the_correct_answers(
+    client: TestClient, session: Session
+):
+    _seed_bank(session)
+    _authenticate(client)
+    exam = _start_exam(client)
+
+    _abandon(client, exam["id"])
+    body = client.get(f"/quiz/exams/{exam['id']}").text
+
+    assert SECRET_MARKER not in body
+    for question in client.get(f"/quiz/exams/{exam['id']}").json()["questions"]:
+        assert question["correct_answer"] is None
+        assert question["verdict"] is None
+
+
+def test_an_abandoned_exam_carries_no_score_and_was_never_handed_in(
+    client: TestClient, session: Session
+):
+    """The mechanism by which abandoned and unsubmitted Sessions stay out of
+    statistics: only a submitted Session has a score and a submission time."""
+    _seed_bank(session)
+    _authenticate(client)
+    exam = _start_exam(client)
+    _fill_in(client, exam, correct=EXAM_LENGTH)
+
+    abandoned = _abandon(client, exam["id"])
+
+    assert abandoned["score"] is None
+    assert abandoned["score_pct"] is None
+    assert abandoned["passed"] is None
+    assert abandoned["submitted_at"] is None
+    assert abandoned["grading_complete"] is False
+
+    row = session.get(ExamSession, exam["id"])
+    assert row.status == STATUS_ABANDONED
+    assert row.score is None
+    assert row.submitted_at is None
+
+
+def test_an_exam_that_is_not_in_progress_cannot_be_abandoned(
+    client: TestClient, session: Session
+):
+    _seed_bank(session)
+    _authenticate(client)
+    submitted = _start_exam(client)
+    _submit(client, submitted["id"])
+
+    _abandon(client, submitted["id"], expect=409)
+
+    abandoned = _start_exam(client)
+    _abandon(client, abandoned["id"])
+    _abandon(client, abandoned["id"], expect=409)
+
+
+def test_abandoning_someone_elses_exam_is_not_found(
+    client: TestClient, session: Session
+):
+    _seed_bank(session)
+    _authenticate(client)
+    exam = _start_exam(client)
+
+    _authenticate(client, OTHER_USER_PAYLOAD)
+
+    _abandon(client, exam["id"], expect=404)
 
 
 # ── Separation from Mappa dei Vini (ADR 0008) ─────────────────────────────────

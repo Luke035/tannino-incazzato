@@ -8,7 +8,7 @@ before it has a score, so it is a different entity wearing the same name.
 from datetime import datetime, timezone
 from typing import List, Optional
 
-from sqlalchemy import Column, ForeignKey, Integer
+from sqlalchemy import Column, ForeignKey, Index, Integer, text
 from sqlalchemy import JSON as SAJSON
 from sqlmodel import Field, SQLModel
 
@@ -21,6 +21,10 @@ MODE_EXAM = "exam"
 
 STATUS_IN_PROGRESS = "in_progress"
 STATUS_SUBMITTED = "submitted"
+# Walked away from on purpose. An abandoned Session frees the one in-progress
+# slot, keeps its questions on record — the next paper still avoids them — and
+# never reaches statistics: only a submitted Session carries a score.
+STATUS_ABANDONED = "abandoned"
 
 VERDICT_CORRECT = "correct"
 VERDICT_WRONG = "wrong"
@@ -55,6 +59,22 @@ class ExamSession(SQLModel, table=True):
     interrupted Exam is still there when the player comes back."""
 
     __tablename__ = "exam_sessions"
+
+    # One Session in progress per player, held by the database rather than by
+    # the check that precedes the insert: two taps in two tabs both pass that
+    # check and would leave two open papers, which is the one thing this rule
+    # exists to prevent. A partial unique index says it in a way a race cannot
+    # get past — both dialects are named because the pytest schema is SQLite
+    # and production is PostgreSQL.
+    __table_args__ = (
+        Index(
+            "uq_exam_sessions_one_in_progress_per_user",
+            "user_id",
+            unique=True,
+            postgresql_where=text("status = 'in_progress'"),
+            sqlite_where=text("status = 'in_progress'"),
+        ),
+    )
 
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(

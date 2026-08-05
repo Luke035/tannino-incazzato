@@ -161,8 +161,10 @@ caller's with a 404:
 
 | Endpoint | Does |
 |---|---|
-| `POST /quiz/exams` | Draws the paper and persists it. 409 if the bank cannot fill it. |
+| `POST /quiz/exams` | Draws the paper and persists it. 409 `question_bank_too_small` if the bank cannot fill it, 409 `exam_in_progress` if the player already has one open. |
+| `GET /quiz/exams/current` | The Session in progress with its answers so far, or `null` when the slot is free. Declared **before** `/{id}` — routes match in the order they are written. |
 | `GET /quiz/exams/{id}` | The paper with the answers so far — and, once submitted, the Verdicts, the score and the correct answers. |
+| `POST /quiz/exams/{id}/abandon` | Frees the slot. 409 `exam_not_in_progress` on anything already submitted or abandoned. |
 | `PUT /quiz/exams/{id}/answers/{question_id}` | Records or clears (`null`) one answer. Returns **no Verdict** in Exam mode. 422 past `MAX_OPEN_ANSWER_CHARS`. |
 | `POST /quiz/exams/{id}/submit` | Grades the Closed Questions and returns immediately. Always possible, blanks and all. |
 | `POST /quiz/exams/{id}/grade` | Grades the Open Questions through the agent. Idempotent — it only looks at what has no Verdict yet. 503 `grading_incomplete` when the paper is still short. |
@@ -183,13 +185,28 @@ Rules that are not negotiable:
 - **True/false is answered in the bank's vocabulary** (`VERO` / `FALSO`); only the label is
   localized, so a paper sat in English grades exactly like one sat in Italian.
 - Selection is blind and random across the whole active bank, **never filtered by Level**, and
-  excludes every question of the player's immediately preceding Exam.
+  excludes every question of the player's immediately preceding Exam — whatever became of it, an
+  abandoned paper included.
+- **A player has at most one Session in progress at a time**, across every mode of the game. A
+  Session leaves that slot by being submitted or by being abandoned (`status = abandoned`), never
+  by another one starting: work is only ever destroyed by an explicit, confirmed choice. The rule
+  is held by the **partial unique index `uq_exam_sessions_one_in_progress_per_user`**, not by the
+  check that precedes the insert — two taps in two tabs both pass a check. The `IntegrityError`
+  it raises is answered with the same 409 `exam_in_progress`. Only a
+  **submitted** Session carries a score and a `submitted_at`, which is what keeps abandoned and
+  never-finished Sessions out of statistics. In-progress Sessions do not expire.
+- **Answers persist as they are given** — the `PUT` is the save — so a closed tab costs nothing
+  and `GET /quiz/exams/current` is enough to put a returning player back where they were, on the
+  same paper with the same served option order.
 - Closed Questions are graded by exact comparison, with **no model call**. An unanswered question
   is wrong — including a blank Open Question, which is graded without asking anybody. One point
   per question — no weighting, no negative marking, no partial credit.
 
-Use `startExam`, `fetchExam`, `saveExamAnswer`, `submitExam` and `gradeExam` in
-`frontend/src/lib/api.ts`; never call these endpoints from a component.
+Use `startExam`, `fetchCurrentExam`, `fetchExam`, `saveExamAnswer`, `submitExam`, `abandonExam`
+and `gradeExam` in `frontend/src/lib/api.ts`; never call these endpoints from a component.
+`startExam` answers `{ started }` or `{ refused }` — the two refusals are different situations
+(one offers the player a choice, the other is a dead end) and the wrapper is where they are told
+apart.
 
 ### Grading the Open Questions (`backend/app/ai/grading.py`)
 The Open Questions of a submitted Exam are graded by a **PydanticAI** agent with a typed result,
@@ -351,7 +368,7 @@ sommelier_game/
 │   │   │   └── seed.py        # seed CSV → Question rows
 │   │   ├── exams/
 │   │   │   ├── model.py       # ExamSession + ExamAnswer tables, composition, pass mark
-│   │   │   └── router.py      # POST /quiz/exams, GET/PUT/submit/grade
+│   │   │   └── router.py      # POST /quiz/exams, GET current/{id}, PUT answer, submit/abandon/grade
 │   │   ├── sessions/
 │   │   │   ├── model.py       # GameSession + SessionCardAttempt SQLModel tables
 │   │   │   └── router.py      # POST /session, GET /session/stats

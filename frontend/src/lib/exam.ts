@@ -17,6 +17,18 @@ export const EXAM_COMPOSITION = {
 // them write past it and lose the tail.
 export const MAX_OPEN_ANSWER_CHARS = 4000;
 
+// Whitespace is a blank. The backend trims before grading, so an answer of
+// three spaces is wrong there and has to look blank everywhere here: on the
+// review screen, in the count of how far a resumed paper got, and nowhere
+// else deciding it for itself.
+export function isBlank(answer: string | null | undefined): boolean {
+  return !answer?.trim();
+}
+
+export function answeredCount(questions: { answer: string | null }[]): number {
+  return questions.filter((question) => !isBlank(question.answer)).length;
+}
+
 // How long after the last keystroke the written answer is sent. Long enough
 // that typing a paragraph is not thirty requests, short enough that a student
 // who closes the tab mid-thought loses at most a word.
