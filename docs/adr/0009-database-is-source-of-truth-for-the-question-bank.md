@@ -22,8 +22,10 @@ irreversibly wrong the first time the sheet is reordered.
 
 ## Consequences
 
-- There is no versioned file in git describing the live bank, and the seed CSV is not committed
-  either. Whatever is in the database is the only record of what is being served.
+- There is no versioned file in git describing the live bank. Whatever is in the database is the
+  only record of what is being served. (This consequence originally also said the seed CSV would
+  not be committed, which left no path for the initial load to run in production — superseded by
+  ADR 0011, which commits it under `backend/data/` for that first load only.)
 - Until an admin panel exists, correcting a question means a query against production. This is
   the accepted cost, and the admin panel is tracked as its own piece of work.
 - Questions are deactivated, never deleted, so answers already given stay readable.

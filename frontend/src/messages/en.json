@@ -11,6 +11,11 @@
         "badge": "Available",
         "cta": "Pour & play →"
       },
+      "quiz": {
+        "title": "Graduated or Decanted?",
+        "badge": "Available",
+        "cta": "Take the test →"
+      },
       "comingSoon": {
         "badge": "Soon"
       },
@@ -100,5 +105,99 @@
     "memorizeTip": "How to remember it",
     "loadingTip": "Generating a memory tip...",
     "continue": "Got it, continue"
+  },
+  "quiz": {
+    "eyebrow": "The final game",
+    "level": "Level {level}",
+    "formats": {
+      "true_false": "True or false",
+      "multiple_choice": "Multiple choice",
+      "open": "Open question"
+    },
+    "true": "True",
+    "false": "False",
+    "loading": "Pulling your paper together…",
+    "emptyTitle": "The bank is dry",
+    "emptySubtitle": "There aren't enough questions loaded to make a paper. Come back once the bank has been filled.",
+      "unavailableTitle": "The tannin isn't answering",
+      "unavailableSubtitle": "Couldn't reach the cellar to draw you a paper. Nothing is lost — try again in a moment.",
+    "start": {
+      "title": "Would you pass right now?",
+      "subtitle": "One sitting, {count} questions, the whole course. The tannin marks it and tells you straight.",
+      "rules": {
+        "length": "{count} questions, one per screen. Go back and change your mind as often as you like.",
+        "levels": "All three levels in one paper, exactly like the real thing.",
+        "passMark": "Pass at {pct}%. Blanks count as wrong, so guess rather than skip.",
+        "timer": "The clock is shown but never stops you. This is study, not an ambush."
+      },
+      "composition": "{open} written answers, {multipleChoice} multiple choice, {trueFalse} true or false. The written ones you type yourself, and the tannin reads every word.",
+      "cta": "Sit the exam",
+      "starting": "Drawing your paper…"
+    },
+    "resume": {
+      "title": "You left a paper open",
+      "progress": "{answered} of {total} answered. Nothing was lost — it waits as long as you need.",
+      "cta": "Pick it up",
+      "abandon": "Bin it and start a new one",
+      "warn": {
+        "title": "Bin the whole paper?",
+        "body": "{count, plural, =0 {It's untouched, so there's nothing to mourn. Gone for good, though.} one {# answer goes in the bin with it, for good.} other {# answers go in the bin with it, for good.}}",
+        "confirm": "Bin it",
+        "abandoning": "Binning it…",
+        "cancel": "Keep it"
+      }
+    },
+    "exam": {
+      "progress": "{current} of {total}",
+      "elapsed": "Elapsed",
+      "back": "Back",
+      "next": "Next",
+      "skip": "Skip",
+      "toReview": "Check my paper",
+      "notFoundTitle": "No such exam",
+      "notFoundSubtitle": "This paper isn't yours or no longer exists. Start a fresh one.",
+      "openPlaceholder": "Write your answer. Your own words are fine — the point is what you know, not how you phrase it.",
+      "charactersLeft": "{count} characters left",
+      "review": {
+        "title": "Before you hand it in",
+        "allAnswered": "Every question answered. Nothing left on the table.",
+        "blanks": "{count, plural, one {# question left blank} other {# questions left blank}} — every one of them counts as wrong.",
+        "jumpHint": "Tap a number to go back to it.",
+        "answered": "Answered",
+        "blank": "Blank",
+        "submit": "Hand it in",
+        "keepWorking": "Keep working"
+      },
+      "warn": {
+        "title": "Handing in with blanks?",
+        "body": "{count, plural, one {# question is} other {# questions are}} still empty. They will be marked wrong. Sure?",
+        "confirm": "Hand it in anyway",
+        "cancel": "Let me finish"
+      }
+    },
+    "result": {
+      "loading": "The tannin is marking…",
+      "gradingTitle": "Reading your written answers.",
+      "gradingBody": "The multiple choice is done — it's below. The written ones take a moment longer, because somebody actually has to read them.",
+      "gradingStalledTitle": "The tannin lost his glasses.",
+      "gradingStalledBody": "Some of your written answers didn't get marked. Nothing was counted wrong for it and your paper is untouched — ask again and it picks up where it stopped.",
+      "gradingRetry": "Mark the rest",
+      "beingGraded": "Still being read.",
+      "passedTitle": "Promoted.",
+      "passedSubtitle": "You'd have walked out of that room with the certificate. Do it again next week and it stops being luck.",
+      "failedTitle": "Decanted.",
+      "failedSubtitle": "Not today. The good news is you now know exactly which questions cost you the pass.",
+      "verdictPassed": "Passed",
+      "verdictFailed": "Failed",
+      "score": "{score} out of {total}",
+      "duration": "Time taken",
+      "passMark": "Pass mark {pct}%",
+      "breakdown": "Question by question",
+      "yourAnswer": "You said",
+      "correctAnswer": "The answer",
+      "noAnswer": "Left blank",
+      "again": "Sit another one",
+      "backToGames": "Back to the games"
+    }
   }
 }

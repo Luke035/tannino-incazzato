@@ -14,11 +14,13 @@ export default function Header() {
   };
 
   return (
-    <header className="w-full flex items-center justify-between px-8 py-4 bg-surface border-b border-border">
+    <header className="w-full flex items-center justify-between px-4 sm:px-8 py-3 sm:py-4 bg-surface border-b border-border">
       <div className="flex items-center gap-6">
         <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <Mascot mood="skeptical" size={36} />
-          <div className="flex items-baseline gap-2">
+          {/* On a phone the mascot alone carries the brand — the wordmark would
+              push the header past the viewport width. */}
+          <div className="hidden sm:flex items-baseline gap-2">
             <span
               className="font-extrabold tracking-tight text-ink leading-none lowercase"
               style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem' }}
@@ -35,13 +37,13 @@ export default function Header() {
         </Link>
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-3 sm:gap-6">
         <LanguageToggle />
         {user && (
           <>
             <Link
               href="/profile"
-              className="px-4 py-2 rounded-full bg-surface-2 text-ink text-sm font-semibold hover:bg-border transition-colors"
+              className="px-3 sm:px-4 py-2 rounded-full bg-surface-2 text-ink text-sm font-semibold hover:bg-border transition-colors whitespace-nowrap"
               style={{ fontFamily: 'var(--font-sans)' }}
             >
               Profilo

@@ -11,6 +11,11 @@
         "badge": "Disponibile",
         "cta": "Versa e gioca →"
       },
+      "quiz": {
+        "title": "Promossi o Cirrotici: Il Gioco Finale",
+        "badge": "Disponibile",
+        "cta": "Mettiti alla prova →"
+      },
       "comingSoon": {
         "badge": "Presto"
       },
@@ -100,5 +105,99 @@
     "memorizeTip": "Come ricordarlo",
     "loadingTip": "Generazione del suggerimento...",
     "continue": "Capito, continua"
+  },
+  "quiz": {
+    "eyebrow": "Il gioco finale",
+    "level": "Livello {level}",
+    "formats": {
+      "true_false": "Vero o falso",
+      "multiple_choice": "Scelta multipla",
+      "open": "Domanda aperta"
+    },
+    "true": "Vero",
+    "false": "Falso",
+    "loading": "Preparo il compito…",
+    "emptyTitle": "Il banco è a secco",
+    "emptySubtitle": "Non ci sono abbastanza domande caricate per mettere insieme un compito. Torna quando il banco sarà pieno.",
+      "unavailableTitle": "Il Tannino non risponde",
+      "unavailableSubtitle": "Non sono riuscito a raggiungere la cantina per pescarti un compito. Non si è perso niente: riprova tra un attimo.",
+    "start": {
+      "title": "Lo passeresti adesso?",
+      "subtitle": "Una prova sola, {count} domande, tutto il corso. Il Tannino corregge e te lo dice in faccia.",
+      "rules": {
+        "length": "{count} domande, una per schermata. Torni indietro e cambi idea quante volte vuoi.",
+        "levels": "Tutti e tre i livelli in un compito solo, come all'esame vero.",
+        "passMark": "Si passa al {pct}%. Le bianche valgono zero: meglio tirare a indovinare che saltare.",
+        "timer": "Il cronometro si vede ma non ti ferma. Questo è studio, non un agguato."
+      },
+      "composition": "{open} domande aperte, {multipleChoice} a scelta multipla, {trueFalse} vero o falso. Le aperte le scrivi tu, e il Tannino se le legge tutte.",
+      "cta": "Fai l'esame",
+      "starting": "Pesco il compito…"
+    },
+    "resume": {
+      "title": "Hai un compito aperto",
+      "progress": "{answered} risposte su {total}. Non si è perso niente: ti aspetta finché vuoi.",
+      "cta": "Riprendilo",
+      "abandon": "Buttalo e iniziane uno nuovo",
+      "warn": {
+        "title": "Butti tutto il compito?",
+        "body": "{count, plural, =0 {È ancora intatto, quindi non c'è granché da piangere. Però sparisce per sempre.} one {Se ne va anche # risposta, per sempre.} other {Se ne vanno anche # risposte, per sempre.}}",
+        "confirm": "Buttalo",
+        "abandoning": "Lo butto…",
+        "cancel": "Tienilo"
+      }
+    },
+    "exam": {
+      "progress": "{current} di {total}",
+      "elapsed": "Tempo",
+      "back": "Indietro",
+      "next": "Avanti",
+      "skip": "Salta",
+      "toReview": "Controlla il compito",
+      "notFoundTitle": "Compito inesistente",
+      "notFoundSubtitle": "Questo compito non è tuo o non esiste più. Iniziane uno nuovo.",
+      "openPlaceholder": "Scrivi la tua risposta. Con parole tue va benissimo: conta quello che sai, non come lo dici.",
+      "charactersLeft": "{count} caratteri rimasti",
+      "review": {
+        "title": "Prima di consegnare",
+        "allAnswered": "Tutte risposte. Non hai lasciato niente sul tavolo.",
+        "blanks": "{count, plural, one {# domanda in bianco} other {# domande in bianco}} — e ognuna vale come sbagliata.",
+        "jumpHint": "Tocca un numero per tornarci.",
+        "answered": "Risposte",
+        "blank": "In bianco",
+        "submit": "Consegna",
+        "keepWorking": "Continua"
+      },
+      "warn": {
+        "title": "Consegni con le bianche?",
+        "body": "{count, plural, one {C'è ancora # domanda vuota} other {Ci sono ancora # domande vuote}}. Verranno contate come sbagliate. Sicuro?",
+        "confirm": "Consegna lo stesso",
+        "cancel": "Fammi finire"
+      }
+    },
+    "result": {
+      "loading": "Il Tannino corregge…",
+      "gradingTitle": "Sto leggendo le tue aperte.",
+      "gradingBody": "Le chiuse sono fatte, le trovi qui sotto. Le aperte ci mettono un attimo in più, perché qualcuno deve leggersele davvero.",
+      "gradingStalledTitle": "Il Tannino ha perso gli occhiali.",
+      "gradingStalledBody": "Alcune aperte non sono state corrette. Non è stato contato niente come sbagliato e il compito è intatto: richiedi la correzione e riparte da dove si era fermata.",
+      "gradingRetry": "Correggi il resto",
+      "beingGraded": "Ancora da leggere.",
+      "passedTitle": "Promosso.",
+      "passedSubtitle": "Da quell'aula uscivi con il diploma. Rifallo la settimana prossima e smette di essere fortuna.",
+      "failedTitle": "Cirrotico.",
+      "failedSubtitle": "Non oggi. La buona notizia è che ora sai esattamente quali domande ti sono costate la promozione.",
+      "verdictPassed": "Promosso",
+      "verdictFailed": "Bocciato",
+      "score": "{score} su {total}",
+      "duration": "Tempo impiegato",
+      "passMark": "Sufficienza al {pct}%",
+      "breakdown": "Domanda per domanda",
+      "yourAnswer": "Hai risposto",
+      "correctAnswer": "La risposta",
+      "noAnswer": "Lasciata in bianco",
+      "again": "Fanne un altro",
+      "backToGames": "Torna ai giochi"
+    }
   }
 }

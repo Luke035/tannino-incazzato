@@ -1,4 +1,4 @@
-import { CardAttempt, Denomination, Filter } from '@/types';
+import { CardAttempt, Denomination, Exam, Filter, Language } from '@/types';
 
 function apiUrl() {
   return process.env.NEXT_PUBLIC_API_URL ?? '';
@@ -119,5 +119,109 @@ export async function fetchSessionStats(): Promise<SessionStats> {
   const res = await fetch(`${apiUrl()}/session/stats`, {
     credentials: 'include',
   });
+  return res.json();
+}
+
+// ── Promossi o Cirrotici: the Exam ───────────────────────────────────────────
+// The backend draws the paper, shuffles the options and produces every Verdict
+// (ADR 0007), so these wrappers carry state rather than compute it.
+
+// Why a paper could not be drawn. `in_progress` is the player already having
+// one open — the backend refuses rather than replacing it, so that no tap can
+// destroy work. `bank_too_small` is claimed only when the backend says so: a
+// 500 or a dropped connection is `unavailable`, and telling a student the bank
+// is empty when it is the backend that is down is a lie about the game.
+export type ExamRefusal = 'in_progress' | 'bank_too_small' | 'unavailable';
+
+export type ExamStart = { started: Exam } | { refused: ExamRefusal };
+
+export async function startExam(): Promise<ExamStart> {
+  const res = await fetch(`${apiUrl()}/quiz/exams`, {
+    method: 'POST',
+    credentials: 'include',
+  }).catch(() => null);
+  if (res === null) return { refused: 'unavailable' };
+  if (res.ok) return { started: await res.json() };
+
+  const detail = await res
+    .json()
+    .then((body) => body?.detail)
+    .catch(() => null);
+  if (detail === 'exam_in_progress') return { refused: 'in_progress' };
+  return { refused: detail === 'question_bank_too_small' ? 'bank_too_small' : 'unavailable' };
+}
+
+// The Session the player left open, or null when the slot is free. In-progress
+// Sessions do not expire, so this is the only thing the game needs to know to
+// tell a returning student what is waiting for them.
+export async function fetchCurrentExam(): Promise<Exam | null> {
+  const res = await fetch(`${apiUrl()}/quiz/exams/current`, {
+    credentials: 'include',
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+// Throws the open paper away and frees the slot. Only ever called behind an
+// explicit confirmation: it is not undoable.
+export async function abandonExam(examId: number): Promise<boolean> {
+  const res = await fetch(`${apiUrl()}/quiz/exams/${examId}/abandon`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+  return res.ok;
+}
+
+export async function fetchExam(examId: number): Promise<Exam | null> {
+  const res = await fetch(`${apiUrl()}/quiz/exams/${examId}`, {
+    credentials: 'include',
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+// `answer: null` clears the answer — skipping a question is a first-class move.
+export async function saveExamAnswer(
+  examId: number,
+  questionId: number,
+  answer: string | null
+): Promise<boolean> {
+  const res = await fetch(`${apiUrl()}/quiz/exams/${examId}/answers/${questionId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ answer }),
+    // The last write of a Session is the one sent as the tab is closing, and a
+    // page going away cancels its requests. `keepalive` is what lets that one
+    // outlive the page — which is the whole promise of an answer that persists
+    // as it is given.
+    keepalive: true,
+  });
+  return res.ok;
+}
+
+// Hands the paper in. Comes back with the Closed Questions already marked and
+// the Open ones still pending — `grading_complete` says which.
+export async function submitExam(examId: number): Promise<Exam | null> {
+  const res = await fetch(`${apiUrl()}/quiz/exams/${examId}/submit`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+// Asks the grading agent for the written answers. Safe to call again on a
+// paper it only got halfway through: it picks up the questions still unmarked, so a
+// retry is cheap. Returns null when the paper came back short of Verdicts —
+// it stays ungraded and scoreless, and calling again is the whole recovery.
+export async function gradeExam(examId: number, language: Language): Promise<Exam | null> {
+  const res = await fetch(`${apiUrl()}/quiz/exams/${examId}/grade`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ language }),
+  });
+  if (!res.ok) return null;
   return res.json();
 }

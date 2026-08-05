@@ -95,7 +95,8 @@ The browser calls FastAPI directly using `NEXT_PUBLIC_API_URL`. There are no Nex
 - **python-jose[cryptography]** — JWT signing/verification
 - **passlib[bcrypt]** — password hashing (bcrypt pinned to `<5.0` for passlib compatibility)
 - **authlib** + **httpx** — Google OAuth2 backend flow
-- **google-genai** — Gemini model `gemini-3.1-flash-lite`
+- **google-genai** — Gemini model `gemini-3.1-flash-lite` (hints, memory tips, session reviews)
+- **pydantic-ai-slim[google]** — typed agent grading the Exam's Open Questions (ADR 0010)
 - **pytest** + **httpx** for testing (SQLite in-memory for DB isolation)
 
 ### Infra (`/infra`)
@@ -130,7 +131,106 @@ The source file `frontend/src/data/denominations.json` (410 entries) is the inge
 ```
 `regions` is **always an array** — denominations can span multiple regions.
 
-### Session persistence
+### Question Bank (Promossi o Cirrotici)
+Questions live in PostgreSQL (`question` table) and are the source of truth once seeded
+(ADR 0009). `backend/data/question_bank.csv` seeds them **once** via
+`scripts/seed_questions.py`, which no-ops if the table already holds a row, so it runs safely on
+every boot from `entrypoint.sh` and `start.sh` (ADR 0011). The check-and-load is held by a
+Postgres advisory lock — concurrent boots would otherwise both find an empty table and double the
+bank. Corrections are made in the database, never by re-ingesting the file. Questions are
+deactivated (`active = false`), never deleted.
+
+A question carries: `text`, `format` (`true_false` | `multiple_choice` | `open`), `level` (1/2/3),
+`reference_answer`, `options`, `explanation`, `topic`, `open_subtype` (`conceptual` | `list`) and
+`active`. `topic` and `open_subtype` are produced offline and committed as seed data — see
+[`docs/question-bank-classification.md`](docs/question-bank-classification.md) for the taxonomy,
+how the classification was produced, and how a correction is made.
+
+### The Exam (Promossi o Cirrotici)
+The Exam is drawn, served and graded entirely by the backend (ADR 0007) and lives in its own
+`exam_sessions` / `exam_answers` tables (ADR 0008). `game_sessions` and `session_card_attempts`
+are untouched and keep serving Mappa dei Vini alone.
+
+`EXAM_COMPOSITION` in `backend/app/exams/model.py` draws **14 open + 11 multiple choice +
+5 true/false = 30**, passed at 60% (18/30). Levels are not part of the composition: the draw is
+blind across the whole active bank, so the three Levels come out in the proportion the bank
+holds them.
+
+Endpoints, all requiring the `sommelier_session` cookie and all refusing an Exam that is not the
+caller's with a 404:
+
+| Endpoint | Does |
+|---|---|
+| `POST /quiz/exams` | Draws the paper and persists it. 409 `question_bank_too_small` if the bank cannot fill it, 409 `exam_in_progress` if the player already has one open. |
+| `GET /quiz/exams/current` | The Session in progress with its answers so far, or `null` when the slot is free. Declared **before** `/{id}` — routes match in the order they are written. |
+| `GET /quiz/exams/{id}` | The paper with the answers so far — and, once submitted, the Verdicts, the score and the correct answers. |
+| `POST /quiz/exams/{id}/abandon` | Frees the slot. 409 `exam_not_in_progress` on anything already submitted or abandoned. |
+| `PUT /quiz/exams/{id}/answers/{question_id}` | Records or clears (`null`) one answer. Returns **no Verdict** in Exam mode. 422 past `MAX_OPEN_ANSWER_CHARS`. |
+| `POST /quiz/exams/{id}/submit` | Grades the Closed Questions and returns immediately. Always possible, blanks and all. |
+| `POST /quiz/exams/{id}/grade` | Grades the Open Questions through the agent. Idempotent — it only looks at what has no Verdict yet. 503 `grading_incomplete` when the paper is still short. |
+
+Rules that are not negotiable:
+- **The browser never holds the answer to a question it is still being asked.** `correct_answer`
+  and `verdict` stay `null` until submission, and the bank's `explanation` is never served at
+  all — it spells the answer out in prose, and it stays unused in this scope (#16). The
+  `feedback` field of a served question is the *agent's* note on the player's own answer,
+  never the bank's.
+- **A paper has a score only when every question on it carries a Verdict.** `grading_complete`
+  says whether it does. An ungraded Open Question is never counted wrong: a model that timed
+  out must not fail a candidate, so the Session stays ungraded, emits no score, and is retried
+  by calling `/grade` again.
+- **Multiple-choice options are shuffled by the backend**, never the browser: in the source bank
+  the correct answer is always the first option. The shuffled order is persisted in
+  `exam_answers.served_options`, so a resumed Exam is the same paper.
+- **True/false is answered in the bank's vocabulary** (`VERO` / `FALSO`); only the label is
+  localized, so a paper sat in English grades exactly like one sat in Italian.
+- Selection is blind and random across the whole active bank, **never filtered by Level**, and
+  excludes every question of the player's immediately preceding Exam — whatever became of it, an
+  abandoned paper included.
+- **A player has at most one Session in progress at a time**, across every mode of the game. A
+  Session leaves that slot by being submitted or by being abandoned (`status = abandoned`), never
+  by another one starting: work is only ever destroyed by an explicit, confirmed choice. The rule
+  is held by the **partial unique index `uq_exam_sessions_one_in_progress_per_user`**, not by the
+  check that precedes the insert — two taps in two tabs both pass a check. The `IntegrityError`
+  it raises is answered with the same 409 `exam_in_progress`. Only a
+  **submitted** Session carries a score and a `submitted_at`, which is what keeps abandoned and
+  never-finished Sessions out of statistics. In-progress Sessions do not expire.
+- **Answers persist as they are given** — the `PUT` is the save — so a closed tab costs nothing
+  and `GET /quiz/exams/current` is enough to put a returning player back where they were, on the
+  same paper with the same served option order.
+- Closed Questions are graded by exact comparison, with **no model call**. An unanswered question
+  is wrong — including a blank Open Question, which is graded without asking anybody. One point
+  per question — no weighting, no negative marking, no partial credit.
+
+Use `startExam`, `fetchCurrentExam`, `fetchExam`, `saveExamAnswer`, `submitExam`, `abandonExam`
+and `gradeExam` in `frontend/src/lib/api.ts`; never call these endpoints from a component.
+`startExam` answers `{ started }` or `{ refused }` — the two refusals are different situations
+(one offers the player a choice, the other is a dead end) and the wrapper is where they are told
+apart.
+
+### Grading the Open Questions (`backend/app/ai/grading.py`)
+The Open Questions of a submitted Exam are graded by a **PydanticAI** agent with a typed result,
+in one call carrying the whole paper (ADR 0010). `/hint`, `/memorize` and `/review` are untouched
+and stay on `google-genai` — load-bearing structured output goes through PydanticAI,
+conversational output does not.
+
+- Each item carries its **question id** both ways. The returned set is checked against the sent
+  set; anything missing, duplicated or carrying an unrecognised id is discarded and re-graded
+  with a **single-question call**. A typed schema does not stop a well-formed Verdict about the
+  question next door.
+- **Nothing is ever graded wrong because a call failed.** An item that could not be graded is
+  simply absent from the result and stays without a Verdict.
+- The criterion is selected by `open_subtype`: **conceptual** — the answer covers the core of the
+  reference answer, in any wording; **list** — it names at least as many valid items as the
+  question asks for (a majority of the reference list where no number is stated), and the
+  explanation reports the count achieved against the count required.
+- Explanations are written in the interface language; questions and reference answers stay in
+  Italian.
+- In tests the agent is patched at its import site — `app.exams.router.grade_open_answers` for
+  the endpoint, `app.ai.grading.run_batch` for the verification logic — exactly as
+  `tests/test_ai.py` patches the Gemini calls. No test reaches a model.
+
+### Session persistence (Mappa dei Vini)
 When a game ends, the recap page saves the session to the backend before displaying results.
 
 **Frontend flow:**
@@ -186,6 +286,11 @@ All three Gemini endpoints live in the FastAPI backend (`backend/app/ai/`):
 
 All prompts pass a `language` field (`"en"` or `"it"`) so Gemini responds in the correct language.
 
+The backend has **two** ways of talking to a model, on purpose (ADR 0010): these three stay on
+`google-genai` with free-text prompts; the Exam's Open Question grading runs on **PydanticAI**
+with a typed result (`backend/app/ai/grading.py`). The rule for anything new: load-bearing,
+structured output goes through PydanticAI, conversational output stays on `google-genai`.
+
 **Never call these endpoints directly from components.** Use the typed wrappers in `frontend/src/lib/api.ts` (`fetchHint`, `fetchMemorizeTip`, `fetchReview`, `fetchDenominations`, `fetchSaveSession`, `fetchSessionStats`). The prompt logic lives in `backend/app/ai/gemini.py`.
 
 ### i18n
@@ -223,9 +328,11 @@ sommelier_game/
 ├── frontend/
 │   └── src/
 │       ├── app/[locale]/      # Login, register, setup, game, recap, profile screens
+│       │   └── quiz/         # exam landing, quiz/exam/[examId] sitting + result
 │       ├── components/
 │       │   ├── game/          # PostIt, ScoreCounter, AutoPlaceModal
 │       │   ├── map/           # ItalyMap, RegionPanel
+│       │   ├── quiz/          # QuestionCard (one question per screen)
 │       │   └── recap/         # RecapStats, AIReview
 │       ├── context/
 │       │   └── AuthContext.tsx   # AuthProvider + useAuth() hook
@@ -234,6 +341,8 @@ sommelier_game/
 │       ├── lib/
 │       │   ├── api.ts         # typed client wrappers for game API endpoints
 │       │   ├── auth.ts        # typed client wrappers for auth endpoints
+│       │   ├── exam.ts        # paper shape mirrored from the backend
+│       │   ├── examTime.ts    # elapsed-time hook + duration formatting
 │       │   ├── gameLogic.ts   # scoring, shuffling, recap stats
 │       │   ├── regionMapping.ts  # JSON name <-> SVG ID conversion
 │       │   ├── svgCollision.ts   # custom dnd-kit collision detection
@@ -245,7 +354,8 @@ sommelier_game/
 ├── backend/
 │   ├── app/
 │   │   ├── ai/
-│   │   │   ├── gemini.py      # Gemini prompt functions
+│   │   │   ├── gemini.py      # Gemini prompt functions (google-genai)
+│   │   │   ├── grading.py     # PydanticAI grading agent + batch verification
 │   │   │   └── router.py      # POST /hint, /memorize, /review
 │   │   ├── auth/
 │   │   │   ├── jwt.py         # create/verify JWT, set/clear HttpOnly cookie
@@ -253,6 +363,12 @@ sommelier_game/
 │   │   ├── denominations/
 │   │   │   ├── model.py       # SQLModel table + Pydantic response schema
 │   │   │   └── router.py      # GET /denominations
+│   │   ├── questions/
+│   │   │   ├── model.py       # Question SQLModel table
+│   │   │   └── seed.py        # seed CSV → Question rows
+│   │   ├── exams/
+│   │   │   ├── model.py       # ExamSession + ExamAnswer tables, composition, pass mark
+│   │   │   └── router.py      # POST /quiz/exams, GET current/{id}, PUT answer, submit/abandon/grade
 │   │   ├── sessions/
 │   │   │   ├── model.py       # GameSession + SessionCardAttempt SQLModel tables
 │   │   │   └── router.py      # POST /session, GET /session/stats
@@ -261,9 +377,13 @@ sommelier_game/
 │   │   ├── database.py        # SQLModel engine + get_session dependency
 │   │   └── main.py            # FastAPI app, CORS (allow_credentials=True), router registration
 │   ├── alembic/               # migration scripts
+│   ├── data/                  # ingestion sources (ADR 0003, ADR 0011)
+│   │   ├── denominations.json
+│   │   └── question_bank.csv   # question bank seed — loaded once
 │   ├── scripts/
-│   │   └── ingest_denominations.py
-│   └── tests/                 # pytest suite (test_auth.py, test_denominations.py, test_sessions.py …)
+│   │   ├── ingest_denominations.py
+│   │   └── seed_questions.py  # seed-once loader (no-op if the bank is loaded)
+│   └── tests/                 # pytest suite (test_auth.py, test_denominations.py, test_sessions.py, test_exams.py …)
 │
 ├── infra/
 │   └── docker-compose.yml     # PostgreSQL 17

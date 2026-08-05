@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fetchHint, fetchMemorizeTip, fetchReview } from '../api';
+import { fetchHint, fetchMemorizeTip, fetchReview, gradeExam, startExam } from '../api';
 
 const BASE = 'http://localhost:8000';
 
@@ -61,5 +61,68 @@ describe('fetchReview', () => {
     });
     expect(spy).toHaveBeenCalledWith(`${BASE}/review`, expect.objectContaining({ method: 'POST' }));
     expect(result).toBe('Good session.');
+  });
+});
+
+// Being refused a paper because one is already open is nothing like being
+// refused because the bank is empty: one offers the player a choice, the other
+// is a dead end. The wrapper is where the two are told apart.
+describe('startExam', () => {
+  it('reads a paper already in progress as its own refusal', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ detail: 'exam_in_progress' }), { status: 409 })
+    );
+
+    expect(await startExam()).toEqual({ refused: 'in_progress' });
+  });
+
+  it('claims the bank is too thin only when the backend says so', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ detail: 'question_bank_too_small' }), { status: 409 })
+    );
+
+    expect(await startExam()).toEqual({ refused: 'bank_too_small' });
+  });
+
+  it('does not blame the bank for a backend that broke', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce(new Response('boom', { status: 500 }));
+
+    expect(await startExam()).toEqual({ refused: 'unavailable' });
+  });
+
+  it('does not blame the bank for a request that never arrived', async () => {
+    vi.spyOn(global, 'fetch').mockRejectedValueOnce(new TypeError('network down'));
+
+    expect(await startExam()).toEqual({ refused: 'unavailable' });
+  });
+
+  it('hands back the paper it drew', async () => {
+    mockFetch({ id: 7, status: 'in_progress' });
+
+    expect(await startExam()).toEqual({ started: { id: 7, status: 'in_progress' } });
+  });
+});
+
+// Grading is the one call whose failure must not look like an answer: a
+// paper that came back short of Verdicts has to reach the screen as "not
+// marked yet", never as a score.
+describe('gradeExam', () => {
+  it('posts the interface language, so the agent writes in it', async () => {
+    const spy = mockFetch({ id: 7, grading_complete: true });
+
+    await gradeExam(7, 'it');
+
+    expect(spy).toHaveBeenCalledWith(
+      `${BASE}/quiz/exams/7/grade`,
+      expect.objectContaining({ method: 'POST', body: JSON.stringify({ language: 'it' }) })
+    );
+  });
+
+  it('returns null when the paper is still short of verdicts', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ detail: 'grading_incomplete' }), { status: 503 })
+    );
+
+    expect(await gradeExam(7, 'en')).toBeNull();
   });
 });

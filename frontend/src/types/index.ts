@@ -28,3 +28,52 @@ export interface SessionState {
 
 export type Language = 'en' | 'it';
 export type Filter = 'both' | 'DOC' | 'DOCG';
+
+// ── Promossi o Cirrotici (quiz) ───────────────────────────────────────────────
+
+export type QuestionFormat = 'true_false' | 'multiple_choice' | 'open';
+export type QuestionLevel = 1 | 2 | 3;
+
+// `abandoned` is a paper walked away from on purpose. It frees the one
+// in-progress slot, keeps no score, and never enters statistics.
+export type ExamStatus = 'in_progress' | 'submitted' | 'abandoned';
+export type ExamVerdict = 'correct' | 'wrong';
+
+// One question of the paper as the browser is allowed to see it. `verdict` and
+// `correctAnswer` stay null until the Exam is handed in — the backend draws,
+// shuffles and grades, and keeps the answers to itself in the meantime
+// (ADR 0007).
+export interface ExamQuestion {
+  question_id: number;
+  position: number;
+  text: string;
+  format: QuestionFormat;
+  level: QuestionLevel;
+  options: string[]; // shuffled by the backend; ["VERO", "FALSO"] on true/false; [] on open
+  topic: string | null;
+  answer: string | null;
+  verdict: ExamVerdict | null;
+  correct_answer: string | null;
+  // What the grading agent told the player about their own answer. Open
+  // Questions only, and only once graded — never the bank's explanation of the
+  // question, which a Closed Question does not get either.
+  feedback: string | null;
+}
+
+export interface Exam {
+  id: number;
+  mode: string;
+  status: ExamStatus;
+  max_score: number;
+  score: number | null;
+  score_pct: number | null;
+  passed: boolean | null;
+  // False while an Open Question of a handed-in paper is still being graded.
+  // Until it turns true there is no score: the recap shows the Closed
+  // Questions and waits.
+  grading_complete: boolean;
+  started_at: string;
+  submitted_at: string | null;
+  duration_seconds: number | null;
+  questions: ExamQuestion[];
+}

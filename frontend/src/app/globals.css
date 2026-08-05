@@ -108,6 +108,20 @@ body {
   50% { translate: 0 -14px; }
 }
 
+/* ───── QUIZ ───── */
+
+/* The recap while the written answers are being graded. Indeterminate on
+   purpose: nobody knows how long a model takes, and a bar that pretends to
+   is lying. */
+@keyframes grading-sweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(250%); }
+}
+
+.animate-grading-sweep {
+  animation: grading-sweep 1.4s ease-in-out infinite;
+}
+
 /* ───── PROFILE / DASHBOARD ───── */
 
 @keyframes fade-up {
