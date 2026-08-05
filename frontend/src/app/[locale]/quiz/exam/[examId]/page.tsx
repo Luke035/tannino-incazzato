@@ -6,6 +6,7 @@ import Header from '@/components/Header';
 import { Mascot } from '@/components/Mascot';
 import { QuestionCard } from '@/components/quiz/QuestionCard';
 import { fetchExam, saveExamAnswer, submitExam } from '@/lib/api';
+import { OPEN_ANSWER_SAVE_DELAY_MS } from '@/lib/exam';
 import { formatDuration, useElapsedSeconds } from '@/lib/examTime';
 import { Exam } from '@/types';
 
@@ -60,8 +61,10 @@ export default function ExamSittingPage({
   }, [examId, router]);
 
   const questions = useMemo(() => exam?.questions ?? [], [exam]);
+  // Whitespace is a blank. The backend trims before grading, so a written
+  // answer of three spaces is wrong there and has to look wrong here too.
   const blanks = useMemo(
-    () => questions.filter((q) => !answers[q.question_id]),
+    () => questions.filter((q) => !answers[q.question_id]?.trim()),
     [questions, answers]
   );
 
@@ -69,22 +72,60 @@ export default function ExamSittingPage({
   // are resent before handing in: a dropped request must never turn an answer
   // the student gave into a blank the backend marks wrong.
   const unsaved = useRef(new Map<number, string>());
+  // A written answer typed but not yet sent. Every keystroke is a request
+  // otherwise, and a paragraph is a hundred of them.
+  const typing = useRef(new Map<number, string>());
+  const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const answer = useCallback(
-    (questionId: number, value: string) => {
-      // The screen updates on the tap; the write is what makes it survive a
-      // reload, not what makes it visible.
-      setAnswers((current) => ({ ...current, [questionId]: value }));
-      void saveExamAnswer(Number(examId), questionId, value).then((saved) => {
+  const send = useCallback(
+    (questionId: number, value: string) =>
+      saveExamAnswer(Number(examId), questionId, value).then((saved) => {
         if (saved) unsaved.current.delete(questionId);
         else unsaved.current.set(questionId, value);
-      });
-    },
+      }),
     [examId]
   );
 
+  /** Sends everything typed but not yet written. Called before leaving a
+   *  question and before handing in, so no answer is ever lost to the delay. */
+  const flushTyping = useCallback(async () => {
+    if (typingTimer.current) {
+      clearTimeout(typingTimer.current);
+      typingTimer.current = null;
+    }
+    const pending = [...typing.current.entries()];
+    typing.current.clear();
+    await Promise.all(pending.map(([questionId, value]) => send(questionId, value)));
+  }, [send]);
+
+  const answer = useCallback(
+    (questionId: number, value: string, typed = false) => {
+      // The screen updates on the tap; the write is what makes it survive a
+      // reload, not what makes it visible.
+      setAnswers((current) => ({ ...current, [questionId]: value }));
+
+      if (!typed) {
+        void send(questionId, value);
+        return;
+      }
+
+      typing.current.set(questionId, value);
+      if (typingTimer.current) clearTimeout(typingTimer.current);
+      typingTimer.current = setTimeout(() => void flushTyping(), OPEN_ANSWER_SAVE_DELAY_MS);
+    },
+    [send, flushTyping]
+  );
+
+  // Leaving the question is the moment the answer on it has to be safe.
+  useEffect(() => {
+    return () => {
+      void flushTyping();
+    };
+  }, [index, view, flushTyping]);
+
   const handIn = useCallback(async () => {
     setSubmitting(true);
+    await flushTyping();
 
     const retries = [...unsaved.current.entries()];
     await Promise.all(
@@ -102,7 +143,7 @@ export default function ExamSittingPage({
       return;
     }
     router.replace(`/quiz/exam/${examId}/result`);
-  }, [examId, router]);
+  }, [examId, router, flushTyping]);
 
   if (loading) {
     return (
@@ -190,7 +231,9 @@ export default function ExamSittingPage({
           <QuestionCard
             question={current}
             answer={answers[current.question_id] ?? null}
-            onAnswer={(value) => answer(current.question_id, value)}
+            onAnswer={(value) =>
+              answer(current.question_id, value, current.format === 'open')
+            }
           />
 
           {/* Bottom of the screen: where a thumb already is. */}
@@ -226,7 +269,7 @@ export default function ExamSittingPage({
             >
               {index === total - 1
                 ? t('quiz.exam.toReview')
-                : answers[current.question_id]
+                : answers[current.question_id]?.trim()
                   ? t('quiz.exam.next')
                   : t('quiz.exam.skip')}
             </button>

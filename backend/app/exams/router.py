@@ -14,11 +14,13 @@ from pydantic import BaseModel
 from sqlalchemy import func
 from sqlmodel import Session, select
 
+from app.ai.grading import OpenAnswerToGrade, grade_open_answers
 from app.auth.jwt import get_current_user_id
 from app.database import get_session
 from app.exams.model import (
     EXAM_COMPOSITION,
     EXAM_LENGTH,
+    MAX_OPEN_ANSWER_CHARS,
     MODE_EXAM,
     PASS_MARK_PCT,
     STATUS_IN_PROGRESS,
@@ -29,7 +31,13 @@ from app.exams.model import (
     ExamAnswer,
     ExamSession,
 )
-from app.questions.model import FORMAT_MULTIPLE_CHOICE, FORMAT_TRUE_FALSE, Question
+from app.questions.model import (
+    FORMAT_MULTIPLE_CHOICE,
+    FORMAT_OPEN,
+    FORMAT_TRUE_FALSE,
+    SUBTYPE_CONCEPTUAL,
+    Question,
+)
 
 router = APIRouter(prefix="/quiz/exams", tags=["quiz"])
 
@@ -54,6 +62,11 @@ class ExamQuestionRead(BaseModel):
     answer: Optional[str]
     verdict: Optional[str]
     correct_answer: Optional[str]
+    # What the grading agent told the player about their answer. Open Questions
+    # only, and only once graded. It is *never* the bank's own `explanation`, which
+    # stays unused in this scope (#16): a wrong Closed Question shows the
+    # correct answer and nothing else.
+    feedback: Optional[str]
 
 
 class ExamRead(BaseModel):
@@ -64,6 +77,10 @@ class ExamRead(BaseModel):
     score: Optional[int]
     score_pct: Optional[float]
     passed: Optional[bool]
+    # False while an Open Question of a submitted paper is still ungraded. The
+    # recap reads it to know that the Closed Questions below it are the whole
+    # story so far, and that there is no score yet.
+    grading_complete: bool
     started_at: datetime
     submitted_at: Optional[datetime]
     duration_seconds: Optional[int]
@@ -73,6 +90,12 @@ class ExamRead(BaseModel):
 class AnswerRequest(BaseModel):
     # `None` clears an answer: skipping a question is a first-class move.
     answer: Optional[str] = None
+
+
+class GradeRequest(BaseModel):
+    # Only the agent's explanations follow it; the questions and the reference
+    # answers are Italian whatever the interface language.
+    language: str = "en"
 
 
 class AnswerAccepted(BaseModel):
@@ -98,7 +121,8 @@ def _as_utc(moment: Optional[datetime]) -> Optional[datetime]:
 
 def _read_exam(exam: ExamSession, answers: List[ExamAnswer], questions: Dict[int, Question]) -> ExamRead:
     submitted = exam.status == STATUS_SUBMITTED
-    graded = submitted and exam.score is not None and exam.max_score > 0
+    grading_complete = submitted and all(answer.verdict is not None for answer in answers)
+    graded = grading_complete and exam.score is not None and exam.max_score > 0
 
     # The percentage is for the screen; the verdict is decided on whole marks.
     # Rounding first would let a paper that fell just short of the mark round
@@ -115,6 +139,7 @@ def _read_exam(exam: ExamSession, answers: List[ExamAnswer], questions: Dict[int
         score=exam.score,
         score_pct=score_pct,
         passed=passed,
+        grading_complete=grading_complete,
         started_at=_as_utc(exam.started_at),
         submitted_at=_as_utc(exam.submitted_at),
         duration_seconds=exam.duration_seconds,
@@ -132,6 +157,7 @@ def _read_exam(exam: ExamSession, answers: List[ExamAnswer], questions: Dict[int
                 correct_answer=(
                     questions[answer.question_id].reference_answer if submitted else None
                 ),
+                feedback=answer.explanation if submitted else None,
             )
             for answer in sorted(answers, key=lambda a: a.position)
         ],
@@ -227,6 +253,27 @@ def _grade_closed(question: Question, answer: Optional[str]) -> str:
     return VERDICT_CORRECT if correct else VERDICT_WRONG
 
 
+def _ungraded_open(
+    answers: List[ExamAnswer], questions: Dict[int, Question]
+) -> List[ExamAnswer]:
+    return [
+        answer
+        for answer in answers
+        if questions[answer.question_id].format == FORMAT_OPEN and answer.verdict is None
+    ]
+
+
+def _settle_score(exam: ExamSession, answers: List[ExamAnswer]) -> bool:
+    """A paper has a score when every question on it has a Verdict, and not a
+    moment before. Counting the ungraded ones wrong would fail a candidate for
+    a model timeout; counting them right would pass one for the same reason."""
+    if any(answer.verdict is None for answer in answers):
+        exam.score = None
+        return False
+    exam.score = sum(1 for answer in answers if answer.verdict == VERDICT_CORRECT)
+    return True
+
+
 # ── POST /quiz/exams ──────────────────────────────────────────────────────────
 
 @router.post("", status_code=201, response_model=ExamRead)
@@ -309,6 +356,12 @@ def record_answer(
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="answer_not_offered"
         )
+    # Refused rather than truncated: silently cutting a student's answer in
+    # half and then grading what is left is the worse of the two.
+    if value is not None and len(value) > MAX_OPEN_ANSWER_CHARS:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="answer_too_long"
+        )
 
     answer.answer = value
     db.add(answer)
@@ -326,7 +379,12 @@ def submit_exam(
     db: Session = Depends(get_session),
 ):
     """Handing in is always possible, blanks and all — the player is never
-    trapped in a Session they want to end. A blank is simply wrong."""
+    trapped in a Session they want to end. A blank is simply wrong.
+
+    Only the Closed Questions are graded here, and they are graded instantly:
+    the recap opens on them while the written answers are still with the
+    agent. Grading the Open Questions is `POST /grade`, because a model call
+    that hangs must not hold the paper the student has already handed in."""
     exam = _load_exam(db, exam_id, user_id)
     if exam.status != STATUS_IN_PROGRESS:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="exam_already_submitted")
@@ -334,11 +392,14 @@ def submit_exam(
     answers = _load_answers(db, exam_id)
     questions = _load_questions(db, answers)
 
-    score = 0
     for answer in answers:
-        answer.verdict = _grade_closed(questions[answer.question_id], answer.answer)
-        if answer.verdict == VERDICT_CORRECT:
-            score += 1
+        question = questions[answer.question_id]
+        if question.format != FORMAT_OPEN:
+            answer.verdict = _grade_closed(question, answer.answer)
+        elif not (answer.answer or "").strip():
+            # A blank is wrong without asking anybody. There is nothing in it
+            # for the agent to read, and no reason to spend a call on it.
+            answer.verdict = VERDICT_WRONG
         db.add(answer)
 
     submitted_at = datetime.now(timezone.utc)
@@ -347,11 +408,77 @@ def submit_exam(
         started = started.replace(tzinfo=timezone.utc)
 
     exam.status = STATUS_SUBMITTED
-    exam.score = score
     exam.submitted_at = submitted_at
     exam.duration_seconds = max(0, int((submitted_at - started).total_seconds()))
+    _settle_score(exam, answers)
     db.add(exam)
     db.commit()
     db.refresh(exam)
+
+    return _read_exam(exam, answers, questions)
+
+
+# ── POST /quiz/exams/{exam_id}/grade ──────────────────────────────────────────
+
+@router.post("/{exam_id}/grade", response_model=ExamRead)
+async def grade_exam(
+    exam_id: int,
+    user_id: Annotated[int, Depends(get_current_user_id)],
+    body: Optional[GradeRequest] = None,
+    db: Session = Depends(get_session),
+):
+    """Grade the written answers of a handed-in paper.
+
+    Idempotent and safely repeatable: it looks only at the questions that have
+    no Verdict yet, so a paper the agent got halfway through is finished by
+    calling again rather than graded twice. Whatever came back is kept even
+    when the rest did not — a retry then costs one short call, not fourteen.
+
+    A paper that is still short of Verdicts answers 503 and keeps no score. It
+    is not failed, not passed and not finished: it is retryable.
+    """
+    exam = _load_exam(db, exam_id, user_id)
+    if exam.status != STATUS_SUBMITTED:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="exam_not_submitted")
+
+    answers = _load_answers(db, exam_id)
+    questions = _load_questions(db, answers)
+
+    ungraded = _ungraded_open(answers, questions)
+    if not ungraded:
+        return _read_exam(exam, answers, questions)
+
+    language = body.language if body else "en"
+    graded = await grade_open_answers(
+        [
+            OpenAnswerToGrade(
+                question_id=answer.question_id,
+                question=questions[answer.question_id].text,
+                reference_answer=questions[answer.question_id].reference_answer,
+                player_answer=answer.answer or "",
+                subtype=questions[answer.question_id].open_subtype or SUBTYPE_CONCEPTUAL,
+            )
+            for answer in ungraded
+        ],
+        language,
+    )
+
+    for answer in ungraded:
+        verdict = graded.get(answer.question_id)
+        if verdict is None:
+            continue
+        answer.verdict = VERDICT_CORRECT if verdict.acceptable else VERDICT_WRONG
+        answer.explanation = verdict.explanation
+        db.add(answer)
+
+    complete = _settle_score(exam, answers)
+    db.add(exam)
+    db.commit()
+    db.refresh(exam)
+
+    if not complete:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="grading_incomplete"
+        )
 
     return _read_exam(exam, answers, questions)

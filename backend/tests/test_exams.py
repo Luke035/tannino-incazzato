@@ -6,6 +6,9 @@ payload, the pass mark — so that is where it is tested. Prior art:
 `tests/test_sessions.py`.
 """
 import os
+from contextlib import contextmanager
+from typing import Iterable, List, Optional
+from unittest.mock import AsyncMock, patch
 
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
@@ -15,9 +18,11 @@ os.environ.setdefault("GOOGLE_CLIENT_ID", "test-client-id")
 os.environ.setdefault("GOOGLE_CLIENT_SECRET", "test-client-secret")
 os.environ.setdefault("GOOGLE_REDIRECT_URI", "http://localhost:8000/auth/google/callback")
 
+from app.ai.grading import GradedOpenAnswer, OpenAnswerToGrade  # noqa: E402
 from app.exams.model import (  # noqa: E402
     EXAM_COMPOSITION,
     EXAM_LENGTH,
+    MAX_OPEN_ANSWER_CHARS,
     PASS_MARK_PCT,
     STATUS_IN_PROGRESS,
     STATUS_SUBMITTED,
@@ -28,6 +33,8 @@ from app.questions.model import (  # noqa: E402
     FORMAT_MULTIPLE_CHOICE,
     FORMAT_OPEN,
     FORMAT_TRUE_FALSE,
+    SUBTYPE_CONCEPTUAL,
+    SUBTYPE_LIST,
     Question,
 )
 
@@ -66,7 +73,7 @@ def _seed_bank(
     session: Session,
     multiple_choice: int = 60,
     true_false: int = 40,
-    open_questions: int = 10,
+    open_questions: int = 40,
     levels: tuple[int, ...] = (1, 2, 3),
 ) -> None:
     """A bank shaped like the real one: the correct option is always the first,
@@ -105,15 +112,21 @@ def _seed_bank(
                 level=levels[n % len(levels)],
                 reference_answer=f"OPEN {n} {CORRECT_MARKER}",
                 options=[],
-                open_subtype="conceptual",
+                explanation=f"OPEN {n}: {SECRET_MARKER}",
+                open_subtype=SUBTYPE_LIST if n % 2 else SUBTYPE_CONCEPTUAL,
             )
         )
     session.commit()
 
 
 def _correct_answer(question: dict) -> str:
+    """What a student who knows their material writes. On an Open Question that
+    is free text, so the stand-in agent below reads it: nothing
+    the browser holds says what the right answer is."""
     if question["format"] == FORMAT_MULTIPLE_CHOICE:
         return next(o for o in question["options"] if o.endswith(CORRECT_MARKER))
+    if question["format"] == FORMAT_OPEN:
+        return f"una risposta {CORRECT_MARKER}"
     index = int(question["text"].split()[1])
     return "VERO" if index % 2 == 0 else "FALSO"
 
@@ -121,7 +134,43 @@ def _correct_answer(question: dict) -> str:
 def _wrong_answer(question: dict) -> str:
     if question["format"] == FORMAT_MULTIPLE_CHOICE:
         return next(o for o in question["options"] if not o.endswith(CORRECT_MARKER))
+    if question["format"] == FORMAT_OPEN:
+        return "una risposta sbagliata"
     return "FALSO" if _correct_answer(question) == "VERO" else "VERO"
+
+
+# ── The grading agent, stood in for ───────────────────────────────────────────
+# Patched at the router's import site, the way `tests/test_ai.py` patches the
+# Gemini calls: no test in this file ever reaches a model.
+
+@contextmanager
+def _grader(
+    *,
+    unavailable: bool = False,
+    ungraded: Iterable[int] = (),
+    seen: Optional[List[dict]] = None,
+):
+    """`unavailable` is the agent being down; `ungraded` is it coming back
+    without those questions — the two failures the paper has to survive."""
+    withheld = set(ungraded)
+
+    async def _grade(items: List[OpenAnswerToGrade], language: str):
+        if seen is not None:
+            seen.append({"items": list(items), "language": language})
+        if unavailable:
+            return {}
+        return {
+            item.question_id: GradedOpenAnswer(
+                question_id=item.question_id,
+                acceptable=CORRECT_MARKER in item.player_answer,
+                explanation=f"[{language}] manca il nocciolo della risposta",
+            )
+            for item in items
+            if item.question_id not in withheld
+        }
+
+    with patch("app.exams.router.grade_open_answers", new=AsyncMock(side_effect=_grade)):
+        yield
 
 
 def _start_exam(client: TestClient) -> dict:
@@ -143,12 +192,36 @@ def _submit(client: TestClient, exam_id: int) -> dict:
     return response.json()
 
 
-def _sit_exam(client: TestClient, exam: dict, correct: int) -> dict:
+def _grade(client: TestClient, exam_id: int, language: str = "en", expect: int = 200):
+    response = client.post(f"/quiz/exams/{exam_id}/grade", json={"language": language})
+    assert response.status_code == expect, response.text
+    return response.json()
+
+
+def _first(exam: dict, question_format: str) -> dict:
+    """The paper is shuffled, so a test that needs one particular format has to
+    ask for it rather than reach for `questions[0]`."""
+    return next(q for q in exam["questions"] if q["format"] == question_format)
+
+
+def _find(exam: dict, question_id: int) -> dict:
+    return next(q for q in exam["questions"] if q["question_id"] == question_id)
+
+
+def _fill_in(client: TestClient, exam: dict, correct: int) -> None:
     """Answer the first `correct` questions right, the rest wrong."""
     for position, question in enumerate(exam["questions"]):
         value = _correct_answer(question) if position < correct else _wrong_answer(question)
         assert _answer(client, exam["id"], question, value).status_code == 200
-    return _submit(client, exam["id"])
+
+
+def _sit_exam(client: TestClient, exam: dict, correct: int, **grader) -> dict:
+    """The whole sitting: fill the paper in, hand it in, and let the agent
+    finish the written answers."""
+    _fill_in(client, exam, correct)
+    _submit(client, exam["id"])
+    with _grader(**grader):
+        return _grade(client, exam["id"])
 
 
 # ── Auth and ownership ────────────────────────────────────────────────────────
@@ -195,9 +268,8 @@ def test_an_unknown_exam_is_not_found(client: TestClient, session: Session):
 
 # ── Composition ───────────────────────────────────────────────────────────────
 
-def test_an_exam_is_drawn_in_the_closed_question_composition(
-    client: TestClient, session: Session
-):
+def test_an_exam_is_drawn_in_the_full_composition(client: TestClient, session: Session):
+    """14 open, 11 multiple choice, 5 true/false — the real paper."""
     _seed_bank(session)
     _authenticate(client)
 
@@ -209,31 +281,34 @@ def test_an_exam_is_drawn_in_the_closed_question_composition(
     for question in exam["questions"]:
         formats[question["format"]] = formats.get(question["format"], 0) + 1
     assert formats == dict(EXAM_COMPOSITION)
+    assert formats == {FORMAT_OPEN: 14, FORMAT_MULTIPLE_CHOICE: 11, FORMAT_TRUE_FALSE: 5}
 
 
-def test_an_exam_holds_no_open_questions_yet(client: TestClient, session: Session):
-    """Open Questions arrive with the grading agent — this Exam is closed only."""
+def test_open_questions_are_served_with_no_options(client: TestClient, session: Session):
+    """An Open Question is answered in free text — anything in `options` would
+    be the browser offering a choice the exam does not give."""
     _seed_bank(session)
     _authenticate(client)
 
     exam = _start_exam(client)
+    open_questions = [q for q in exam["questions"] if q["format"] == FORMAT_OPEN]
 
-    assert all(q["format"] != FORMAT_OPEN for q in exam["questions"])
+    assert len(open_questions) == EXAM_COMPOSITION[FORMAT_OPEN]
+    assert all(q["options"] == [] for q in open_questions)
 
 
 def test_an_exam_draws_across_all_three_levels(client: TestClient, session: Session):
     """Selection is never filtered by Level: the real exam is a single sitting
-    across the whole course. The bank here holds ten multiple-choice questions
-    per Level, so a draw of more than twenty cannot come from two Levels."""
-    _seed_bank(session, multiple_choice=30, true_false=40, open_questions=0)
+    across the whole course, and a blind draw takes the Levels in the
+    proportion the bank holds them. The bank here holds five Open Questions per
+    Level, so a draw of fourteen cannot come from two Levels."""
+    _seed_bank(session, multiple_choice=60, true_false=40, open_questions=15)
     _authenticate(client)
 
     exam = _start_exam(client)
 
-    assert EXAM_COMPOSITION[FORMAT_MULTIPLE_CHOICE] > 20
-    levels = {
-        q["level"] for q in exam["questions"] if q["format"] == FORMAT_MULTIPLE_CHOICE
-    }
+    assert EXAM_COMPOSITION[FORMAT_OPEN] > 10
+    levels = {q["level"] for q in exam["questions"] if q["format"] == FORMAT_OPEN}
     assert levels == {1, 2, 3}
 
 
@@ -262,7 +337,7 @@ def test_a_bank_too_thin_to_fill_the_paper_is_refused(
 def test_no_question_of_the_preceding_exam_appears_in_the_next_one(
     client: TestClient, session: Session
 ):
-    _seed_bank(session, multiple_choice=60, true_false=40, open_questions=0)
+    _seed_bank(session, multiple_choice=60, true_false=40, open_questions=40)
     _authenticate(client)
 
     first = _start_exam(client)
@@ -398,13 +473,13 @@ def test_an_answer_can_be_changed(client: TestClient, session: Session):
     _seed_bank(session)
     _authenticate(client)
     exam = _start_exam(client)
-    question = exam["questions"][0]
+    question = _first(exam, FORMAT_MULTIPLE_CHOICE)
 
     _answer(client, exam["id"], question, _wrong_answer(question))
     _answer(client, exam["id"], question, _correct_answer(question))
 
     result = _submit(client, exam["id"])
-    assert result["questions"][0]["verdict"] == VERDICT_CORRECT
+    assert _find(result, question["question_id"])["verdict"] == VERDICT_CORRECT
 
 
 def test_an_answer_can_be_cleared(client: TestClient, session: Session):
@@ -425,11 +500,42 @@ def test_an_answer_outside_the_served_options_is_refused(
     _seed_bank(session)
     _authenticate(client)
     exam = _start_exam(client)
-    question = exam["questions"][0]
+    question = _first(exam, FORMAT_MULTIPLE_CHOICE)
 
     response = _answer(client, exam["id"], question, "una risposta inventata")
 
     assert response.status_code == 422
+
+
+def test_an_open_question_takes_whatever_the_student_writes(
+    client: TestClient, session: Session
+):
+    """The rule that refuses an answer from outside the served options is about
+    Closed Questions. An Open Question has none, and free text is the point."""
+    _seed_bank(session)
+    _authenticate(client)
+    exam = _start_exam(client)
+    question = _first(exam, FORMAT_OPEN)
+
+    assert _answer(client, exam["id"], question, "boh, il tannino, l'acidità").status_code == 200
+
+    refetched = client.get(f"/quiz/exams/{exam['id']}").json()
+    assert _find(refetched, question["question_id"])["answer"] == "boh, il tannino, l'acidità"
+
+
+def test_an_open_answer_beyond_the_cap_is_refused_rather_than_truncated(
+    client: TestClient, session: Session
+):
+    _seed_bank(session)
+    _authenticate(client)
+    exam = _start_exam(client)
+    question = _first(exam, FORMAT_OPEN)
+
+    response = _answer(client, exam["id"], question, "a" * (MAX_OPEN_ANSWER_CHARS + 1))
+
+    assert response.status_code == 422
+    refetched = client.get(f"/quiz/exams/{exam['id']}").json()
+    assert _find(refetched, question["question_id"])["answer"] is None
 
 
 def test_a_question_outside_the_exam_cannot_be_answered(
@@ -490,7 +596,9 @@ def test_an_unanswered_question_is_wrong(client: TestClient, session: Session):
 
     for question in exam["questions"][:-1]:
         _answer(client, exam["id"], question, _correct_answer(question))
-    result = client.post(f"/quiz/exams/{exam['id']}/submit").json()
+    _submit(client, exam["id"])
+    with _grader():
+        result = _grade(client, exam["id"])
 
     assert result["questions"][-1]["answer"] is None
     assert result["questions"][-1]["verdict"] == VERDICT_WRONG
@@ -499,7 +607,8 @@ def test_an_unanswered_question_is_wrong(client: TestClient, session: Session):
 
 def test_an_exam_can_be_submitted_entirely_blank(client: TestClient, session: Session):
     """Submission is always possible: the player is never trapped in a Session
-    they want to end."""
+    they want to end. A blank Open Question is wrong without a model call —
+    there is nothing in it for the agent to read."""
     _seed_bank(session)
     _authenticate(client)
     exam = _start_exam(client)
@@ -507,6 +616,7 @@ def test_an_exam_can_be_submitted_entirely_blank(client: TestClient, session: Se
     result = client.post(f"/quiz/exams/{exam['id']}/submit")
 
     assert result.status_code == 200
+    assert result.json()["grading_complete"] is True
     assert result.json()["score"] == 0
     assert result.json()["passed"] is False
 
@@ -546,6 +656,227 @@ def test_a_submitted_exam_cannot_be_answered(client: TestClient, session: Sessio
     client.post(f"/quiz/exams/{exam['id']}/submit")
 
     assert _answer(client, exam["id"], question, _correct_answer(question)).status_code == 409
+
+
+# ── Grading the Open Questions ────────────────────────────────────────────────
+
+def test_handing_in_grades_the_closed_questions_and_leaves_the_open_ones_pending(
+    client: TestClient, session: Session
+):
+    """The recap opens on the Closed Questions while the written answers are
+    still with the agent, so handing in has to return them already graded."""
+    _seed_bank(session)
+    _authenticate(client)
+    exam = _start_exam(client)
+    _fill_in(client, exam, correct=EXAM_LENGTH)
+
+    handed_in = _submit(client, exam["id"])
+
+    closed = [q for q in handed_in["questions"] if q["format"] != FORMAT_OPEN]
+    open_questions = [q for q in handed_in["questions"] if q["format"] == FORMAT_OPEN]
+    assert handed_in["status"] == STATUS_SUBMITTED
+    assert all(q["verdict"] == VERDICT_CORRECT for q in closed)
+    assert all(q["verdict"] is None for q in open_questions)
+    assert handed_in["grading_complete"] is False
+
+
+def test_a_paper_still_being_graded_emits_no_score(client: TestClient, session: Session):
+    _seed_bank(session)
+    _authenticate(client)
+    exam = _start_exam(client)
+    _fill_in(client, exam, correct=EXAM_LENGTH)
+
+    handed_in = _submit(client, exam["id"])
+
+    assert handed_in["score"] is None
+    assert handed_in["score_pct"] is None
+    assert handed_in["passed"] is None
+
+
+def test_the_grading_agent_is_sent_what_it_needs_and_nothing_it_does_not(
+    client: TestClient, session: Session
+):
+    _seed_bank(session)
+    _authenticate(client)
+    exam = _start_exam(client)
+    _fill_in(client, exam, correct=EXAM_LENGTH)
+    _submit(client, exam["id"])
+
+    seen: List[dict] = []
+    with _grader(seen=seen):
+        _grade(client, exam["id"], language="it")
+
+    sent = seen[0]["items"]
+    assert seen[0]["language"] == "it"
+    assert len(sent) == EXAM_COMPOSITION[FORMAT_OPEN]
+    for item in sent:
+        question = session.get(Question, item.question_id)
+        assert item.question == question.text
+        assert item.reference_answer == question.reference_answer
+        assert item.player_answer == f"una risposta {CORRECT_MARKER}"
+        assert item.subtype in (SUBTYPE_CONCEPTUAL, SUBTYPE_LIST)
+        assert item.subtype == question.open_subtype
+
+
+def test_an_acceptable_open_answer_scores_and_an_unacceptable_one_does_not(
+    client: TestClient, session: Session
+):
+    _seed_bank(session)
+    _authenticate(client)
+    exam = _start_exam(client)
+
+    result = _sit_exam(client, exam, correct=EXAM_LENGTH - 3)
+
+    assert result["grading_complete"] is True
+    assert result["score"] == EXAM_LENGTH - 3
+    assert sum(1 for q in result["questions"] if q["verdict"] == VERDICT_WRONG) == 3
+
+
+def test_a_graded_open_question_comes_back_with_the_reference_answer_and_the_note(
+    client: TestClient, session: Session
+):
+    """A wrong Open Question leaves the recap knowing both what the answer was
+    and what the student's own answer was missing."""
+    _seed_bank(session)
+    _authenticate(client)
+    exam = _start_exam(client)
+
+    result = _sit_exam(client, exam, correct=0)
+
+    wrong_open = [q for q in result["questions"] if q["format"] == FORMAT_OPEN]
+    assert wrong_open
+    for question in wrong_open:
+        assert question["verdict"] == VERDICT_WRONG
+        assert question["correct_answer"].endswith(CORRECT_MARKER)
+        assert question["feedback"] == "[en] manca il nocciolo della risposta"
+
+
+def test_a_wrong_closed_question_carries_no_note_at_all(
+    client: TestClient, session: Session
+):
+    """The bank's own explanations stay unused in this scope (#16): a wrong
+    Closed Question shows the correct answer and nothing else."""
+    _seed_bank(session)
+    _authenticate(client)
+    exam = _start_exam(client)
+
+    result = _sit_exam(client, exam, correct=0)
+
+    closed = [q for q in result["questions"] if q["format"] != FORMAT_OPEN]
+    assert all(q["feedback"] is None for q in closed)
+    assert SECRET_MARKER not in client.get(f"/quiz/exams/{exam['id']}").text
+
+
+def test_a_grading_agent_that_is_down_leaves_the_paper_ungraded_with_no_score(
+    client: TestClient, session: Session
+):
+    """A timeout must not fail a candidate. Nothing is graded wrong by default,
+    no score is emitted, and the paper stays retryable."""
+    _seed_bank(session)
+    _authenticate(client)
+    exam = _start_exam(client)
+    _fill_in(client, exam, correct=EXAM_LENGTH)
+    _submit(client, exam["id"])
+
+    with _grader(unavailable=True):
+        _grade(client, exam["id"], expect=503)
+
+    paper = client.get(f"/quiz/exams/{exam['id']}").json()
+    assert paper["grading_complete"] is False
+    assert paper["score"] is None
+    assert paper["score_pct"] is None
+    assert paper["passed"] is None
+    open_questions = [q for q in paper["questions"] if q["format"] == FORMAT_OPEN]
+    assert all(q["verdict"] is None for q in open_questions)
+
+
+def test_a_retry_finishes_a_paper_the_agent_could_not(
+    client: TestClient, session: Session
+):
+    _seed_bank(session)
+    _authenticate(client)
+    exam = _start_exam(client)
+    _fill_in(client, exam, correct=EXAM_LENGTH)
+    _submit(client, exam["id"])
+    with _grader(unavailable=True):
+        _grade(client, exam["id"], expect=503)
+
+    with _grader():
+        result = _grade(client, exam["id"])
+
+    assert result["grading_complete"] is True
+    assert result["score"] == EXAM_LENGTH
+    assert result["passed"] is True
+
+
+def test_a_partly_graded_paper_keeps_what_came_back_and_only_retries_the_rest(
+    client: TestClient, session: Session
+):
+    """A retry costs one short call, not fourteen."""
+    _seed_bank(session)
+    _authenticate(client)
+    exam = _start_exam(client)
+    _fill_in(client, exam, correct=EXAM_LENGTH)
+    _submit(client, exam["id"])
+    open_ids = [q["question_id"] for q in exam["questions"] if q["format"] == FORMAT_OPEN]
+    withheld = open_ids[:2]
+
+    with _grader(ungraded=withheld):
+        _grade(client, exam["id"], expect=503)
+
+    half_graded = client.get(f"/quiz/exams/{exam['id']}").json()
+    assert half_graded["score"] is None
+    assert all(_find(half_graded, qid)["verdict"] is None for qid in withheld)
+    assert all(
+        _find(half_graded, qid)["verdict"] == VERDICT_CORRECT
+        for qid in open_ids
+        if qid not in withheld
+    )
+
+    seen: List[dict] = []
+    with _grader(seen=seen):
+        result = _grade(client, exam["id"])
+
+    assert [item.question_id for item in seen[0]["items"]] == withheld
+    assert result["grading_complete"] is True
+    assert result["score"] == EXAM_LENGTH
+
+
+def test_grading_a_paper_that_is_already_graded_asks_nobody_anything(
+    client: TestClient, session: Session
+):
+    _seed_bank(session)
+    _authenticate(client)
+    exam = _start_exam(client)
+    _sit_exam(client, exam, correct=EXAM_LENGTH)
+
+    seen: List[dict] = []
+    with _grader(seen=seen):
+        result = _grade(client, exam["id"])
+
+    assert seen == []
+    assert result["score"] == EXAM_LENGTH
+
+
+def test_a_paper_not_yet_handed_in_cannot_be_graded(client: TestClient, session: Session):
+    _seed_bank(session)
+    _authenticate(client)
+    exam = _start_exam(client)
+
+    with _grader():
+        _grade(client, exam["id"], expect=409)
+
+
+def test_grading_someone_elses_paper_is_not_found(client: TestClient, session: Session):
+    _seed_bank(session)
+    _authenticate(client)
+    exam = _start_exam(client)
+    _submit(client, exam["id"])
+    client.cookies.clear()
+    _authenticate(client, OTHER_USER_PAYLOAD)
+
+    with _grader():
+        _grade(client, exam["id"], expect=404)
 
 
 # ── The pass mark ─────────────────────────────────────────────────────────────

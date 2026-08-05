@@ -1,12 +1,16 @@
-// A paper as the backend serves it: 30 closed questions, options already
-// shuffled, no correct answer anywhere until it is handed in.
+// A paper as the backend serves it: 14 open, 11 multiple choice and 5
+// true/false, options already shuffled, no correct answer anywhere until it is
+// handed in.
 //
 // The bank is Italian and stays Italian whatever the interface language, so
 // these fixtures are too.
 
 export const EXAM_LENGTH = 30;
+export const OPEN_COUNT = 14;
+export const MULTIPLE_CHOICE_COUNT = 11;
+export const TRUE_FALSE_COUNT = 5;
 
-type Format = 'multiple_choice' | 'true_false';
+type Format = 'multiple_choice' | 'true_false' | 'open';
 
 export interface ExamQuestionFixture {
   question_id: number;
@@ -19,12 +23,16 @@ export interface ExamQuestionFixture {
   answer: string | null;
   verdict: 'correct' | 'wrong' | null;
   correct_answer: string | null;
+  feedback: string | null;
 }
 
-// The option a correct answer would pick. Never served while the paper is
-// open — the specs use it to sit the exam, the way a student who knows the
-// material would.
+// The option a correct answer would pick — or, on an Open Question, what a
+// student who knows their material would write. Never served while the paper
+// is open: the specs use it to sit the exam, the way that student would.
 export const CORRECT_OPTION: Record<number, string> = {};
+
+// What the grading agent sends back on a written answer it did not accept.
+export const OPEN_FEEDBACK = 'Ti mancava il nocciolo della risposta.';
 
 function multipleChoice(position: number): ExamQuestionFixture {
   const id = 100 + position;
@@ -42,6 +50,26 @@ function multipleChoice(position: number): ExamQuestionFixture {
     answer: null,
     verdict: null,
     correct_answer: null,
+    feedback: null,
+  };
+}
+
+function open(position: number): ExamQuestionFixture {
+  const id = 100 + position;
+  const right = `Risposta giusta ${position + 1}`;
+  CORRECT_OPTION[id] = right;
+  return {
+    question_id: id,
+    position,
+    text: `Domanda aperta ${position + 1}`,
+    level: ((position % 3) + 1) as 1 | 2 | 3,
+    format: 'open',
+    options: [], // free text: the paper offers nothing to pick from
+    topic: 'viticulture',
+    answer: null,
+    verdict: null,
+    correct_answer: null,
+    feedback: null,
   };
 }
 
@@ -60,14 +88,19 @@ function trueFalse(position: number): ExamQuestionFixture {
     answer: null,
     verdict: null,
     correct_answer: null,
+    feedback: null,
   };
 }
 
-// 21 multiple choice + 9 true/false, the closed-only composition the backend
-// draws while the Open Questions wait for the grading agent.
+// The composition the backend draws. Laid out in blocks rather than shuffled so
+// that a spec can say "question 3" and mean something.
 export const EXAM_QUESTIONS: ExamQuestionFixture[] = Array.from(
   { length: EXAM_LENGTH },
-  (_, position) => (position < 21 ? multipleChoice(position) : trueFalse(position))
+  (_, position) => {
+    if (position < MULTIPLE_CHOICE_COUNT) return multipleChoice(position);
+    if (position < MULTIPLE_CHOICE_COUNT + TRUE_FALSE_COUNT) return trueFalse(position);
+    return open(position);
+  }
 );
 
 export const EXAM_ID = 7;
@@ -80,6 +113,7 @@ export interface ExamFixture {
   score: number | null;
   score_pct: number | null;
   passed: boolean | null;
+  grading_complete: boolean;
   started_at: string;
   submitted_at: string | null;
   duration_seconds: number | null;
@@ -95,6 +129,7 @@ export function examInProgress(): ExamFixture {
     score: null,
     score_pct: null,
     passed: null,
+    grading_complete: false,
     started_at: new Date(Date.now() - 90_000).toISOString(),
     submitted_at: null,
     duration_seconds: null,

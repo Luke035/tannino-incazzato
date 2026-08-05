@@ -1,4 +1,4 @@
-import { CardAttempt, Denomination, Exam, Filter } from '@/types';
+import { CardAttempt, Denomination, Exam, Filter, Language } from '@/types';
 
 function apiUrl() {
   return process.env.NEXT_PUBLIC_API_URL ?? '';
@@ -160,10 +160,27 @@ export async function saveExamAnswer(
   return res.ok;
 }
 
+// Hands the paper in. Comes back with the Closed Questions already marked and
+// the Open ones still pending — `grading_complete` says which.
 export async function submitExam(examId: number): Promise<Exam | null> {
   const res = await fetch(`${apiUrl()}/quiz/exams/${examId}/submit`, {
     method: 'POST',
     credentials: 'include',
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+// Asks the grading agent for the written answers. Safe to call again on a
+// paper it only got halfway through: it picks up the questions still unmarked, so a
+// retry is cheap. Returns null when the paper came back short of Verdicts —
+// it stays ungraded and scoreless, and calling again is the whole recovery.
+export async function gradeExam(examId: number, language: Language): Promise<Exam | null> {
+  const res = await fetch(`${apiUrl()}/quiz/exams/${examId}/grade`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ language }),
   });
   if (!res.ok) return null;
   return res.json();

@@ -1,17 +1,31 @@
 import { test, expect, Page } from '@playwright/test';
 import { mockApi } from './helpers/mockApi';
-import { CORRECT_OPTION, EXAM_ID, EXAM_LENGTH, examInProgress } from './fixtures/exam';
+import {
+  CORRECT_OPTION,
+  EXAM_ID,
+  EXAM_LENGTH,
+  OPEN_COUNT,
+  OPEN_FEEDBACK,
+  examInProgress,
+} from './fixtures/exam';
 
 // Sitting an Exam on a phone, one thumb, from Home to the verdict. Running at
 // a mobile viewport is the point of this file.
 test.use({ viewport: { width: 393, height: 852 }, hasTouch: true });
 
 /** Answer the question on screen. `right` decides whether the student knows
- *  their material; the option to tap is read off the screen, exactly as a
- *  player reads it. */
+ *  their material; the option to tap — or the answer to type — is read off the
+ *  screen, exactly as a player reads it. */
 async function answerCurrent(page: Page, right: boolean) {
   const questionId = await currentQuestionId(page);
   const correct = CORRECT_OPTION[questionId];
+
+  const written = page.getByTestId('exam-open-answer');
+  if (await written.count()) {
+    await written.fill(right ? correct : 'boh, il tannino, direi');
+    return;
+  }
+
   const options = page.getByTestId('exam-option');
   const count = await options.count();
 
@@ -256,4 +270,98 @@ test('an exam that is not the student’s own is not shown', async ({ page }) =>
   await page.goto('/en/quiz/exam/9999');
 
   await expect(page.getByTestId('exam-not-found')).toBeVisible();
+});
+
+// ── The written answers ──────────────────────────────────────────────────────
+
+test('a written answer is typed, kept, and still there on the way back', async ({ page }) => {
+  await mockApi(page);
+  await startExam(page);
+
+  // The Open Questions sit after the closed ones on the fixture paper.
+  await page.getByTestId('exam-to-review').tap();
+  await page.getByTestId('exam-review-blank').nth(EXAM_LENGTH - OPEN_COUNT).tap();
+
+  const written = page.getByTestId('exam-open-answer');
+  await expect(written).toBeVisible();
+  await expect(page.getByTestId('exam-option')).toHaveCount(0);
+  await written.fill('Il tannino viene dalle bucce, dai vinaccioli e dal legno.');
+
+  await page.getByTestId('exam-next').tap();
+  await expect(page.getByTestId('exam-open-answer')).toHaveValue('');
+  await page.getByTestId('exam-back').tap();
+
+  await expect(page.getByTestId('exam-open-answer')).toHaveValue(
+    'Il tannino viene dalle bucce, dai vinaccioli e dal legno.'
+  );
+});
+
+test('the recap shows the closed questions while the written ones are still being graded', async ({
+  page,
+}) => {
+  await mockApi(page, { grader: 'down' });
+  await startExam(page);
+
+  await sitExam(page, EXAM_LENGTH);
+  await page.getByTestId('exam-submit').tap();
+  await page.waitForURL(`**/quiz/exam/${EXAM_ID}/result`);
+
+  // Every closed question is already marked and on screen…
+  await expect(page.getByTestId('exam-answer-correct')).toHaveCount(EXAM_LENGTH - OPEN_COUNT);
+  // …while the written ones say what they are waiting for.
+  await expect(page.getByTestId('exam-answer-grading')).toHaveCount(OPEN_COUNT);
+  // …and no score is invented in the meantime.
+  await expect(page.getByTestId('exam-score-pct')).toHaveCount(0);
+  await expect(page.getByTestId('exam-verdict')).toHaveCount(0);
+});
+
+test('a grading agent that gives up leaves the paper ungraded, and asking again finishes it', async ({
+  page,
+}) => {
+  await mockApi(page, { grader: 'downOnce' });
+  await startExam(page);
+
+  await sitExam(page, EXAM_LENGTH);
+  await page.getByTestId('exam-submit').tap();
+  await page.waitForURL(`**/quiz/exam/${EXAM_ID}/result`);
+
+  await expect(page.getByTestId('exam-grading')).toHaveAttribute('data-failed', 'true');
+  await expect(page.getByTestId('exam-score-pct')).toHaveCount(0);
+
+  await page.getByTestId('exam-grading-retry').tap();
+
+  await expect(page.getByTestId('exam-verdict')).toHaveText('Passed');
+  await expect(page.getByTestId('exam-score')).toContainText(`${EXAM_LENGTH} out of ${EXAM_LENGTH}`);
+});
+
+test('a written answer that was not accepted comes back with the answer and what was missing', async ({
+  page,
+}) => {
+  await mockApi(page);
+  await startExam(page);
+
+  await sitExam(page, EXAM_LENGTH - OPEN_COUNT); // every closed one right, every written one wrong
+  await page.getByTestId('exam-submit').tap();
+  await page.waitForURL(`**/quiz/exam/${EXAM_ID}/result`);
+
+  await expect(page.getByTestId('exam-answer-wrong')).toHaveCount(OPEN_COUNT);
+  const wrong = page.getByTestId('exam-answer-wrong').first();
+  await expect(wrong.getByTestId('exam-correct-answer')).toBeVisible();
+  await expect(wrong.getByTestId('exam-answer-feedback')).toHaveText(OPEN_FEEDBACK);
+});
+
+test('a wrong closed question shows the answer and nothing more', async ({ page }) => {
+  await mockApi(page);
+  await startExam(page);
+
+  await sitExam(page, 0);
+  await page.getByTestId('exam-submit').tap();
+  await page.waitForURL(`**/quiz/exam/${EXAM_ID}/result`);
+  await expect(page.getByTestId('exam-verdict')).toBeVisible();
+
+  // The first question of the paper is closed: it gets the correct answer and
+  // no note at all — the bank's explanations stay unused (#16).
+  const closed = page.getByTestId('exam-answer-wrong').first();
+  await expect(closed.getByTestId('exam-correct-answer')).toBeVisible();
+  await expect(closed.getByTestId('exam-answer-feedback')).toHaveCount(0);
 });

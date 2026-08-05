@@ -12,7 +12,7 @@ from sqlalchemy import Column, ForeignKey, Integer
 from sqlalchemy import JSON as SAJSON
 from sqlmodel import Field, SQLModel
 
-from app.questions.model import FORMAT_MULTIPLE_CHOICE, FORMAT_TRUE_FALSE
+from app.questions.model import FORMAT_MULTIPLE_CHOICE, FORMAT_OPEN, FORMAT_TRUE_FALSE
 
 # Modes of the game. Only the Exam exists so far; Practice and Error Review are
 # stored against the same tables when they arrive, which is why the column is
@@ -29,20 +29,25 @@ VERDICT_WRONG = "wrong"
 EXAM_LENGTH = 30
 PASS_MARK_PCT = 60
 
-# **Temporary composition — Closed Questions only.** The final Exam is 14 open,
-# 11 multiple choice and 5 true/false; the Open Questions arrive with the
-# grading agent. Until then the paper keeps its final length and its final
-# 11:5 ratio between the closed formats, scaled to fill all 30 questions, so
-# that the pass mark still lands on a whole question (18 of 30 is exactly 60%).
+# The composition of the paper. Levels are not part of it: the draw is blind
+# and random across the whole active bank, so the three Levels come out in the
+# proportion the bank itself holds them — which is what the real sitting does.
 EXAM_COMPOSITION = {
-    FORMAT_MULTIPLE_CHOICE: 21,
-    FORMAT_TRUE_FALSE: 9,
+    FORMAT_OPEN: 14,
+    FORMAT_MULTIPLE_CHOICE: 11,
+    FORMAT_TRUE_FALSE: 5,
 }
 
 # The two answers a true/false question accepts, in the bank's own vocabulary.
 # The player answers in these terms and the screen localizes the labels, so the
 # stored answer never depends on the language the exam was sat in.
 TRUE_FALSE_OPTIONS = ["VERO", "FALSO"]
+
+# An Open Question is answered in prose, and prose has no natural end. The cap
+# is far above any real answer — the longest reference answer in the bank is
+# under 2500 characters — and exists so that one pasted essay cannot dominate a
+# prompt carrying fourteen questions.
+MAX_OPEN_ANSWER_CHARS = 4000
 
 
 class ExamSession(SQLModel, table=True):
@@ -60,6 +65,9 @@ class ExamSession(SQLModel, table=True):
     mode: str = Field(default=MODE_EXAM)
     level: Optional[int] = Field(default=None)  # the chosen Level, Practice only
     status: str = Field(default=STATUS_IN_PROGRESS, index=True)
+    # Null until *every* question carries a Verdict. A paper whose Open
+    # Questions could not be marked is submitted but ungraded, and emits no
+    # score at all rather than a score that counts the unmarked ones wrong.
     score: Optional[int] = Field(default=None)
     max_score: int
     duration_seconds: Optional[int] = Field(default=None)

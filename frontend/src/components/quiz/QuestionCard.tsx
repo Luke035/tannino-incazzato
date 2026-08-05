@@ -1,5 +1,7 @@
 'use client';
+import { useCallback, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
+import { MAX_OPEN_ANSWER_CHARS } from '@/lib/exam';
 import { ExamQuestion } from '@/types';
 
 // The two answers a true/false question accepts, in the bank's own vocabulary.
@@ -11,6 +13,9 @@ const TRUE_FALSE_LABELS: Record<string, 'true' | 'false'> = {
 };
 
 export function optionLabel(question: ExamQuestion, option: string, t: (key: string) => string) {
+  // Only a Closed Question speaks that vocabulary. A student who happens to
+  // write "VERO" in a written answer wrote a word, not an option.
+  if (question.format === 'open') return option;
   const label = TRUE_FALSE_LABELS[option];
   return label ? t(`quiz.${label}`) : option;
 }
@@ -32,6 +37,7 @@ export function QuestionCard({
   // Multiple-choice options are prose that wraps, so they take the large card
   // radius instead: 999px on three wrapped lines eats the width.
   const isTrueFalse = question.format === 'true_false';
+  const isOpen = question.format === 'open';
 
   return (
     <article
@@ -79,6 +85,8 @@ export function QuestionCard({
         {question.text}
       </h2>
 
+      {isOpen && <OpenAnswerField answer={answer} onAnswer={onAnswer} />}
+
       <div className={isTrueFalse ? 'grid grid-cols-2 gap-3' : 'flex flex-col gap-3'}>
         {question.options.map((option) => {
           const selected = answer === option;
@@ -108,5 +116,95 @@ export function QuestionCard({
         })}
       </div>
     </article>
+  );
+}
+
+/** The written answer. Two things make or break this box on a phone: it has to
+ *  show what you already wrote, and the soft keyboard must not sit on top of
+ *  it. Hence a field that grows with the answer rather than scrolling inside
+ *  three lines, and a scroll that puts it back in view when the keyboard
+ *  takes half the screen. */
+function OpenAnswerField({
+  answer,
+  onAnswer,
+}: {
+  answer: string | null;
+  onAnswer: (value: string) => void;
+}) {
+  const t = useTranslations();
+  const field = useRef<HTMLTextAreaElement>(null);
+
+  const fit = useCallback(() => {
+    const box = field.current;
+    if (!box) return;
+    box.style.height = 'auto';
+    box.style.height = `${box.scrollHeight}px`;
+  }, []);
+
+  useEffect(() => {
+    fit();
+  }, [fit, answer]);
+
+  // The keyboard animates in, and on iOS the viewport only settles once it
+  // has: scrolling straight away scrolls to where the field used to be.
+  const keepInView = useCallback(() => {
+    window.setTimeout(() => {
+      field.current?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }, 300);
+  }, []);
+
+  // A late or second resize — rotating the phone, switching to the emoji
+  // keyboard — moves the field back under the keyboard. Follow it.
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    const follow = () => {
+      if (document.activeElement === field.current) keepInView();
+    };
+    viewport.addEventListener('resize', follow);
+    return () => viewport.removeEventListener('resize', follow);
+  }, [keepInView]);
+
+  const written = answer?.length ?? 0;
+
+  return (
+    <div className="flex flex-col gap-2">
+      <textarea
+        ref={field}
+        data-testid="exam-open-answer"
+        value={answer ?? ''}
+        onChange={(event) => onAnswer(event.target.value.slice(0, MAX_OPEN_ANSWER_CHARS))}
+        onFocus={keepInView}
+        rows={4}
+        maxLength={MAX_OPEN_ANSWER_CHARS}
+        placeholder={t('quiz.exam.openPlaceholder')}
+        // Autocorrect off: this is a wine vocabulary the phone has never heard
+        // of, and it will "fix" every word of it — into a wrong answer.
+        autoCapitalize="sentences"
+        autoCorrect="off"
+        spellCheck={false}
+        className="w-full px-5 py-4 card-rounded resize-none"
+        style={{
+          fontFamily: 'var(--font-sans)',
+          fontSize: '1rem', // never below 16px: anything less makes iOS zoom in
+          lineHeight: '1.5',
+          minHeight: '7.5rem',
+          backgroundColor: 'var(--surface-2)',
+          color: 'var(--ink)',
+          border: '2px solid var(--border)',
+        }}
+      />
+      {/* Silent until the cap is actually in sight — a counter on an empty box
+          is a word limit nobody asked for. */}
+      {written > MAX_OPEN_ANSWER_CHARS * 0.8 && (
+        <p
+          data-testid="exam-open-remaining"
+          className="self-end"
+          style={{ fontFamily: 'var(--font-sans)', fontSize: '0.75rem', color: 'var(--faint)' }}
+        >
+          {t('quiz.exam.charactersLeft', { count: MAX_OPEN_ANSWER_CHARS - written })}
+        </p>
+      )}
+    </div>
   );
 }

@@ -2,7 +2,13 @@ import type { Page } from '@playwright/test';
 import { DENOMINATIONS } from '../fixtures/denominations';
 import { HINT_RESPONSE, MEMORIZE_TIP_RESPONSE, REVIEW_RESPONSE } from '../fixtures/aiResponses';
 import { EMPTY_STATS, ONE_SESSION_STATS } from '../fixtures/sessionStats';
-import { CORRECT_OPTION, EXAM_ID, ExamFixture, examInProgress } from '../fixtures/exam';
+import {
+  CORRECT_OPTION,
+  EXAM_ID,
+  ExamFixture,
+  OPEN_FEEDBACK,
+  examInProgress,
+} from '../fixtures/exam';
 
 const MOCK_USER = { id: 1, email: 'e2e-test@sommelier.test', first_name: 'Test', last_name: 'User' };
 
@@ -20,6 +26,9 @@ export async function mockApi(
     exam?: ExamFixture | null;
     // Makes the bank look too thin to fill a paper.
     examRefused?: boolean;
+    // How the grading agent behaves on the written answers: 'down' never grades
+    // them, 'downOnce' fails the first request and grades on the retry.
+    grader?: 'ok' | 'down' | 'downOnce';
   }
 ): Promise<void> {
   const denoms = options?.denominations ?? DENOMINATIONS;
@@ -29,6 +38,23 @@ export async function mockApi(
   // a fixed payload: the answers a spec gives have to come back on a refetch,
   // and the score has to follow from them.
   let exam: ExamFixture | null = options?.exam ?? null;
+  let gradingRequests = 0;
+
+  // A paper has a score only once every question on it carries a Verdict —
+  // the same rule the backend applies, and the reason the recap can show the
+  // Closed Questions while the written ones are still with the agent.
+  const settle = (paper: ExamFixture) => {
+    paper.grading_complete = paper.questions.every((q) => q.verdict !== null);
+    if (!paper.grading_complete) {
+      paper.score = null;
+      paper.score_pct = null;
+      paper.passed = null;
+      return;
+    }
+    paper.score = paper.questions.filter((q) => q.verdict === 'correct').length;
+    paper.score_pct = Math.round((paper.score / paper.max_score) * 1000) / 10;
+    paper.passed = paper.score_pct >= 60;
+  };
 
   await page.route(/\/quiz\/exams/, (route) => {
     const method = route.request().method();
@@ -56,21 +82,39 @@ export async function mockApi(
       return json({ question_id: questionId, answer });
     }
 
+    // Handing in grades the Closed Questions and nothing else: a written answer
+    // that was actually written goes to the agent, a blank one is wrong on
+    // the spot.
     if (method === 'POST' && path.endsWith('/submit')) {
-      let score = 0;
       for (const question of exam.questions) {
-        const correct = question.answer === CORRECT_OPTION[question.question_id];
-        question.verdict = correct ? 'correct' : 'wrong';
         question.correct_answer = CORRECT_OPTION[question.question_id];
-        if (correct) score += 1;
+        if (question.format === 'open' && question.answer) continue;
+        question.verdict =
+          question.answer === CORRECT_OPTION[question.question_id] ? 'correct' : 'wrong';
       }
       exam.status = 'submitted';
-      exam.score = score;
-      exam.score_pct = Math.round((score / exam.max_score) * 1000) / 10;
-      exam.passed = exam.score_pct >= 60;
       exam.submitted_at = new Date().toISOString();
       exam.duration_seconds = 92;
+      settle(exam);
       return json(exam);
+    }
+
+    if (method === 'POST' && path.endsWith('/grade')) {
+      gradingRequests += 1;
+      const down =
+        options?.grader === 'down' || (options?.grader === 'downOnce' && gradingRequests === 1);
+
+      if (!down) {
+        for (const question of exam.questions) {
+          if (question.format !== 'open' || question.verdict) continue;
+          const correct = question.answer === CORRECT_OPTION[question.question_id];
+          question.verdict = correct ? 'correct' : 'wrong';
+          question.feedback = correct ? 'Ci siamo.' : OPEN_FEEDBACK;
+        }
+      }
+      settle(exam);
+      // Short of Verdicts: no score, and the paper stays retryable.
+      return exam.grading_complete ? json(exam) : json({ detail: 'grading_incomplete' }, 503);
     }
 
     return json(exam);

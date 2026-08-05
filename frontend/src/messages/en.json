@@ -128,7 +128,7 @@
         "passMark": "Pass at {pct}%. Blanks count as wrong, so guess rather than skip.",
         "timer": "The clock is shown but never stops you. This is study, not an ambush."
       },
-      "closedOnly": "For now the paper is closed questions only — the written ones come when the tannin has learned to mark them.",
+      "composition": "{open} written answers, {multipleChoice} multiple choice, {trueFalse} true or false. The written ones you type yourself, and the tannin reads every word.",
       "cta": "Sit the exam",
       "starting": "Drawing your paper…"
     },
@@ -141,6 +141,8 @@
       "toReview": "Check my paper",
       "notFoundTitle": "No such exam",
       "notFoundSubtitle": "This paper isn't yours or no longer exists. Start a fresh one.",
+      "openPlaceholder": "Write your answer. Your own words are fine — the point is what you know, not how you phrase it.",
+      "charactersLeft": "{count} characters left",
       "review": {
         "title": "Before you hand it in",
         "allAnswered": "Every question answered. Nothing left on the table.",
@@ -160,6 +162,12 @@
     },
     "result": {
       "loading": "The tannin is marking…",
+      "gradingTitle": "Reading your written answers.",
+      "gradingBody": "The multiple choice is done — it's below. The written ones take a moment longer, because somebody actually has to read them.",
+      "gradingStalledTitle": "The tannin lost his glasses.",
+      "gradingStalledBody": "Some of your written answers didn't get marked. Nothing was counted wrong for it and your paper is untouched — ask again and it picks up where it stopped.",
+      "gradingRetry": "Mark the rest",
+      "beingGraded": "Still being read.",
       "passedTitle": "Promoted.",
       "passedSubtitle": "You'd have walked out of that room with the certificate. Do it again next week and it stops being luck.",
       "failedTitle": "Decanted.",

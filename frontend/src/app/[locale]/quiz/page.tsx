@@ -5,7 +5,7 @@ import { Link, useRouter } from '@/i18n/navigation';
 import Header from '@/components/Header';
 import { Mascot } from '@/components/Mascot';
 import { startExam } from '@/lib/api';
-import { EXAM_LENGTH, PASS_MARK_PCT } from '@/lib/exam';
+import { EXAM_COMPOSITION, EXAM_LENGTH, PASS_MARK_PCT } from '@/lib/exam';
 
 // Mobile-first by design: every control below is reachable with one thumb.
 export default function QuizPage() {
@@ -86,7 +86,11 @@ export default function QuizPage() {
                 color: 'var(--muted)',
               }}
             >
-              {t('quiz.start.closedOnly')}
+              {t('quiz.start.composition', {
+                open: EXAM_COMPOSITION.open,
+                multipleChoice: EXAM_COMPOSITION.multiple_choice,
+                trueFalse: EXAM_COMPOSITION.true_false,
+              })}
             </p>
           </div>
 

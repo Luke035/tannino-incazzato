@@ -128,7 +128,7 @@
         "passMark": "Si passa al {pct}%. Le bianche valgono zero: meglio tirare a indovinare che saltare.",
         "timer": "Il cronometro si vede ma non ti ferma. Questo è studio, non un agguato."
       },
-      "closedOnly": "Per ora il compito è di sole domande chiuse — le aperte arrivano quando il Tannino avrà imparato a correggerle.",
+      "composition": "{open} domande aperte, {multipleChoice} a scelta multipla, {trueFalse} vero o falso. Le aperte le scrivi tu, e il Tannino se le legge tutte.",
       "cta": "Fai l'esame",
       "starting": "Pesco il compito…"
     },
@@ -141,6 +141,8 @@
       "toReview": "Controlla il compito",
       "notFoundTitle": "Compito inesistente",
       "notFoundSubtitle": "Questo compito non è tuo o non esiste più. Iniziane uno nuovo.",
+      "openPlaceholder": "Scrivi la tua risposta. Con parole tue va benissimo: conta quello che sai, non come lo dici.",
+      "charactersLeft": "{count} caratteri rimasti",
       "review": {
         "title": "Prima di consegnare",
         "allAnswered": "Tutte risposte. Non hai lasciato niente sul tavolo.",
@@ -160,6 +162,12 @@
     },
     "result": {
       "loading": "Il Tannino corregge…",
+      "gradingTitle": "Sto leggendo le tue aperte.",
+      "gradingBody": "Le chiuse sono fatte, le trovi qui sotto. Le aperte ci mettono un attimo in più, perché qualcuno deve leggersele davvero.",
+      "gradingStalledTitle": "Il Tannino ha perso gli occhiali.",
+      "gradingStalledBody": "Alcune aperte non sono state corrette. Non è stato contato niente come sbagliato e il compito è intatto: richiedi la correzione e riparte da dove si era fermata.",
+      "gradingRetry": "Correggi il resto",
+      "beingGraded": "Ancora da leggere.",
       "passedTitle": "Promosso.",
       "passedSubtitle": "Da quell'aula uscivi con il diploma. Rifallo la settimana prossima e smette di essere fortuna.",
       "failedTitle": "Cirrotico.",

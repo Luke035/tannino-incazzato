@@ -47,11 +47,15 @@ export interface ExamQuestion {
   text: string;
   format: QuestionFormat;
   level: QuestionLevel;
-  options: string[]; // shuffled by the backend; ["VERO", "FALSO"] on true/false
+  options: string[]; // shuffled by the backend; ["VERO", "FALSO"] on true/false; [] on open
   topic: string | null;
   answer: string | null;
   verdict: ExamVerdict | null;
   correct_answer: string | null;
+  // What the grading agent told the player about their own answer. Open
+  // Questions only, and only once graded — never the bank's explanation of the
+  // question, which a Closed Question does not get either.
+  feedback: string | null;
 }
 
 export interface Exam {
@@ -62,6 +66,10 @@ export interface Exam {
   score: number | null;
   score_pct: number | null;
   passed: boolean | null;
+  // False while an Open Question of a handed-in paper is still being graded.
+  // Until it turns true there is no score: the recap shows the Closed
+  // Questions and waits.
+  grading_complete: boolean;
   started_at: string;
   submitted_at: string | null;
   duration_seconds: number | null;
