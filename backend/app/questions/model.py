@@ -48,18 +48,3 @@ class Question(SQLModel, table=True):
     topic: Optional[str] = Field(default=None, index=True)
     open_subtype: Optional[str] = Field(default=None)
     active: bool = Field(default=True, index=True)
-
-
-class QuestionRead(SQLModel):
-    """What the browser is allowed to see for a question it has not answered.
-
-    Deliberately omits `reference_answer` and `explanation`: the explanation
-    spells the correct answer out in prose, so serving it would defeat the game
-    exactly as serving the answer itself would."""
-
-    id: int
-    text: str
-    format: str
-    level: int
-    options: List[str]
-    topic: Optional[str]

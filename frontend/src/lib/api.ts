@@ -1,4 +1,4 @@
-import { CardAttempt, Denomination, Filter, QuizQuestion } from '@/types';
+import { CardAttempt, Denomination, Exam, Filter } from '@/types';
 
 function apiUrl() {
   return process.env.NEXT_PUBLIC_API_URL ?? '';
@@ -122,9 +122,47 @@ export async function fetchSessionStats(): Promise<SessionStats> {
   return res.json();
 }
 
-// Returns null when the bank holds no question to serve.
-export async function fetchQuizQuestion(): Promise<QuizQuestion | null> {
-  const res = await fetch(`${apiUrl()}/quiz/question`, {
+// ── Promossi o Cirrotici: the Exam ───────────────────────────────────────────
+// The backend draws the paper, shuffles the options and produces every Verdict
+// (ADR 0007), so these wrappers carry state rather than compute it.
+
+// Returns null when the bank cannot fill a paper — the caller says so on screen
+// rather than dropping the student into a broken exam.
+export async function startExam(): Promise<Exam | null> {
+  const res = await fetch(`${apiUrl()}/quiz/exams`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+export async function fetchExam(examId: number): Promise<Exam | null> {
+  const res = await fetch(`${apiUrl()}/quiz/exams/${examId}`, {
+    credentials: 'include',
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+// `answer: null` clears the answer — skipping a question is a first-class move.
+export async function saveExamAnswer(
+  examId: number,
+  questionId: number,
+  answer: string | null
+): Promise<boolean> {
+  const res = await fetch(`${apiUrl()}/quiz/exams/${examId}/answers/${questionId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ answer }),
+  });
+  return res.ok;
+}
+
+export async function submitExam(examId: number): Promise<Exam | null> {
+  const res = await fetch(`${apiUrl()}/quiz/exams/${examId}/submit`, {
+    method: 'POST',
     credentials: 'include',
   });
   if (!res.ok) return null;

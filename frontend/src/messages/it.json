@@ -107,8 +107,7 @@
     "continue": "Capito, continua"
   },
   "quiz": {
-    "eyebrow": "Una domanda alla volta",
-    "description": "Domande vere dell'esame, dal banco del corso. Nessuna risposta nascosta nella pagina.",
+    "eyebrow": "Il gioco finale",
     "level": "Livello {level}",
     "formats": {
       "true_false": "Vero o falso",
@@ -117,11 +116,65 @@
     },
     "true": "Vero",
     "false": "Falso",
-    "openPlaceholder": "Scrivi la tua risposta…",
-    "another": "Un’altra domanda →",
-    "loading": "Pesco una domanda…",
-    "notGradedYet": "Il Tannino sta ancora affilando la matita rossa — per ora non si corregge.",
+    "loading": "Preparo il compito…",
     "emptyTitle": "Il banco è a secco",
-    "emptySubtitle": "Nessuna domanda caricata. Torna quando il banco sarà pieno."
+    "emptySubtitle": "Non ci sono abbastanza domande caricate per mettere insieme un compito. Torna quando il banco sarà pieno.",
+    "start": {
+      "title": "Lo passeresti adesso?",
+      "subtitle": "Una prova sola, {count} domande, tutto il corso. Il Tannino corregge e te lo dice in faccia.",
+      "rules": {
+        "length": "{count} domande, una per schermata. Torni indietro e cambi idea quante volte vuoi.",
+        "levels": "Tutti e tre i livelli in un compito solo, come all'esame vero.",
+        "passMark": "Si passa al {pct}%. Le bianche valgono zero: meglio tirare a indovinare che saltare.",
+        "timer": "Il cronometro si vede ma non ti ferma. Questo è studio, non un agguato."
+      },
+      "closedOnly": "Per ora il compito è di sole domande chiuse — le aperte arrivano quando il Tannino avrà imparato a correggerle.",
+      "cta": "Fai l'esame",
+      "starting": "Pesco il compito…"
+    },
+    "exam": {
+      "progress": "{current} di {total}",
+      "elapsed": "Tempo",
+      "back": "Indietro",
+      "next": "Avanti",
+      "skip": "Salta",
+      "toReview": "Controlla il compito",
+      "notFoundTitle": "Compito inesistente",
+      "notFoundSubtitle": "Questo compito non è tuo o non esiste più. Iniziane uno nuovo.",
+      "review": {
+        "title": "Prima di consegnare",
+        "allAnswered": "Tutte risposte. Non hai lasciato niente sul tavolo.",
+        "blanks": "{count, plural, one {# domanda in bianco} other {# domande in bianco}} — e ognuna vale come sbagliata.",
+        "jumpHint": "Tocca un numero per tornarci.",
+        "answered": "Risposte",
+        "blank": "In bianco",
+        "submit": "Consegna",
+        "keepWorking": "Continua"
+      },
+      "warn": {
+        "title": "Consegni con le bianche?",
+        "body": "{count, plural, one {C'è ancora # domanda vuota} other {Ci sono ancora # domande vuote}}. Verranno contate come sbagliate. Sicuro?",
+        "confirm": "Consegna lo stesso",
+        "cancel": "Fammi finire"
+      }
+    },
+    "result": {
+      "loading": "Il Tannino corregge…",
+      "passedTitle": "Promosso.",
+      "passedSubtitle": "Da quell'aula uscivi con il diploma. Rifallo la settimana prossima e smette di essere fortuna.",
+      "failedTitle": "Cirrotico.",
+      "failedSubtitle": "Non oggi. La buona notizia è che ora sai esattamente quali domande ti sono costate la promozione.",
+      "verdictPassed": "Promosso",
+      "verdictFailed": "Bocciato",
+      "score": "{score} su {total}",
+      "duration": "Tempo impiegato",
+      "passMark": "Sufficienza al {pct}%",
+      "breakdown": "Domanda per domanda",
+      "yourAnswer": "Hai risposto",
+      "correctAnswer": "La risposta",
+      "noAnswer": "Lasciata in bianco",
+      "again": "Fanne un altro",
+      "backToGames": "Torna ai giochi"
+    }
   }
 }

@@ -12,6 +12,7 @@ from app.denominations.model import Denomination  # noqa: F401 — registers tab
 from app.users.model import User  # noqa: F401 — registers table with metadata
 from app.sessions.model import GameSession, SessionCardAttempt  # noqa: F401 — registers tables with metadata
 from app.questions.model import Question  # noqa: F401 — registers table with metadata
+from app.exams.model import ExamSession, ExamAnswer  # noqa: F401 — registers tables with metadata
 from sqlmodel import SQLModel
 
 config = context.config

@@ -34,13 +34,36 @@ export type Filter = 'both' | 'DOC' | 'DOCG';
 export type QuestionFormat = 'true_false' | 'multiple_choice' | 'open';
 export type QuestionLevel = 1 | 2 | 3;
 
-// What the browser is allowed to know about a question it has not answered.
-// The reference answer and the explanation stay on the server.
-export interface QuizQuestion {
-  id: number;
+export type ExamStatus = 'in_progress' | 'submitted';
+export type ExamVerdict = 'correct' | 'wrong';
+
+// One question of the paper as the browser is allowed to see it. `verdict` and
+// `correctAnswer` stay null until the Exam is handed in — the backend draws,
+// shuffles and grades, and keeps the answers to itself in the meantime
+// (ADR 0007).
+export interface ExamQuestion {
+  question_id: number;
+  position: number;
   text: string;
   format: QuestionFormat;
   level: QuestionLevel;
-  options: string[]; // shuffled by the backend; empty unless multiple choice
+  options: string[]; // shuffled by the backend; ["VERO", "FALSO"] on true/false
   topic: string | null;
+  answer: string | null;
+  verdict: ExamVerdict | null;
+  correct_answer: string | null;
+}
+
+export interface Exam {
+  id: number;
+  mode: string;
+  status: ExamStatus;
+  max_score: number;
+  score: number | null;
+  score_pct: number | null;
+  passed: boolean | null;
+  started_at: string;
+  submitted_at: string | null;
+  duration_seconds: number | null;
+  questions: ExamQuestion[];
 }

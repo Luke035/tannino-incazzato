@@ -107,8 +107,7 @@
     "continue": "Got it, continue"
   },
   "quiz": {
-    "eyebrow": "One question at a time",
-    "description": "Real exam questions from the course bank. No answers hiding in the page.",
+    "eyebrow": "The final game",
     "level": "Level {level}",
     "formats": {
       "true_false": "True or false",
@@ -117,11 +116,65 @@
     },
     "true": "True",
     "false": "False",
-    "openPlaceholder": "Write your answer…",
-    "another": "Another question →",
-    "loading": "Pulling a question…",
-    "notGradedYet": "The tannin is still sharpening its red pencil — no marks yet.",
+    "loading": "Pulling your paper together…",
     "emptyTitle": "The bank is dry",
-    "emptySubtitle": "No questions loaded yet. Come back once the bank has been filled."
+    "emptySubtitle": "There aren't enough questions loaded to make a paper. Come back once the bank has been filled.",
+    "start": {
+      "title": "Would you pass right now?",
+      "subtitle": "One sitting, {count} questions, the whole course. The tannin marks it and tells you straight.",
+      "rules": {
+        "length": "{count} questions, one per screen. Go back and change your mind as often as you like.",
+        "levels": "All three levels in one paper, exactly like the real thing.",
+        "passMark": "Pass at {pct}%. Blanks count as wrong, so guess rather than skip.",
+        "timer": "The clock is shown but never stops you. This is study, not an ambush."
+      },
+      "closedOnly": "For now the paper is closed questions only — the written ones come when the tannin has learned to mark them.",
+      "cta": "Sit the exam",
+      "starting": "Drawing your paper…"
+    },
+    "exam": {
+      "progress": "{current} of {total}",
+      "elapsed": "Elapsed",
+      "back": "Back",
+      "next": "Next",
+      "skip": "Skip",
+      "toReview": "Check my paper",
+      "notFoundTitle": "No such exam",
+      "notFoundSubtitle": "This paper isn't yours or no longer exists. Start a fresh one.",
+      "review": {
+        "title": "Before you hand it in",
+        "allAnswered": "Every question answered. Nothing left on the table.",
+        "blanks": "{count, plural, one {# question left blank} other {# questions left blank}} — every one of them counts as wrong.",
+        "jumpHint": "Tap a number to go back to it.",
+        "answered": "Answered",
+        "blank": "Blank",
+        "submit": "Hand it in",
+        "keepWorking": "Keep working"
+      },
+      "warn": {
+        "title": "Handing in with blanks?",
+        "body": "{count, plural, one {# question is} other {# questions are}} still empty. They will be marked wrong. Sure?",
+        "confirm": "Hand it in anyway",
+        "cancel": "Let me finish"
+      }
+    },
+    "result": {
+      "loading": "The tannin is marking…",
+      "passedTitle": "Promoted.",
+      "passedSubtitle": "You'd have walked out of that room with the certificate. Do it again next week and it stops being luck.",
+      "failedTitle": "Decanted.",
+      "failedSubtitle": "Not today. The good news is you now know exactly which questions cost you the pass.",
+      "verdictPassed": "Passed",
+      "verdictFailed": "Failed",
+      "score": "{score} out of {total}",
+      "duration": "Time taken",
+      "passMark": "Pass mark {pct}%",
+      "breakdown": "Question by question",
+      "yourAnswer": "You said",
+      "correctAnswer": "The answer",
+      "noAnswer": "Left blank",
+      "again": "Sit another one",
+      "backToGames": "Back to the games"
+    }
   }
 }

@@ -145,14 +145,44 @@ A question carries: `text`, `format` (`true_false` | `multiple_choice` | `open`)
 [`docs/question-bank-classification.md`](docs/question-bank-classification.md) for the taxonomy,
 how the classification was produced, and how a correction is made.
 
-**`GET /quiz/question`** (requires the `sommelier_session` cookie) serves one random active
-question through `QuestionRead`, which deliberately omits `reference_answer` **and**
-`explanation` — the explanation spells the answer out in prose. **Multiple-choice options are
-shuffled by the backend**, never the browser: in the source bank the correct answer is always the
-first option. Use `fetchQuizQuestion` in `frontend/src/lib/api.ts`; never call the endpoint from a
-component.
+### The Exam (Promossi o Cirrotici)
+The Exam is drawn, served and graded entirely by the backend (ADR 0007) and lives in its own
+`exam_sessions` / `exam_answers` tables (ADR 0008). `game_sessions` and `session_card_attempts`
+are untouched and keep serving Mappa dei Vini alone.
 
-### Session persistence
+**Composition is temporary.** `EXAM_COMPOSITION` in `backend/app/exams/model.py` currently draws
+**21 multiple choice + 9 true/false**: Open Questions arrive with the grading agent. The length
+(30) and the pass mark (60%, i.e. 18/30) are final, which is why the closed formats are drawn in
+the final 11:5 ratio scaled to fill the paper — the pass mark has to land on a whole question.
+
+Endpoints, all requiring the `sommelier_session` cookie and all refusing an Exam that is not the
+caller's with a 404:
+
+| Endpoint | Does |
+|---|---|
+| `POST /quiz/exams` | Draws the paper and persists it. 409 if the bank cannot fill it. |
+| `GET /quiz/exams/{id}` | The paper with the answers so far — and, once submitted, the Verdicts, the score and the correct answers. |
+| `PUT /quiz/exams/{id}/answers/{question_id}` | Records or clears (`null`) one answer. Returns **no Verdict** in Exam mode. |
+| `POST /quiz/exams/{id}/submit` | Grades and returns the result. Always possible, blanks and all. |
+
+Rules that are not negotiable:
+- **The browser never holds the answer to a question it is still being asked.** `correct_answer`
+  and `verdict` stay `null` until submission, and `explanation` is never served — it spells the
+  answer out in prose.
+- **Multiple-choice options are shuffled by the backend**, never the browser: in the source bank
+  the correct answer is always the first option. The shuffled order is persisted in
+  `exam_answers.served_options`, so a resumed Exam is the same paper.
+- **True/false is answered in the bank's vocabulary** (`VERO` / `FALSO`); only the label is
+  localized, so a paper sat in English grades exactly like one sat in Italian.
+- Selection is blind and random across the whole active bank, **never filtered by Level**, and
+  excludes every question of the player's immediately preceding Exam.
+- Closed Questions are graded by exact comparison, with **no model call**. An unanswered question
+  is wrong. One point per question — no weighting, no negative marking, no partial credit.
+
+Use `startExam`, `fetchExam`, `saveExamAnswer` and `submitExam` in `frontend/src/lib/api.ts`;
+never call these endpoints from a component.
+
+### Session persistence (Mappa dei Vini)
 When a game ends, the recap page saves the session to the backend before displaying results.
 
 **Frontend flow:**
@@ -244,10 +274,12 @@ pill shapes, anti-snob voice). **Full spec: [`frontend/DESIGN.md`](frontend/DESI
 sommelier_game/
 ├── frontend/
 │   └── src/
-│       ├── app/[locale]/      # Login, register, setup, game, recap, profile, quiz screens
+│       ├── app/[locale]/      # Login, register, setup, game, recap, profile screens
+│       │   └── quiz/         # exam landing, quiz/exam/[examId] sitting + result
 │       ├── components/
 │       │   ├── game/          # PostIt, ScoreCounter, AutoPlaceModal
 │       │   ├── map/           # ItalyMap, RegionPanel
+│       │   ├── quiz/          # QuestionCard (one question per screen)
 │       │   └── recap/         # RecapStats, AIReview
 │       ├── context/
 │       │   └── AuthContext.tsx   # AuthProvider + useAuth() hook
@@ -256,6 +288,7 @@ sommelier_game/
 │       ├── lib/
 │       │   ├── api.ts         # typed client wrappers for game API endpoints
 │       │   ├── auth.ts        # typed client wrappers for auth endpoints
+│       │   ├── examTime.ts    # elapsed-time hook + duration formatting
 │       │   ├── gameLogic.ts   # scoring, shuffling, recap stats
 │       │   ├── regionMapping.ts  # JSON name <-> SVG ID conversion
 │       │   ├── svgCollision.ts   # custom dnd-kit collision detection
@@ -276,9 +309,11 @@ sommelier_game/
 │   │   │   ├── model.py       # SQLModel table + Pydantic response schema
 │   │   │   └── router.py      # GET /denominations
 │   │   ├── questions/
-│   │   │   ├── model.py       # Question SQLModel table + QuestionRead schema
-│   │   │   ├── seed.py        # seed CSV → Question rows
-│   │   │   └── router.py      # GET /quiz/question
+│   │   │   ├── model.py       # Question SQLModel table
+│   │   │   └── seed.py        # seed CSV → Question rows
+│   │   ├── exams/
+│   │   │   ├── model.py       # ExamSession + ExamAnswer tables, composition, pass mark
+│   │   │   └── router.py      # POST /quiz/exams, GET/PUT/submit
 │   │   ├── sessions/
 │   │   │   ├── model.py       # GameSession + SessionCardAttempt SQLModel tables
 │   │   │   └── router.py      # POST /session, GET /session/stats
@@ -293,7 +328,7 @@ sommelier_game/
 │   ├── scripts/
 │   │   ├── ingest_denominations.py
 │   │   └── seed_questions.py  # seed-once loader (no-op if the bank is loaded)
-│   └── tests/                 # pytest suite (test_auth.py, test_denominations.py, test_sessions.py …)
+│   └── tests/                 # pytest suite (test_auth.py, test_denominations.py, test_sessions.py, test_exams.py …)
 │
 ├── infra/
 │   └── docker-compose.yml     # PostgreSQL 17
