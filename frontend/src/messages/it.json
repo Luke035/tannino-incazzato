@@ -119,8 +119,69 @@
     "loading": "Preparo il compito…",
     "emptyTitle": "Il banco è a secco",
     "emptySubtitle": "Non ci sono abbastanza domande caricate per mettere insieme un compito. Torna quando il banco sarà pieno.",
-      "unavailableTitle": "Il Tannino non risponde",
-      "unavailableSubtitle": "Non sono riuscito a raggiungere la cantina per pescarti un compito. Non si è perso niente: riprova tra un attimo.",
+    "unavailableTitle": "Il Tannino non risponde",
+    "unavailableSubtitle": "Non sono riuscito a raggiungere la cantina per pescarti un compito. Non si è perso niente: riprova tra un attimo.",
+    "modes": {
+      "title": "Due modi di entrarci",
+      "practice": {
+        "name": "Allenamento",
+        "blurb": "Un livello solo, lungo quanto hai tempo, e il Tannino te lo dice in faccia dopo ogni risposta. Qui si studia davvero.",
+        "cta": "Allenati su un livello"
+      }
+    },
+    "practice": {
+      "eyebrow": "Allenamento",
+      "title": "Qui si studia, non si viene giudicati.",
+      "subtitle": "Scegli il livello che stai facendo a lezione e quanto tempo hai. Qui non si passa e non si viene bocciati.",
+      "levelLabel": "Quale livello?",
+      "lengthLabel": "Quante domande?",
+      "lengthOption": "{count} domande",
+      "openNote": "{count} sono domande aperte, e il Tannino se le legge tutte parola per parola.",
+      "rules": {
+        "level": "Ogni domanda arriva dal livello che hai scelto, e da nessun altro.",
+        "feedback": "Ti dico subito se ci hai preso, mentre ti ricordi ancora perché l'hai detto.",
+        "adaptive": "Prima le domande che non hai mai visto, poi quelle che avevi sbagliato.",
+        "noVerdict": "Niente promosso, niente bocciato. Quel numero è affare dell'esame, non di qui."
+      },
+      "cta": "Inizia ad allenarti",
+      "starting": "Ti pesco le domande…",
+      "thinTitle": "Questo livello è troppo magro",
+      "thinSubtitle": "Non ci sono abbastanza domande caricate su questo livello per una sessione così lunga. Provane una più corta, o un altro livello.",
+      "progress": "{current} di {total}",
+      "tally": "{count} giuste finora",
+      "check": "Correggimela",
+      "checking": "Il Tannino la legge…",
+      "next": "Prossima domanda",
+      "toResult": "Vediamo com'è andata",
+      "correct": "Giusta.",
+      "wrong": "Eh, no.",
+      "correctAnswer": "La risposta",
+      "stalledTitle": "Il Tannino ha perso gli occhiali.",
+      "stalledBody": "Questa non è stata corretta, e non ti è stato contato niente contro. Rimandagliela e ci riprova.",
+      "retry": "Riprova a correggerla",
+      "notFoundTitle": "Sessione inesistente",
+      "notFoundSubtitle": "Questa sessione non è tua o non esiste più. Iniziane una nuova.",
+      "loading": "Ti pesco le domande…",
+      "end": "Chiudi la sessione",
+      "endWarn": {
+        "title": "Ti fermi qui?",
+        "body": "{count, plural, =0 {Non hai ancora risposto a niente, quindi non c'è nulla da registrare.} one {# risposta data. Ti conto quella e nient'altro.} other {# risposte date. Ti conto quelle e nient'altro.}}",
+        "confirm": "Mi fermo qui",
+        "cancel": "Vado avanti"
+      },
+      "result": {
+        "loading": "Faccio i conti…",
+        "title": "Sessione finita.",
+        "subtitle": "Nessun verdetto, nessun attestato. Solo quello che sai e quello che non sai, che è la metà utile.",
+        "nothingTitle": "Non hai risposto a niente.",
+        "nothingSubtitle": "Ti sei fermato prima di rispondere, quindi non c'è nulla da contare. Torna quando hai cinque minuti.",
+        "score": "{score} giuste su {total}",
+        "level": "Livello {level}",
+        "duration": "Tempo impiegato",
+        "again": "Allenati ancora",
+        "backToQuiz": "Torna al gioco"
+      }
+    },
     "start": {
       "title": "Lo passeresti adesso?",
       "subtitle": "Una prova sola, {count} domande, tutto il corso. Il Tannino corregge e te lo dice in faccia.",
@@ -136,11 +197,13 @@
     },
     "resume": {
       "title": "Hai un compito aperto",
+      "practiceTitle": "Hai una sessione di allenamento aperta",
       "progress": "{answered} risposte su {total}. Non si è perso niente: ti aspetta finché vuoi.",
       "cta": "Riprendilo",
       "abandon": "Buttalo e iniziane uno nuovo",
       "warn": {
         "title": "Butti tutto il compito?",
+        "practiceTitle": "Butti tutta la sessione?",
         "body": "{count, plural, =0 {È ancora intatto, quindi non c'è granché da piangere. Però sparisce per sempre.} one {Se ne va anche # risposta, per sempre.} other {Se ne vanno anche # risposte, per sempre.}}",
         "confirm": "Buttalo",
         "abandoning": "Lo butto…",

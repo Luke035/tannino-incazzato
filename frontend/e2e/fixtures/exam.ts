@@ -108,6 +108,9 @@ export const EXAM_ID = 7;
 export interface ExamFixture {
   id: number;
   mode: string;
+  // Null on an Exam: it is deliberately blind across all three Levels. Only a
+  // Practice Session carries one.
+  level: 1 | 2 | 3 | null;
   status: 'in_progress' | 'submitted' | 'abandoned';
   max_score: number;
   score: number | null;
@@ -124,6 +127,7 @@ export function examInProgress(): ExamFixture {
   return {
     id: EXAM_ID,
     mode: 'exam',
+    level: null,
     status: 'in_progress',
     max_score: EXAM_LENGTH,
     score: null,

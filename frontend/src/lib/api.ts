@@ -1,4 +1,12 @@
-import { CardAttempt, Denomination, Exam, Filter, Language } from '@/types';
+import {
+  CardAttempt,
+  Denomination,
+  Exam,
+  Filter,
+  Language,
+  PracticeAnswerResult,
+  QuizSession,
+} from '@/types';
 
 function apiUrl() {
   return process.env.NEXT_PUBLIC_API_URL ?? '';
@@ -209,6 +217,96 @@ export async function submitExam(examId: number): Promise<Exam | null> {
   });
   if (!res.ok) return null;
   return res.json();
+}
+
+// ── Promossi o Cirrotici: Practice ──────────────────────────────────────────
+// The same Session resource under a different mode, so the payload is the same.
+// What differs is that the Verdict comes back with the answer — Practice is
+// where the correction has to land while the reasoning is still fresh.
+
+// Why a Practice Session could not be drawn. `in_progress` is the player
+// already having a Session open in *any* mode — the backend refuses rather
+// than replacing it, so that no tap can destroy work. `level_too_thin` is the
+// chosen Level being unable to fill the chosen length, which is a fact about
+// the bank; anything else is the backend not answering, and the two are never
+// told to the student as the same thing.
+export type PracticeRefusal = 'in_progress' | 'level_too_thin' | 'unavailable';
+
+export type PracticeStart = { started: QuizSession } | { refused: PracticeRefusal };
+
+export async function startPractice(
+  level: number,
+  length: number
+): Promise<PracticeStart> {
+  const res = await fetch(`${apiUrl()}/quiz/practice`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ level, length }),
+  }).catch(() => null);
+  if (res === null) return { refused: 'unavailable' };
+  if (res.ok) return { started: await res.json() };
+
+  const detail = await res
+    .json()
+    .then((body) => body?.detail)
+    .catch(() => null);
+  if (detail === 'exam_in_progress') return { refused: 'in_progress' };
+  return { refused: detail === 'question_bank_too_small' ? 'level_too_thin' : 'unavailable' };
+}
+
+export async function fetchPracticeSession(sessionId: number): Promise<QuizSession | null> {
+  const res = await fetch(`${apiUrl()}/quiz/practice/${sessionId}`, {
+    credentials: 'include',
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+// Answers one question and comes back with the correction. Null means the
+// answer was not taken at all — a question already marked, or a backend that
+// did not answer. It never means "wrong": a Verdict only ever comes from the
+// backend, and its absence in the payload is a stalled agent, which the screen
+// tells the student about rather than counting against them.
+export async function savePracticeAnswer(
+  sessionId: number,
+  questionId: number,
+  answer: string,
+  language: Language
+): Promise<PracticeAnswerResult | null> {
+  const res = await fetch(
+    `${apiUrl()}/quiz/practice/${sessionId}/answers/${questionId}`,
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ answer, language }),
+    }
+  ).catch(() => null);
+  if (!res?.ok) return null;
+  return res.json();
+}
+
+// Ends the Session and records it. Always available: a student who runs out of
+// time is scored on what they actually answered, never trapped in a Session
+// they want to end.
+export async function finishPractice(sessionId: number): Promise<QuizSession | null> {
+  const res = await fetch(`${apiUrl()}/quiz/practice/${sessionId}/finish`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+// Throws the Session away and frees the slot, recording nothing. Only ever
+// called behind an explicit confirmation: it is not undoable.
+export async function abandonPractice(sessionId: number): Promise<boolean> {
+  const res = await fetch(`${apiUrl()}/quiz/practice/${sessionId}/abandon`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+  return res.ok;
 }
 
 // Asks the grading agent for the written answers. Safe to call again on a

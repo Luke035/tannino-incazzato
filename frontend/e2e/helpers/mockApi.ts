@@ -9,6 +9,14 @@ import {
   OPEN_FEEDBACK,
   examInProgress,
 } from '../fixtures/exam';
+import {
+  PRACTICE_CORRECT,
+  PRACTICE_FEEDBACK_RIGHT,
+  PRACTICE_FEEDBACK_WRONG,
+  PRACTICE_ID,
+  PracticeFixture,
+  practiceInProgress,
+} from '../fixtures/practice';
 
 const MOCK_USER = { id: 1, email: 'e2e-test@sommelier.test', first_name: 'Test', last_name: 'User' };
 
@@ -34,6 +42,16 @@ export async function mockApi(
     // How the grading agent behaves on the written answers: 'down' never grades
     // them, 'downOnce' fails the first request and grades on the retry.
     grader?: 'ok' | 'down' | 'downOnce';
+    // Starts the spec with a Practice Session already open, and optionally with
+    // some of it already answered — what a student who was interrupted comes
+    // back to.
+    practice?: PracticeFixture | null;
+    // Makes the chosen Level look too thin to fill a Session of that length.
+    practiceRefused?: boolean;
+    // The grading agent on a written *Practice* answer, which is marked one
+    // question at a time rather than a paper at a time. 'downOnce' stalls the
+    // first written answer and marks it on the retry.
+    practiceGrader?: 'ok' | 'down' | 'downOnce';
   }
 ): Promise<void> {
   const denoms = options?.denominations ?? DENOMINATIONS;
@@ -44,6 +62,18 @@ export async function mockApi(
   // and the score has to follow from them.
   let exam: ExamFixture | null = options?.exam ?? null;
   let gradingRequests = 0;
+
+  // The other mode of the same game. There is one Session in progress across
+  // both, which is exactly the rule the specs have to be able to exercise, so
+  // the two live side by side in this one mock rather than in two.
+  let practice: PracticeFixture | null = options?.practice ?? null;
+  let practiceGradingRequests = 0;
+
+  const inProgress = (): ExamFixture | PracticeFixture | null => {
+    if (exam?.status === 'in_progress') return exam;
+    if (practice?.status === 'in_progress') return practice;
+    return null;
+  };
 
   // A paper has a score only once every question on it carries a Verdict —
   // the same rule the backend applies, and the reason the recap can show the
@@ -67,10 +97,15 @@ export async function mockApi(
     const json = (body: unknown, status = 200) =>
       route.fulfill({ contentType: 'application/json', status, body: JSON.stringify(body) });
 
-    // The Session in progress, or nothing. Only an in-progress paper holds the
-    // slot: a submitted or an abandoned one has already freed it.
+    // Same guard as the Practice route below: an API path has no locale in
+    // front of it, and anything that does is the browser navigating.
+    if (!path.startsWith('/quiz/exams')) return route.fallback();
+
+    // The Session in progress, in whichever mode, or nothing. Only an
+    // in-progress Session holds the slot: a submitted or an abandoned one has
+    // already freed it.
     if (method === 'GET' && path.endsWith('/quiz/exams/current')) {
-      return json(exam && exam.status === 'in_progress' ? exam : null);
+      return json(inProgress());
     }
 
     if (method === 'POST' && path.endsWith('/quiz/exams')) {
@@ -80,9 +115,9 @@ export async function mockApi(
       if (options?.examRefused) {
         return json({ detail: 'question_bank_too_small' }, 409);
       }
-      // Refused rather than replacing it: one Session in progress at a time,
-      // and no tap destroys the paper the player already has open.
-      if (exam && exam.status === 'in_progress') {
+      // Refused rather than replacing it: one Session in progress at a time
+      // across every mode, and no tap destroys work the player already has.
+      if (inProgress()) {
         return json({ detail: 'exam_in_progress' }, 409);
       }
       exam = examInProgress();
@@ -149,6 +184,123 @@ export async function mockApi(
     }
 
     return json(exam);
+  });
+
+  // Practice is stateful in a different way from the Exam: the Verdict lands
+  // with the answer rather than at the end, so this mock marks one question at
+  // a time exactly as the backend does.
+  await page.route(/\/quiz\/practice/, (route) => {
+    const method = route.request().method();
+    const path = new URL(route.request().url()).pathname;
+    const json = (body: unknown, status = 200) =>
+      route.fulfill({ contentType: 'application/json', status, body: JSON.stringify(body) });
+
+    // The game's own screens live at `/{locale}/quiz/practice`, which this
+    // pattern matches just as happily as the API call it is meant for. An API
+    // path has no locale in front of it — anything that does is the browser
+    // navigating, and must be let through untouched.
+    if (!path.startsWith('/quiz/practice')) return route.fallback();
+
+    if (method === 'POST' && path.endsWith('/quiz/practice')) {
+      if (options?.practiceRefused) {
+        return json({ detail: 'question_bank_too_small' }, 409);
+      }
+      if (inProgress()) {
+        return json({ detail: 'exam_in_progress' }, 409);
+      }
+      practice = practiceInProgress();
+      const body = route.request().postDataJSON() as { level: number; length: number };
+      practice.level = body.level as 1 | 2 | 3;
+      for (const question of practice.questions) question.level = practice.level;
+      return json(practice, 201);
+    }
+
+    if (!practice || !path.includes(`/quiz/practice/${PRACTICE_ID}`)) {
+      return json({ detail: 'exam_not_found' }, 404);
+    }
+
+    // Answering *is* asking to be marked, so this returns the correction
+    // rather than a bare acknowledgement — the one thing that makes Practice
+    // Practice.
+    if (method === 'PUT') {
+      if (practice.status !== 'in_progress') {
+        return json({ detail: 'exam_not_in_progress' }, 409);
+      }
+      const questionId = Number(path.split('/').pop());
+      const answer = (route.request().postDataJSON() as { answer: string }).answer;
+      const question = practice.questions.find((one) => one.question_id === questionId);
+      if (!question) return json({ detail: 'question_not_in_exam' }, 404);
+      // A question already marked is closed: being shown the answer and then
+      // being allowed to change yours is not studying.
+      if (question.verdict !== null) {
+        return json({ detail: 'answer_already_graded' }, 409);
+      }
+      question.answer = answer;
+
+      if (question.format === 'open') {
+        practiceGradingRequests += 1;
+        const down =
+          options?.practiceGrader === 'down' ||
+          (options?.practiceGrader === 'downOnce' && practiceGradingRequests === 1);
+        // A written answer the agent could not read is left unmarked. It is
+        // never turned into a wrong answer, and it gives nothing away.
+        if (down) {
+          return json({
+            question_id: questionId,
+            answer,
+            verdict: null,
+            correct_answer: null,
+            feedback: null,
+          });
+        }
+      }
+
+      const correct = answer === PRACTICE_CORRECT[questionId];
+      question.verdict = correct ? 'correct' : 'wrong';
+      question.correct_answer = PRACTICE_CORRECT[questionId];
+      if (question.format === 'open') {
+        question.feedback = correct ? PRACTICE_FEEDBACK_RIGHT : PRACTICE_FEEDBACK_WRONG;
+      }
+      return json({
+        question_id: questionId,
+        answer,
+        verdict: question.verdict,
+        correct_answer: question.correct_answer,
+        feedback: question.feedback,
+      });
+    }
+
+    if (method === 'POST' && path.endsWith('/abandon')) {
+      if (practice.status !== 'in_progress') {
+        return json({ detail: 'exam_not_in_progress' }, 409);
+      }
+      practice.status = 'abandoned';
+      return json(practice);
+    }
+
+    // Scored on what was actually marked, and on nothing else: a Session ended
+    // after four questions reads "4 out of 4", which is the truth about it.
+    if (method === 'POST' && path.endsWith('/finish')) {
+      if (practice.status !== 'in_progress') {
+        return json({ detail: 'exam_not_in_progress' }, 409);
+      }
+      const marked = practice.questions.filter((one) => one.verdict !== null);
+      practice.status = 'submitted';
+      practice.max_score = marked.length;
+      practice.score = marked.filter((one) => one.verdict === 'correct').length;
+      practice.score_pct = marked.length
+        ? Math.round((practice.score / marked.length) * 1000) / 10
+        : null;
+      practice.submitted_at = new Date().toISOString();
+      practice.duration_seconds = 74;
+      // Every question the student was shown the answer to now carries it.
+      for (const one of practice.questions) {
+        one.correct_answer = PRACTICE_CORRECT[one.question_id];
+      }
+      return json(practice);
+    }
+
+    return json(practice);
   });
 
   await page.route('**/auth/me', (route) =>

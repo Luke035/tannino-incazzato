@@ -208,6 +208,52 @@ and `gradeExam` in `frontend/src/lib/api.ts`; never call these endpoints from a 
 (one offers the player a choice, the other is a dead end) and the wrapper is where they are told
 apart.
 
+### Practice mode (`backend/app/exams/practice.py`)
+Practice is the same Session resource under `mode = practice`, on the same tables, sharing
+`backend/app/exams/service.py` with the Exam — loading a Session, deciding what of it the
+browser may see, shuffling options and marking a Closed Question are written once, there. It
+differs from the Exam in exactly three ways a caller can see:
+
+- **One chosen Level** (`PRACTICE_LEVELS`), because a student drills the block they have
+  lessons on. The Exam is never filtered by Level; Practice always is.
+- **The length they have time for** — 10, 20 or 30 (`PRACTICE_LENGTHS`), in the Exam's own
+  format proportions scaled by the largest remainder method and then *written down* in
+  `PRACTICE_COMPOSITION`: 5/4/1, 10/7/3, 14/11/5. Open Questions stay the largest block at
+  every length.
+- **The Verdict lands with the answer.** The `PUT` returns it, along with the correct answer and
+  the agent's note — one model call for one Open Question, not a batch.
+
+| Endpoint | Does |
+|---|---|
+| `POST /quiz/practice` | Draws at `{level, length}`. 422 `level_not_offered` / `length_not_offered`, 409 `question_bank_too_small`, 409 `exam_in_progress`. |
+| `GET /quiz/practice/{id}` | The Session with the corrections on the questions already marked. |
+| `PUT /quiz/practice/{id}/answers/{question_id}` | Records **and marks** one answer, returning `{verdict, correct_answer, feedback}`. |
+| `POST /quiz/practice/{id}/finish` | Ends and records it. |
+| `POST /quiz/practice/{id}/abandon` | Frees the slot, recording nothing. |
+
+Rules that are not negotiable:
+- **Nothing here passes or fails anybody.** `passed` is `None` on a Practice Session however it
+  went — the only pass mark in the product is the Exam's, and `read_session` gates it on mode.
+- **A question is answered once.** One that already carries a Verdict is closed (409
+  `answer_already_graded`): being shown the right answer and then being allowed to change yours
+  is not studying. A written answer the agent *could not read* carries no Verdict and is
+  therefore not closed — sending it again is the retry.
+- **There is no skipping.** A blank is refused (422 `answer_required`) rather than marked wrong
+  on the spot, which could not be taken back.
+- **Selection is adaptive**, which the Exam's deliberately is not: never-seen questions first,
+  then the ones this player got wrong, then the ones they have not seen for longest. History is
+  read across *every* mode, and a question that was drawn but never answered counts as never
+  seen.
+- **Scored on what was actually marked.** `finish` sets `max_score` to the number of questions
+  carrying a Verdict, so a Session ended after four questions reads 4 of 4. A question never
+  reached and an answer the agent could not read are both left out rather than counted wrong.
+- The single-in-progress rule is the game's, not the mode's: `GET /quiz/exams/current` answers
+  with a Practice Session just as readily and `mode` says which it is. Only `mode = exam` rows
+  are Exam history.
+
+Use `startPractice`, `fetchPracticeSession`, `savePracticeAnswer`, `finishPractice` and
+`abandonPractice` in `frontend/src/lib/api.ts`; never call these endpoints from a component.
+
 ### Grading the Open Questions (`backend/app/ai/grading.py`)
 The Open Questions of a submitted Exam are graded by a **PydanticAI** agent with a typed result,
 in one call carrying the whole paper (ADR 0010). `/hint`, `/memorize` and `/review` are untouched

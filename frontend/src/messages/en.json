@@ -119,8 +119,69 @@
     "loading": "Pulling your paper together…",
     "emptyTitle": "The bank is dry",
     "emptySubtitle": "There aren't enough questions loaded to make a paper. Come back once the bank has been filled.",
-      "unavailableTitle": "The tannin isn't answering",
-      "unavailableSubtitle": "Couldn't reach the cellar to draw you a paper. Nothing is lost — try again in a moment.",
+    "unavailableTitle": "The tannin isn't answering",
+    "unavailableSubtitle": "Couldn't reach the cellar to draw you a paper. Nothing is lost — try again in a moment.",
+    "modes": {
+      "title": "Two ways in",
+      "practice": {
+        "name": "Practice",
+        "blurb": "One level, the length you have time for, and the tannin tells you straight after every answer. This is where you actually study.",
+        "cta": "Practise a level"
+      }
+    },
+    "practice": {
+      "eyebrow": "Practice",
+      "title": "Study, not sentencing.",
+      "subtitle": "Pick the level you have lessons on and how long you've got. Nothing here is passed or failed.",
+      "levelLabel": "Which level?",
+      "lengthLabel": "How many questions?",
+      "lengthOption": "{count} questions",
+      "openNote": "{count} of them are written answers, and the tannin reads every word.",
+      "rules": {
+        "level": "Every question comes from the level you picked, and nowhere else.",
+        "feedback": "You're told straight away whether you got it, while you still remember why you said it.",
+        "adaptive": "Questions you've never seen come first, then the ones you got wrong before.",
+        "noVerdict": "No pass, no fail. That number is the exam's job, not this one's."
+      },
+      "cta": "Start practising",
+      "starting": "Picking your questions…",
+      "thinTitle": "That level is too thin",
+      "thinSubtitle": "There aren't enough questions loaded at this level to fill a session that long. Try a shorter one, or another level.",
+      "progress": "{current} of {total}",
+      "tally": "{count} right so far",
+      "check": "Mark my answer",
+      "checking": "The tannin is reading…",
+      "next": "Next question",
+      "toResult": "See how it went",
+      "correct": "Right.",
+      "wrong": "Nope.",
+      "correctAnswer": "The answer",
+      "stalledTitle": "The tannin lost his glasses.",
+      "stalledBody": "That one didn't get marked, and nothing was counted against you. Send it again and he'll have another go.",
+      "retry": "Try marking it again",
+      "notFoundTitle": "No such session",
+      "notFoundSubtitle": "This session isn't yours or no longer exists. Start a fresh one.",
+      "loading": "Picking your questions…",
+      "end": "End the session",
+      "endWarn": {
+        "title": "Stop here?",
+        "body": "{count, plural, =0 {You haven't answered anything yet, so there's nothing to record.} one {# answer given. You'll be scored on that one and nothing else.} other {# answers given. You'll be scored on those and nothing else.}}",
+        "confirm": "Stop here",
+        "cancel": "Keep going"
+      },
+      "result": {
+        "loading": "Adding it up…",
+        "title": "Session done.",
+        "subtitle": "No verdict, no certificate. Just what you know and what you don't, which is the useful half.",
+        "nothingTitle": "Nothing answered.",
+        "nothingSubtitle": "You stopped before answering anything, so there's nothing to count. Come back when you have five minutes.",
+        "score": "{score} of {total} right",
+        "level": "Level {level}",
+        "duration": "Time taken",
+        "again": "Practise again",
+        "backToQuiz": "Back to the game"
+      }
+    },
     "start": {
       "title": "Would you pass right now?",
       "subtitle": "One sitting, {count} questions, the whole course. The tannin marks it and tells you straight.",
@@ -136,11 +197,13 @@
     },
     "resume": {
       "title": "You left a paper open",
+      "practiceTitle": "You left a practice session open",
       "progress": "{answered} of {total} answered. Nothing was lost — it waits as long as you need.",
       "cta": "Pick it up",
       "abandon": "Bin it and start a new one",
       "warn": {
         "title": "Bin the whole paper?",
+        "practiceTitle": "Bin the whole session?",
         "body": "{count, plural, =0 {It's untouched, so there's nothing to mourn. Gone for good, though.} one {# answer goes in the bin with it, for good.} other {# answers go in the bin with it, for good.}}",
         "confirm": "Bin it",
         "abandoning": "Binning it…",

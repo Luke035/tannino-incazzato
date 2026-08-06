@@ -14,10 +14,11 @@ from sqlmodel import Field, SQLModel
 
 from app.questions.model import FORMAT_MULTIPLE_CHOICE, FORMAT_OPEN, FORMAT_TRUE_FALSE
 
-# Modes of the game. Only the Exam exists so far; Practice and Error Review are
-# stored against the same tables when they arrive, which is why the column is
-# written now rather than retrofitted.
+# Modes of the game. They share these tables — a Session is a Session whatever
+# it is for — and the `mode` column is what tells them apart. It is also what
+# keeps Practice out of the Exam history: only `exam` rows are an exam result.
 MODE_EXAM = "exam"
+MODE_PRACTICE = "practice"
 
 STATUS_IN_PROGRESS = "in_progress"
 STATUS_SUBMITTED = "submitted"
@@ -40,6 +41,28 @@ EXAM_COMPOSITION = {
     FORMAT_OPEN: 14,
     FORMAT_MULTIPLE_CHOICE: 11,
     FORMAT_TRUE_FALSE: 5,
+}
+
+# ── Practice ──────────────────────────────────────────────────────────────────
+# The lengths a Practice Session comes in, so that a session fits the time the
+# student actually has. Nothing here is passed or failed: the only pass mark in
+# the product stays the Exam's.
+PRACTICE_LENGTHS = (10, 20, 30)
+
+# The Levels a Practice Session can be drawn from. Unlike the Exam — which is
+# deliberately blind across all three — Practice is drawn from exactly one, so
+# that a student can drill the block they have lessons on this month.
+PRACTICE_LEVELS = (1, 2, 3)
+
+# The same format proportions as the Exam, scaled to each length by the largest
+# remainder method and then written down, because a composition that is
+# computed is a composition nobody can check. Open Questions stay the majority
+# at every length — they are what the real paper is mostly made of, and they
+# are the ones worth practising.
+PRACTICE_COMPOSITION = {
+    10: {FORMAT_OPEN: 5, FORMAT_MULTIPLE_CHOICE: 4, FORMAT_TRUE_FALSE: 1},
+    20: {FORMAT_OPEN: 10, FORMAT_MULTIPLE_CHOICE: 7, FORMAT_TRUE_FALSE: 3},
+    30: dict(EXAM_COMPOSITION),
 }
 
 # The two answers a true/false question accepts, in the bank's own vocabulary.

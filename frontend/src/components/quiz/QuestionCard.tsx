@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { MAX_OPEN_ANSWER_CHARS } from '@/lib/exam';
-import { ExamQuestion } from '@/types';
+import { ExamQuestion, ExamVerdict } from '@/types';
 
 // The two answers a true/false question accepts, in the bank's own vocabulary.
 // The player answers in those terms and only the label is localized, so a paper
@@ -20,18 +20,37 @@ export function optionLabel(question: ExamQuestion, option: string, t: (key: str
   return label ? t(`quiz.${label}`) : option;
 }
 
+/** What a question that has already been marked shows: which option was the
+ *  right one, and therefore which one the player got wrong. Only ever passed in
+ *  Practice — in the Exam nothing is revealed until the paper is handed in, and
+ *  the payload does not carry it before then either. */
+export interface QuestionReveal {
+  verdict: ExamVerdict;
+  correctAnswer: string | null;
+}
+
 /** One question on its own screen. Every control sits within a thumb's reach:
  *  this game is played standing on a bus. */
 export function QuestionCard({
   question,
   answer,
   onAnswer,
+  reveal = null,
+  busy = false,
 }: {
   question: ExamQuestion;
   answer: string | null;
   onAnswer: (value: string) => void;
+  // Set once the question has been marked, which closes it: being shown the
+  // right answer and then being allowed to change yours is not studying, and
+  // the backend refuses it anyway.
+  reveal?: QuestionReveal | null;
+  // A written answer is with the agent. The controls lock while it is, so that
+  // a second tap does not send a second answer.
+  busy?: boolean;
 }) {
   const t = useTranslations();
+  const locked = reveal !== null || busy;
 
   // True/false is two short labels — a proper pill pair, side by side.
   // Multiple-choice options are prose that wraps, so they take the large card
@@ -85,17 +104,35 @@ export function QuestionCard({
         {question.text}
       </h2>
 
-      {isOpen && <OpenAnswerField answer={answer} onAnswer={onAnswer} />}
+      {isOpen && (
+        <OpenAnswerField answer={answer} onAnswer={onAnswer} readOnly={locked} />
+      )}
 
       <div className={isTrueFalse ? 'grid grid-cols-2 gap-3' : 'flex flex-col gap-3'}>
         {question.options.map((option) => {
           const selected = answer === option;
+          // Once the question is marked the colours stop meaning "picked" and
+          // start meaning "right" and "wrong" — which is the only thing worth
+          // looking at on a question that is over.
+          const right = reveal !== null && option === reveal.correctAnswer;
+          const missed = reveal !== null && selected && !right;
+          const edge = right
+            ? 'var(--correct)'
+            : missed
+              ? 'var(--rust)'
+              : selected && reveal === null
+                ? 'var(--accent)'
+                : 'var(--border)';
+          const filled = right || missed || (selected && reveal === null);
+
           return (
             <button
               key={option}
               data-testid="exam-option"
               data-option={option}
+              data-marked={right ? 'correct' : missed ? 'wrong' : undefined}
               aria-pressed={selected}
+              disabled={locked}
               onClick={() => onAnswer(option)}
               // generous tap target — one thumb, no aiming
               className={`w-full px-5 py-4 font-semibold transition-colors ${
@@ -105,9 +142,12 @@ export function QuestionCard({
                 fontFamily: 'var(--font-sans)',
                 fontSize: '0.95rem',
                 minHeight: '3.25rem',
-                backgroundColor: selected ? 'var(--accent)' : 'var(--surface-2)',
-                color: selected ? 'white' : 'var(--ink)',
-                border: `2px solid ${selected ? 'var(--accent)' : 'var(--border)'}`,
+                backgroundColor: filled ? edge : 'var(--surface-2)',
+                color: filled ? 'white' : 'var(--ink)',
+                border: `2px solid ${edge}`,
+                // A locked question is still legible: dimming it would hide
+                // the correction it exists to show.
+                opacity: locked && !filled ? 0.6 : 1,
               }}
             >
               {optionLabel(question, option, t)}
@@ -127,9 +167,11 @@ export function QuestionCard({
 function OpenAnswerField({
   answer,
   onAnswer,
+  readOnly = false,
 }: {
   answer: string | null;
   onAnswer: (value: string) => void;
+  readOnly?: boolean;
 }) {
   const t = useTranslations();
   const field = useRef<HTMLTextAreaElement>(null);
@@ -176,6 +218,7 @@ function OpenAnswerField({
         onChange={(event) => onAnswer(event.target.value.slice(0, MAX_OPEN_ANSWER_CHARS))}
         onFocus={keepInView}
         rows={4}
+        readOnly={readOnly}
         maxLength={MAX_OPEN_ANSWER_CHARS}
         placeholder={t('quiz.exam.openPlaceholder')}
         // Autocorrect off: this is a wine vocabulary the phone has never heard

@@ -4,11 +4,11 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/i18n/navigation';
 import Header from '@/components/Header';
 import { Mascot } from '@/components/Mascot';
-import { optionLabel } from '@/components/quiz/QuestionCard';
+import { Breakdown } from '@/components/quiz/Breakdown';
 import { fetchExam, gradeExam, startExam } from '@/lib/api';
 import { PASS_MARK_PCT } from '@/lib/exam';
 import { formatDuration } from '@/lib/examTime';
-import { Exam, ExamQuestion, Language } from '@/types';
+import { Exam, Language } from '@/types';
 
 /** The one answer the student came for: a percentage and a plain verdict.
  *
@@ -118,7 +118,7 @@ export default function ExamResultPage({
     return (
       <ResultShell>
         <StillGrading failed={gradingFailed} onRetry={() => void grade()} />
-        <Breakdown exam={exam} />
+        <Breakdown questions={exam.questions} />
       </ResultShell>
     );
   }
@@ -187,7 +187,7 @@ export default function ExamResultPage({
         </dl>
       </section>
 
-      <Breakdown exam={exam} />
+      <Breakdown questions={exam.questions} />
 
       <div className="flex flex-col gap-3 pt-2">
         <button
@@ -277,118 +277,6 @@ function StillGrading({ failed, onRetry }: { failed: boolean; onRetry: () => voi
         </div>
       )}
     </section>
-  );
-}
-
-/** Question by question. A Closed Question that went wrong shows the correct
- *  answer and nothing else; a written one also shows what the agent found
- *  missing. A written one still being graded shows neither — it carries no
- *  verdict yet, and the answer is not given away before it does. */
-function Breakdown({ exam }: { exam: Exam }) {
-  const t = useTranslations();
-
-  return (
-    <>
-      <h2
-        className="pt-2"
-        style={{ fontFamily: 'var(--font-display)', fontSize: '1.3rem', color: 'var(--ink)' }}
-      >
-        {t('quiz.result.breakdown')}
-      </h2>
-
-      <ol className="flex flex-col gap-3">
-        {exam.questions.map((question, position) => (
-          <BreakdownRow key={question.question_id} question={question} position={position} />
-        ))}
-      </ol>
-    </>
-  );
-}
-
-function BreakdownRow({ question, position }: { question: ExamQuestion; position: number }) {
-  const t = useTranslations();
-
-  const pending = question.verdict === null;
-  const correct = question.verdict === 'correct';
-  const edge = pending ? 'var(--border)' : correct ? 'var(--correct)' : 'var(--rust)';
-
-  return (
-    <li
-      data-testid={
-        pending ? 'exam-answer-grading' : correct ? 'exam-answer-correct' : 'exam-answer-wrong'
-      }
-      className="flex flex-col gap-2 card-rounded p-4"
-      style={{ backgroundColor: 'var(--surface)', border: `2px solid ${edge}` }}
-    >
-      <span
-        style={{
-          fontFamily: 'var(--font-sans)',
-          fontSize: '0.7rem',
-          fontWeight: 800,
-          letterSpacing: '0.1em',
-          color: pending ? 'var(--muted)' : edge,
-        }}
-      >
-        {position + 1}
-      </span>
-      <p
-        style={{
-          fontFamily: 'var(--font-display)',
-          fontSize: '1rem',
-          lineHeight: '1.35',
-          color: 'var(--ink)',
-        }}
-      >
-        {question.text}
-      </p>
-      <p
-        style={{ fontFamily: 'var(--font-sans)', fontSize: '0.85rem', color: 'var(--muted)' }}
-      >
-        {t('quiz.result.yourAnswer')}:{' '}
-        <strong style={{ color: pending ? 'var(--ink)' : edge }}>
-          {question.answer
-            ? optionLabel(question, question.answer, t)
-            : t('quiz.result.noAnswer')}
-        </strong>
-      </p>
-
-      {pending && (
-        <p
-          data-testid="exam-answer-grading-note"
-          style={{ fontFamily: 'var(--font-sans)', fontSize: '0.82rem', color: 'var(--faint)' }}
-        >
-          {t('quiz.result.beingGraded')}
-        </p>
-      )}
-
-      {/* A wrong answer leaves the recap knowing more than it arrived with. */}
-      {!pending && !correct && question.correct_answer && (
-        <p
-          data-testid="exam-correct-answer"
-          style={{ fontFamily: 'var(--font-sans)', fontSize: '0.85rem', color: 'var(--ink)' }}
-        >
-          {t('quiz.result.correctAnswer')}:{' '}
-          <strong>{optionLabel(question, question.correct_answer, t)}</strong>
-        </p>
-      )}
-
-      {/* Only a written answer gets one, and only from the grading agent. */}
-      {!pending && question.feedback && (
-        <p
-          data-testid="exam-answer-feedback"
-          className="card-rounded p-3"
-          style={{
-            fontFamily: 'var(--font-sans)',
-            fontSize: '0.85rem',
-            lineHeight: '1.45',
-            color: 'var(--ink)',
-            backgroundColor: 'var(--surface-2)',
-          }}
-        >
-          {question.feedback}
-        </p>
-      )}
-    </li>
   );
 }
 
