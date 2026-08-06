@@ -210,9 +210,11 @@ apart.
 
 ### Practice mode (`backend/app/exams/practice.py`)
 Practice is the same Session resource under `mode = practice`, on the same tables, sharing
-`backend/app/exams/service.py` with the Exam — loading a Session, deciding what of it the
-browser may see, shuffling options and marking a Closed Question are written once, there. It
-differs from the Exam in exactly three ways a caller can see:
+`backend/app/exams/service.py` with the Exam and with Error Review — loading a Session, deciding
+what of it the browser may see, shuffling options, marking an answer as it is given, reading the
+player's history and ending a sitting are written once, there. What lives in `practice.py` is the
+draw, which is what makes the mode itself. It differs from the Exam in exactly three ways a caller
+can see:
 
 - **One chosen Level** (`PRACTICE_LEVELS`), because a student drills the block they have
   lessons on. The Exam is never filtered by Level; Practice always is.
@@ -258,6 +260,59 @@ Rules that are not negotiable:
 
 Use `startPractice`, `fetchPracticeSession`, `savePracticeAnswer`, `finishPractice` and
 `abandonPractice` in `frontend/src/lib/api.ts`; never call these endpoints from a component.
+
+The sitting and the recap are `FeedbackSitting` / `FeedbackResult` in
+`frontend/src/components/quiz/`, shared with Error Review — both modes mark as they go, so they are
+one screen parameterised by mode, copy namespace and API wrappers. Every `data-testid` is prefixed
+with the mode, so `practice-check` and `review-check` are the same button in two modes.
+
+### Error Review and the Mastered rule (`backend/app/exams/review.py`)
+The third mode, `mode = review`, on the same tables and the same service layer. It drills what this
+player personally keeps getting wrong, and it is the only mode whose pool is finite: emptying it is
+winning.
+
+- **The pool** is every question this player has *answered* — in any mode, and whatever became of
+  the Session that asked, an abandoned one included — that is `active` and not yet Mastered. A
+  question drawn but never reached is not one of theirs.
+- **Mastered** is `MASTERY_SESSIONS = 3` correct answers in **three distinct Sessions**. Three
+  inside one sitting count once: the rule is `COUNT(DISTINCT session_id)` in
+  `service.mastery_counts`, and `tests/test_review.py` asserts that from both sides of the
+  boundary.
+- **There is no Level and no format composition.** Both would be the game choosing the questions,
+  when the player's own record already has.
+
+| Endpoint | Does |
+|---|---|
+| `GET /quiz/review/pool` | `{pending, mastery_sessions}` — how many questions are still waiting. Declared **before** `/{id}`. Zero is a real answer, not an error. |
+| `POST /quiz/review` | Draws at `{length}` (`REVIEW_LENGTHS`). 422 `length_not_offered`, 409 `nothing_to_review` on an empty pool, 409 `exam_in_progress`. |
+| `GET /quiz/review/{id}` | The Session, plus `pending` recomputed at the moment of asking. |
+| `PUT /quiz/review/{id}/answers/{question_id}` | Records **and marks** one answer, exactly as Practice does. |
+| `POST /quiz/review/{id}/finish` | Ends and records it. This is what makes its correct answers count. |
+| `POST /quiz/review/{id}/abandon` | Frees the slot. Nothing in it counts towards mastery. |
+
+Rules that are not negotiable:
+- **Mastery is derived, never counted.** `service.mastery_counts` reads the stored answers on every
+  call; there is no counter column and there must not be one. A counter and a history can disagree,
+  and this cannot — a Session that is deleted takes its contribution with it.
+- **Only a submitted Session buys mastery**, and every mode's does. An abandoned Session earns
+  nothing, because credit for a rule this strict has to come from a sitting that was actually
+  finished — while its *mistakes* stay on record in `service.history`, because binning a Session
+  does not unmake them. That asymmetry is deliberate.
+- **An empty pool is a designed state.** It is refused with 409 `nothing_to_review` and the screen
+  turns it into the congratulation it is, with the two ways to make more of it. It is never an
+  error and never a blank screen.
+- **A pool shorter than the requested length simply serves what exists** — `max_score` is
+  `len(drawn)`. Refusing to show a student their last four mistakes because they asked for ten
+  would be absurd.
+- `pending` is on **every** review payload and recomputed each time, because the number moves
+  during the Session and watching it fall is the reward the mode is built around. It only moves on
+  `finish`, which is the truth about when mastery is earned.
+
+Use `fetchErrorReviewPool`, `startErrorReview`, `fetchErrorReview`, `saveErrorReviewAnswer`,
+`finishErrorReview` and `abandonErrorReview` in `frontend/src/lib/api.ts`. They are named
+`ErrorReview` to keep them away from `fetchReview`, which is Mappa dei Vini's end-of-game write-up
+and has nothing to do with the quiz — the same collision bites `page.route('**/review')` in the
+Playwright mock, which guards against `/quiz/review` for exactly this reason.
 
 ### Grading the Open Questions (`backend/app/ai/grading.py`)
 The Open Questions of a submitted Exam are graded by a **PydanticAI** agent with a typed result,

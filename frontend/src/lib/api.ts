@@ -6,6 +6,8 @@ import {
   Language,
   PracticeAnswerResult,
   QuizSession,
+  ReviewPool,
+  ReviewSession,
 } from '@/types';
 
 function apiUrl() {
@@ -322,4 +324,103 @@ export async function gradeExam(examId: number, language: Language): Promise<Exa
   });
   if (!res.ok) return null;
   return res.json();
+}
+
+// ── Promossi o Cirrotici: Error Review ───────────────────────────────────────
+// The same Session resource again, under `mode = review`, with the corrections
+// landing as they do in Practice. What is different is where the questions come
+// from: this player's own record, minus everything they have Mastered. The
+// payload carries `pending` — how many are still waiting — because that number
+// is the whole state of the mode and it moves while the Session is being sat.
+//
+// Named `ErrorReview` throughout to keep it away from `fetchReview`, which is
+// Mappa dei Vini's end-of-game write-up and has nothing to do with the quiz.
+
+// Why an Error Review Session could not be drawn. `nothing_to_review` is the
+// pool being empty, which is the mode working rather than failing: either the
+// student has answered nothing yet or they have Mastered all of it, and the
+// screen says which. `in_progress` is a Session already open in *any* mode.
+// Anything else is the backend not answering, and the three are never told to
+// the student as the same thing.
+export type ReviewRefusal = 'in_progress' | 'nothing_to_review' | 'unavailable';
+
+export type ReviewStart = { started: ReviewSession } | { refused: ReviewRefusal };
+
+// How many questions are still waiting to be Mastered, before a Session exists.
+// Null is the backend not answering — never rendered as "nothing left to do",
+// which is the one lie this screen must not tell.
+export async function fetchErrorReviewPool(): Promise<ReviewPool | null> {
+  const res = await fetch(`${apiUrl()}/quiz/review/pool`, {
+    credentials: 'include',
+  }).catch(() => null);
+  if (!res?.ok) return null;
+  return res.json();
+}
+
+export async function startErrorReview(length: number): Promise<ReviewStart> {
+  const res = await fetch(`${apiUrl()}/quiz/review`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ length }),
+  }).catch(() => null);
+  if (res === null) return { refused: 'unavailable' };
+  if (res.ok) return { started: await res.json() };
+
+  const detail = await res
+    .json()
+    .then((body) => body?.detail)
+    .catch(() => null);
+  if (detail === 'exam_in_progress') return { refused: 'in_progress' };
+  return { refused: detail === 'nothing_to_review' ? 'nothing_to_review' : 'unavailable' };
+}
+
+export async function fetchErrorReview(sessionId: number): Promise<ReviewSession | null> {
+  const res = await fetch(`${apiUrl()}/quiz/review/${sessionId}`, {
+    credentials: 'include',
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+// Answers one question and comes back with the correction. Null never means
+// "wrong": a Verdict only ever comes from the backend, and its absence is a
+// stalled agent, which the screen tells the student about rather than counting
+// against them.
+export async function saveErrorReviewAnswer(
+  sessionId: number,
+  questionId: number,
+  answer: string,
+  language: Language
+): Promise<PracticeAnswerResult | null> {
+  const res = await fetch(`${apiUrl()}/quiz/review/${sessionId}/answers/${questionId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ answer, language }),
+  }).catch(() => null);
+  if (!res?.ok) return null;
+  return res.json();
+}
+
+// Ends the Session and records it. Submitting is what makes its correct answers
+// count towards the Mastered rule, so the `pending` this returns is the first
+// one that includes the work just done.
+export async function finishErrorReview(sessionId: number): Promise<ReviewSession | null> {
+  const res = await fetch(`${apiUrl()}/quiz/review/${sessionId}/finish`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+// Throws the Session away and frees the slot. Nothing done in it counts towards
+// mastery. Only ever called behind an explicit confirmation: it is not undoable.
+export async function abandonErrorReview(sessionId: number): Promise<boolean> {
+  const res = await fetch(`${apiUrl()}/quiz/review/${sessionId}/abandon`, {
+    method: 'POST',
+    credentials: 'include',
+  });
+  return res.ok;
 }

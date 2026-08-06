@@ -63,7 +63,7 @@ export interface ExamQuestion {
 // Which mode of the game a Session belongs to. There is one Session in
 // progress at a time across all of them, so the mode is what tells a returning
 // player which screen they were on.
-export type QuizMode = 'exam' | 'practice';
+export type QuizMode = 'exam' | 'practice' | 'review';
 
 export interface Exam {
   id: number;
@@ -86,13 +86,31 @@ export interface Exam {
   questions: ExamQuestion[];
 }
 
-// The Exam and Practice are the same resource with a different `mode`, so they
-// are the same payload. The alias is here so that Practice code does not have
-// to call a Practice Session an Exam to say what it is holding.
+// Every mode is the same resource with a different `mode`, so they are the same
+// payload. The alias is here so that code outside the Exam does not have to
+// call a Session an Exam to say what it is holding.
 export type QuizSession = Exam;
 
-// What comes back from answering one Practice question: the Verdict lands with
-// the answer, which is the whole reason the mode exists. `verdict` is null only
+// An Error Review Session carries one thing the others do not: how many
+// questions are still waiting to be Mastered, counted at the moment of asking.
+// It is on every response because the number moves *during* the Session — that
+// is what progress looks like in this mode.
+export interface ReviewSession extends Exam {
+  pending: number;
+}
+
+// How much is left to learn, before there is a Session to put it in. Zero is a
+// real answer and not an error: emptying the pool is winning.
+export interface ReviewPool {
+  pending: number;
+  // The bar a question has to clear, so no translation string has to hardcode
+  // a rule that lives in the backend.
+  mastery_sessions: number;
+}
+
+// What comes back from answering one question in a mode that marks as it goes —
+// Practice or Error Review. The Verdict lands with the answer, which is the
+// whole reason those modes exist. `verdict` is null only
 // when the agent could not read a written answer — that is not a wrong answer,
 // gives nothing away, and is retried by sending the same answer again.
 export interface PracticeAnswerResult {

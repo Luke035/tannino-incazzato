@@ -6,14 +6,16 @@ import Header from '@/components/Header';
 import { Mascot } from '@/components/Mascot';
 import { ConfirmSheet } from '@/components/quiz/ConfirmSheet';
 import {
+  abandonErrorReview,
   abandonExam,
   abandonPractice,
   ExamRefusal,
   fetchCurrentExam,
+  fetchErrorReviewPool,
   startExam,
 } from '@/lib/api';
 import { answeredCount, EXAM_COMPOSITION, EXAM_LENGTH, PASS_MARK_PCT } from '@/lib/exam';
-import { Exam } from '@/types';
+import { Exam, QuizMode } from '@/types';
 
 // Mobile-first by design: every control below is reachable with one thumb.
 export default function QuizPage() {
@@ -29,12 +31,19 @@ export default function QuizPage() {
   const [openExam, setOpenExam] = useState<Exam | null>(null);
   const [confirmingAbandon, setConfirmingAbandon] = useState(false);
   const [abandoning, setAbandoning] = useState(false);
+  // How many questions this player still has to Master. Null until it is known
+  // — the Error Review card offers itself either way, and only the number
+  // waits, because a card that appeared late would move the screen under a
+  // thumb already on its way down.
+  const [pending, setPending] = useState<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     void (async () => {
       const current = await fetchCurrentExam();
       if (!cancelled) setOpenExam(current);
+      const pool = await fetchErrorReviewPool();
+      if (!cancelled && pool) setPending(pool.pending);
     })();
     return () => {
       cancelled = true;
@@ -62,22 +71,25 @@ export default function QuizPage() {
 
   // The one open Session belongs to whichever mode drew it, and every screen
   // that touches it has to ask the same question: which mode? Asked once, here.
-  const openIsPractice = openExam?.mode === 'practice';
+  const openMode: QuizMode = openExam?.mode ?? 'exam';
 
   const abandon = useCallback(async () => {
     if (!openExam) return;
     setAbandoning(true);
     // Each mode bins its own: a Practice Session is not an Exam, and the
     // backend will not pretend otherwise.
-    const dropped = openIsPractice
-      ? await abandonPractice(openExam.id)
-      : await abandonExam(openExam.id);
+    const bin = {
+      exam: abandonExam,
+      practice: abandonPractice,
+      review: abandonErrorReview,
+    }[openMode];
+    const dropped = await bin(openExam.id);
     setAbandoning(false);
     setConfirmingAbandon(false);
     // Refetched rather than assumed: if the slot was not freed, the panel has
     // to keep saying so instead of offering a start that would be refused.
     setOpenExam(dropped ? null : await fetchCurrentExam());
-  }, [openExam, openIsPractice]);
+  }, [openExam, openMode]);
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--bg)' }}>
@@ -129,7 +141,7 @@ export default function QuizPage() {
         {openExam && (
           <ResumePanel
             exam={openExam}
-            practice={openIsPractice}
+            mode={openMode}
             onAbandon={() => setConfirmingAbandon(true)}
           />
         )}
@@ -275,6 +287,75 @@ export default function QuizPage() {
             {t('quiz.modes.practice.cta')}
           </Link>
         </section>
+
+        {/* The third way in, and the one a student ends up living in. It sits
+            below Practice because it cannot be the first thing anybody does:
+            the pool is built out of their own answers, so there is nothing here
+            until they have sat something. */}
+        <section
+          data-testid="review-card"
+          className="flex flex-col gap-4 card-rounded p-5 sm:p-7"
+          style={{ backgroundColor: 'var(--surface-2)', border: '2px solid var(--border)' }}
+        >
+          <div className="flex items-center gap-4">
+            <Mascot mood="skeptical" size={52} />
+            <div>
+              <h2
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: '1.25rem',
+                  color: 'var(--ink)',
+                }}
+              >
+                {t('quiz.modes.review.name')}
+              </h2>
+              <p
+                style={{
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '0.88rem',
+                  color: 'var(--muted)',
+                }}
+              >
+                {t('quiz.modes.review.blurb')}
+              </p>
+            </div>
+          </div>
+
+          {/* The count, as soon as it is known. Nothing waiting is worth saying
+              out loud — it is the only "you have finished something" this
+              product has — and it is said here rather than only behind a tap. */}
+          {pending !== null && (
+            <p
+              data-testid="review-card-pending"
+              style={{
+                fontFamily: 'var(--font-sans)',
+                fontSize: '0.85rem',
+                fontWeight: 700,
+                color: pending === 0 ? 'var(--correct)' : 'var(--ink)',
+                fontVariantNumeric: 'tabular-nums',
+              }}
+            >
+              {t('quiz.modes.review.pending', { count: pending })}
+            </p>
+          )}
+
+          <Link
+            data-testid="review-open"
+            href="/quiz/review"
+            className="w-full px-6 py-4 pill font-bold text-center transition-opacity hover:opacity-90"
+            style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: '0.95rem',
+              minHeight: '3.5rem',
+              lineHeight: '1.5rem',
+              backgroundColor: 'var(--surface)',
+              color: 'var(--accent)',
+              border: '2px solid var(--accent)',
+            }}
+          >
+            {t('quiz.modes.review.cta')}
+          </Link>
+        </section>
       </main>
 
       {confirmingAbandon && openExam && (
@@ -282,11 +363,7 @@ export default function QuizPage() {
           testId="exam-abandon-warning"
           confirmTestId="exam-abandon-confirm"
           cancelTestId="exam-abandon-cancel"
-          title={
-            openIsPractice
-              ? t('quiz.resume.warn.practiceTitle')
-              : t('quiz.resume.warn.title')
-          }
+          title={t(`quiz.resume.warn.${openMode}Title`)}
           body={t('quiz.resume.warn.body', { count: answeredCount(openExam.questions) })}
           confirmLabel={
             abandoning ? t('quiz.resume.warn.abandoning') : t('quiz.resume.warn.confirm')
@@ -305,11 +382,11 @@ export default function QuizPage() {
  *  got, and the two ways out of it. */
 function ResumePanel({
   exam,
-  practice,
+  mode,
   onAbandon,
 }: {
   exam: Exam;
-  practice: boolean;
+  mode: QuizMode;
   onAbandon: () => void;
 }) {
   const t = useTranslations();
@@ -331,7 +408,7 @@ function ResumePanel({
               color: 'var(--ink)',
             }}
           >
-            {practice ? t('quiz.resume.practiceTitle') : t('quiz.resume.title')}
+            {t(`quiz.resume.${mode}Title`)}
           </h2>
           <p
             data-testid="exam-in-progress-answered"
@@ -342,9 +419,11 @@ function ResumePanel({
         </div>
       </div>
 
+      {/* The Exam's own route is singular and predates the others; the rest are
+          named after their mode. */}
       <Link
         data-testid="exam-resume"
-        href={practice ? `/quiz/practice/${exam.id}` : `/quiz/exam/${exam.id}`}
+        href={mode === 'exam' ? `/quiz/exam/${exam.id}` : `/quiz/${mode}/${exam.id}`}
         className="w-full px-8 py-4 font-bold pill text-white text-center transition-opacity hover:opacity-90"
         style={{
           fontFamily: 'var(--font-sans)',

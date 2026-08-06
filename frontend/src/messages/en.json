@@ -126,6 +126,12 @@
         "name": "Practice",
         "blurb": "One level, the length you have time for, and the tannin tells you straight after every answer. This is where you actually study.",
         "cta": "Practise a level"
+      },
+      "review": {
+        "name": "Error Review",
+        "blurb": "Only the questions you keep getting wrong, and they stop coming back once you've had them right in three separate sessions.",
+        "pending": "{count, plural, =0 {Nothing waiting. You've mastered everything you've been asked.} one {# question still waiting to be mastered} other {# questions still waiting to be mastered}}",
+        "cta": "Review my mistakes"
       }
     },
     "practice": {
@@ -181,6 +187,62 @@
         "backToQuiz": "Back to the game"
       }
     },
+    "review": {
+      "eyebrow": "Error Review",
+      "title": "Your mistakes, and nobody else's.",
+      "subtitle": "Only questions you've already been asked and haven't learned yet. One leaves for good after you get it right in {count} separate sessions.",
+      "pool": "{count, plural, one {# question still waiting to be mastered} other {# questions still waiting to be mastered}}",
+      "pending": "{count, plural, =0 {Nothing left to master.} one {# still to master} other {# still to master}}",
+      "lengthLabel": "How many questions?",
+      "lengthOption": "{count} questions",
+      "lengthNote": "If there are fewer left than that, you get what's left. No padding.",
+      "rules": {
+        "pool": "Every question here is one you've already been asked and haven't learned yet.",
+        "mastered": "Get one right in {count} separate sessions and it's gone for good.",
+        "everyMode": "Right answers count wherever you gave them — practice, exam, here.",
+        "feedback": "You're told straight away, while you still remember why you said it."
+      },
+      "cta": "Start reviewing",
+      "starting": "Digging out your mistakes…",
+      "emptyTitle": "Nothing to review.",
+      "emptySubtitle": "Either you haven't been asked anything yet, or you've mastered every question you have been. Both are fixed the same way: go and get asked some more.",
+      "emptyPractice": "Go and practise",
+      "emptyExam": "Sit an exam",
+      "progress": "{current} of {total}",
+      "tally": "{count} right so far",
+      "check": "Mark my answer",
+      "checking": "The tannin is reading…",
+      "next": "Next question",
+      "toResult": "See how it went",
+      "correct": "Right.",
+      "wrong": "Nope.",
+      "correctAnswer": "The answer",
+      "stalledTitle": "The tannin lost his glasses.",
+      "stalledBody": "That one didn't get marked, and nothing was counted against you. Send it again and he'll have another go.",
+      "retry": "Try marking it again",
+      "notFoundTitle": "No such session",
+      "notFoundSubtitle": "This session isn't yours or no longer exists. Start a fresh one.",
+      "loading": "Digging out your mistakes…",
+      "end": "End the session",
+      "endWarn": {
+        "title": "Stop here?",
+        "body": "{count, plural, =0 {You haven't answered anything yet, so nothing counts towards mastering anything.} one {# answer given. Only that one counts towards mastering a question.} other {# answers given. Only those count towards mastering a question.}}",
+        "confirm": "Stop here",
+        "cancel": "Keep going"
+      },
+      "result": {
+        "loading": "Adding it up…",
+        "title": "Session done.",
+        "subtitle": "No verdict, no certificate. Just a shorter list than you started with.",
+        "nothingTitle": "Nothing answered.",
+        "nothingSubtitle": "You stopped before answering anything, so nothing moved. Your mistakes are exactly where you left them.",
+        "score": "{score} of {total} right",
+        "remaining": "{count, plural, =0 {That's the lot. Nothing left to master — for now.} one {# question still waiting to be mastered.} other {# questions still waiting to be mastered.}}",
+        "duration": "Time taken",
+        "again": "Review some more",
+        "backToQuiz": "Back to the game"
+      }
+    },
     "start": {
       "title": "Would you pass right now?",
       "subtitle": "One sitting, {count} questions, the whole course. The tannin marks it and tells you straight.",
@@ -195,14 +257,16 @@
       "starting": "Drawing your paper…"
     },
     "resume": {
-      "title": "You left a paper open",
+      "examTitle": "You left a paper open",
       "practiceTitle": "You left a practice session open",
+      "reviewTitle": "You left a review session open",
       "progress": "{answered} of {total} answered. Nothing was lost — it waits as long as you need.",
       "cta": "Pick it up",
       "abandon": "Bin it and start a new one",
       "warn": {
-        "title": "Bin the whole paper?",
+        "examTitle": "Bin the whole paper?",
         "practiceTitle": "Bin the whole session?",
+        "reviewTitle": "Bin the whole session?",
         "body": "{count, plural, =0 {It's untouched, so there's nothing to mourn. Gone for good, though.} one {# answer goes in the bin with it, for good.} other {# answers go in the bin with it, for good.}}",
         "confirm": "Bin it",
         "abandoning": "Binning it…",

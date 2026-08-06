@@ -17,6 +17,16 @@ import {
   PracticeFixture,
   practiceInProgress,
 } from '../fixtures/practice';
+import {
+  REVIEW_CORRECT,
+  REVIEW_FEEDBACK_RIGHT,
+  REVIEW_FEEDBACK_WRONG,
+  REVIEW_ID,
+  REVIEW_MASTERY_SESSIONS,
+  REVIEW_PENDING,
+  ReviewFixture,
+  reviewInProgress,
+} from '../fixtures/review';
 
 const MOCK_USER = { id: 1, email: 'e2e-test@sommelier.test', first_name: 'Test', last_name: 'User' };
 
@@ -52,6 +62,15 @@ export async function mockApi(
     // question at a time rather than a paper at a time. 'downOnce' stalls the
     // first written answer and marks it on the retry.
     practiceGrader?: 'ok' | 'down' | 'downOnce';
+    // Starts the spec with an Error Review Session already open, and optionally
+    // with some of it already answered.
+    review?: ReviewFixture | null;
+    // The pool is empty — the student has mastered everything they have been
+    // asked, which is the mode working rather than failing.
+    reviewEmpty?: boolean;
+    // The grading agent on a written Error Review answer, marked one question
+    // at a time exactly as in Practice.
+    reviewGrader?: 'ok' | 'down' | 'downOnce';
   }
 ): Promise<void> {
   const denoms = options?.denominations ?? DENOMINATIONS;
@@ -69,9 +88,17 @@ export async function mockApi(
   let practice: PracticeFixture | null = options?.practice ?? null;
   let practiceGradingRequests = 0;
 
-  const inProgress = (): ExamFixture | PracticeFixture | null => {
+  // The third mode, on the same one slot. `pending` is the whole state of it:
+  // it is what the screens read, and it only moves when a Session is finished,
+  // because mastery is counted in submitted Sessions.
+  let review: ReviewFixture | null = options?.review ?? null;
+  let reviewGradingRequests = 0;
+  let pending = options?.reviewEmpty ? 0 : (options?.review?.pending ?? REVIEW_PENDING);
+
+  const inProgress = (): ExamFixture | PracticeFixture | ReviewFixture | null => {
     if (exam?.status === 'in_progress') return exam;
     if (practice?.status === 'in_progress') return practice;
+    if (review?.status === 'in_progress') return review;
     return null;
   };
 
@@ -319,9 +346,135 @@ export async function mockApi(
     route.fulfill({ contentType: 'application/json', body: JSON.stringify(MEMORIZE_TIP_RESPONSE) })
   );
 
-  await page.route('**/review', (route) =>
-    route.fulfill({ contentType: 'application/json', body: JSON.stringify(REVIEW_RESPONSE) })
-  );
+  // Mappa dei Vini's end-of-game write-up. The pattern also matches the quiz's
+  // Error Review paths and the browser navigating to `/{locale}/quiz/review`,
+  // and either of those being answered with a write-up is a page that never
+  // loads — so anything under `/quiz` is passed straight back.
+  await page.route('**/review', (route) => {
+    if (new URL(route.request().url()).pathname.includes('/quiz/review')) {
+      return route.fallback();
+    }
+    route.fulfill({ contentType: 'application/json', body: JSON.stringify(REVIEW_RESPONSE) });
+  });
+
+
+  // Error Review, registered *after* `**/review` above so that it wins: that
+  // pattern is Mappa dei Vini's end-of-game write-up and matches this path just
+  // as happily, and Playwright gives the most recently added route first
+  // refusal.
+  await page.route(/\/quiz\/review/, (route) => {
+    const method = route.request().method();
+    const path = new URL(route.request().url()).pathname;
+    const json = (body: unknown, status = 200) =>
+      route.fulfill({ contentType: 'application/json', status, body: JSON.stringify(body) });
+
+    // The game's own screens live at `/{locale}/quiz/review`, which this
+    // pattern matches too. An API path has no locale in front of it.
+    if (!path.startsWith('/quiz/review')) return route.fallback();
+
+    // How much is left to learn. Zero is a real answer, not an error.
+    if (method === 'GET' && path.endsWith('/quiz/review/pool')) {
+      return json({ pending, mastery_sessions: REVIEW_MASTERY_SESSIONS });
+    }
+
+    if (method === 'POST' && path.endsWith('/quiz/review')) {
+      // An empty pool is refused, and the screen turns that into the
+      // congratulation it is rather than an error.
+      if (pending === 0) {
+        return json({ detail: 'nothing_to_review' }, 409);
+      }
+      if (inProgress()) {
+        return json({ detail: 'exam_in_progress' }, 409);
+      }
+      review = reviewInProgress();
+      review.pending = pending;
+      return json(review, 201);
+    }
+
+    if (!review || !path.includes(`/quiz/review/${REVIEW_ID}`)) {
+      return json({ detail: 'exam_not_found' }, 404);
+    }
+
+    if (method === 'PUT') {
+      if (review.status !== 'in_progress') {
+        return json({ detail: 'exam_not_in_progress' }, 409);
+      }
+      const questionId = Number(path.split('/').pop());
+      const answer = (route.request().postDataJSON() as { answer: string }).answer;
+      const question = review.questions.find((one) => one.question_id === questionId);
+      if (!question) return json({ detail: 'question_not_in_exam' }, 404);
+      if (question.verdict !== null) {
+        return json({ detail: 'answer_already_graded' }, 409);
+      }
+      question.answer = answer;
+
+      if (question.format === 'open') {
+        reviewGradingRequests += 1;
+        const down =
+          options?.reviewGrader === 'down' ||
+          (options?.reviewGrader === 'downOnce' && reviewGradingRequests === 1);
+        if (down) {
+          return json({
+            question_id: questionId,
+            answer,
+            verdict: null,
+            correct_answer: null,
+            feedback: null,
+          });
+        }
+      }
+
+      const correct = answer === REVIEW_CORRECT[questionId];
+      question.verdict = correct ? 'correct' : 'wrong';
+      question.correct_answer = REVIEW_CORRECT[questionId];
+      if (question.format === 'open') {
+        question.feedback = correct ? REVIEW_FEEDBACK_RIGHT : REVIEW_FEEDBACK_WRONG;
+      }
+      return json({
+        question_id: questionId,
+        answer,
+        verdict: question.verdict,
+        correct_answer: question.correct_answer,
+        feedback: question.feedback,
+      });
+    }
+
+    // Binning it buys nothing: mastery is earned by submitted Sessions only, so
+    // the pool is exactly where it was.
+    if (method === 'POST' && path.endsWith('/abandon')) {
+      if (review.status !== 'in_progress') {
+        return json({ detail: 'exam_not_in_progress' }, 409);
+      }
+      review.status = 'abandoned';
+      return json({ ...review, pending });
+    }
+
+    if (method === 'POST' && path.endsWith('/finish')) {
+      if (review.status !== 'in_progress') {
+        return json({ detail: 'exam_not_in_progress' }, 409);
+      }
+      const marked = review.questions.filter((one) => one.verdict !== null);
+      review.status = 'submitted';
+      review.max_score = marked.length;
+      review.score = marked.filter((one) => one.verdict === 'correct').length;
+      review.score_pct = marked.length
+        ? Math.round((review.score / marked.length) * 1000) / 10
+        : null;
+      review.submitted_at = new Date().toISOString();
+      review.duration_seconds = 68;
+      for (const one of review.questions) {
+        one.correct_answer = REVIEW_CORRECT[one.question_id];
+      }
+      // Submitting is what makes the correct answers count. The mock stands in
+      // for three sessions' worth of history by mastering each one outright,
+      // which is all any screen can tell the difference of.
+      pending = Math.max(0, pending - review.score);
+      review.pending = pending;
+      return json(review);
+    }
+
+    return json({ ...review, pending });
+  });
 
   await page.route('**/session/stats', (route) =>
     route.fulfill({ contentType: 'application/json', body: JSON.stringify(statsData) })
