@@ -1,5 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fetchHint, fetchMemorizeTip, fetchReview, gradeExam, startExam } from '../api';
+import {
+  fetchErrorReviewPool,
+  fetchHint,
+  fetchMemorizeTip,
+  fetchReview,
+  gradeExam,
+  startErrorReview,
+  startExam,
+} from '../api';
 
 const BASE = 'http://localhost:8000';
 
@@ -124,5 +132,61 @@ describe('gradeExam', () => {
     );
 
     expect(await gradeExam(7, 'en')).toBeNull();
+  });
+});
+
+// Error Review is the one mode whose refusals are not all failures. An empty
+// pool means the student has nothing left to learn, which the screen turns into
+// the congratulation it is — so it must never arrive as "unavailable", and
+// "unavailable" must never arrive as an empty pool.
+describe('startErrorReview', () => {
+  it('sends the chosen length and hands back the session it drew', async () => {
+    const spy = mockFetch({ id: 9, mode: 'review', pending: 12 });
+
+    expect(await startErrorReview(20)).toEqual({
+      started: { id: 9, mode: 'review', pending: 12 },
+    });
+    expect(spy).toHaveBeenCalledWith(
+      `${BASE}/quiz/review`,
+      expect.objectContaining({ method: 'POST', body: JSON.stringify({ length: 20 }) })
+    );
+  });
+
+  it('tells an empty pool apart from a backend that is down', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ detail: 'nothing_to_review' }), { status: 409 })
+    );
+
+    expect(await startErrorReview(10)).toEqual({ refused: 'nothing_to_review' });
+  });
+
+  it('reports a session already open as such, whatever mode is holding it', async () => {
+    vi.spyOn(global, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ detail: 'exam_in_progress' }), { status: 409 })
+    );
+
+    expect(await startErrorReview(10)).toEqual({ refused: 'in_progress' });
+  });
+
+  it('does not claim the pool is empty when the request never arrived', async () => {
+    vi.spyOn(global, 'fetch').mockRejectedValueOnce(new TypeError('network down'));
+
+    expect(await startErrorReview(10)).toEqual({ refused: 'unavailable' });
+  });
+});
+
+describe('fetchErrorReviewPool', () => {
+  it('returns the count and the rule behind it', async () => {
+    mockFetch({ pending: 4, mastery_sessions: 3 });
+
+    expect(await fetchErrorReviewPool()).toEqual({ pending: 4, mastery_sessions: 3 });
+  });
+
+  // Null, never zero: "the backend did not answer" and "you have mastered
+  // everything" are opposite pieces of news.
+  it('returns null rather than zero when the backend does not answer', async () => {
+    vi.spyOn(global, 'fetch').mockRejectedValueOnce(new TypeError('network down'));
+
+    expect(await fetchErrorReviewPool()).toBeNull();
   });
 });

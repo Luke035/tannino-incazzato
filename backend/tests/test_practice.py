@@ -176,7 +176,7 @@ def _grader(
             if item.question_id not in withheld
         }
 
-    with patch("app.exams.practice.grade_open_answers", new=AsyncMock(side_effect=_grade)):
+    with patch("app.exams.service.grade_open_answers", new=AsyncMock(side_effect=_grade)):
         yield
 
 

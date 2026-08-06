@@ -126,6 +126,12 @@
         "name": "Allenamento",
         "blurb": "Un livello solo, lungo quanto hai tempo, e il Tannino te lo dice in faccia dopo ogni risposta. Qui si studia davvero.",
         "cta": "Allenati su un livello"
+      },
+      "review": {
+        "name": "Ripasso degli errori",
+        "blurb": "Solo le domande che continui a sbagliare. Spariscono quando le azzecchi in tre sessioni diverse.",
+        "pending": "{count, plural, =0 {Non è rimasto niente. Hai imparato tutto quello che ti è stato chiesto.} one {# domanda ancora da imparare} other {# domande ancora da imparare}}",
+        "cta": "Ripassa i miei errori"
       }
     },
     "practice": {
@@ -181,6 +187,62 @@
         "backToQuiz": "Torna al gioco"
       }
     },
+    "review": {
+      "eyebrow": "Ripasso degli errori",
+      "title": "I tuoi errori, non quelli degli altri.",
+      "subtitle": "Solo domande che ti sono già state fatte e che non hai ancora imparato. Una sparisce per sempre quando la azzecchi in {count} sessioni diverse.",
+      "pool": "{count, plural, one {# domanda ancora da imparare} other {# domande ancora da imparare}}",
+      "pending": "{count, plural, =0 {Non è rimasto niente da imparare.} one {ne resta #} other {ne restano #}}",
+      "lengthLabel": "Quante domande?",
+      "lengthOption": "{count} domande",
+      "lengthNote": "Se ne restano meno, ti diamo quelle che ci sono. Niente riempitivi.",
+      "rules": {
+        "pool": "Ogni domanda qui te l'hanno già fatta e non l'hai ancora imparata.",
+        "mastered": "Azzeccala in {count} sessioni diverse e sparisce per sempre.",
+        "everyMode": "Le risposte giuste valgono ovunque le hai date: esercitazione, esame, qui.",
+        "feedback": "Te lo dice subito, finché ti ricordi ancora perché hai risposto così."
+      },
+      "cta": "Inizia il ripasso",
+      "starting": "Sto tirando fuori i tuoi errori…",
+      "emptyTitle": "Niente da ripassare.",
+      "emptySubtitle": "O non ti hanno ancora chiesto niente, o hai imparato tutto quello che ti hanno chiesto. Si risolve allo stesso modo: fatti fare altre domande.",
+      "emptyPractice": "Vai a esercitarti",
+      "emptyExam": "Fai un esame",
+      "progress": "{current} di {total}",
+      "tally": "{count} giuste finora",
+      "check": "Correggi la risposta",
+      "checking": "Il tannino sta leggendo…",
+      "next": "Prossima domanda",
+      "toResult": "Vedi com'è andata",
+      "correct": "Giusto.",
+      "wrong": "No.",
+      "correctAnswer": "La risposta",
+      "stalledTitle": "Il tannino ha perso gli occhiali.",
+      "stalledBody": "Quella non è stata corretta, e non ti è stato contato niente contro. Rimandala e ci riprova.",
+      "retry": "Riprova a correggerla",
+      "notFoundTitle": "Sessione inesistente",
+      "notFoundSubtitle": "Questa sessione non è tua o non esiste più. Aprine una nuova.",
+      "loading": "Sto tirando fuori i tuoi errori…",
+      "end": "Chiudi la sessione",
+      "endWarn": {
+        "title": "Ti fermi qui?",
+        "body": "{count, plural, =0 {Non hai ancora risposto a niente, quindi non conta niente per imparare le domande.} one {# risposta data. Solo quella conta per imparare una domanda.} other {# risposte date. Solo quelle contano per imparare una domanda.}}",
+        "confirm": "Mi fermo qui",
+        "cancel": "Vado avanti"
+      },
+      "result": {
+        "loading": "Sto facendo i conti…",
+        "title": "Sessione finita.",
+        "subtitle": "Nessun verdetto, nessun attestato. Solo una lista più corta di quella con cui hai iniziato.",
+        "nothingTitle": "Nessuna risposta.",
+        "nothingSubtitle": "Ti sei fermato prima di rispondere, quindi non si è mosso niente. I tuoi errori sono esattamente dove li hai lasciati.",
+        "score": "{score} giuste su {total}",
+        "remaining": "{count, plural, =0 {È tutto. Non resta niente da imparare, per ora.} one {# domanda ancora da imparare.} other {# domande ancora da imparare.}}",
+        "duration": "Tempo impiegato",
+        "again": "Ripassa ancora",
+        "backToQuiz": "Torna al gioco"
+      }
+    },
     "start": {
       "title": "Lo passeresti adesso?",
       "subtitle": "Una prova sola, {count} domande, tutto il corso. Il Tannino corregge e te lo dice in faccia.",
@@ -195,14 +257,16 @@
       "starting": "Pesco il compito…"
     },
     "resume": {
-      "title": "Hai un compito aperto",
-      "practiceTitle": "Hai una sessione di allenamento aperta",
+      "examTitle": "Hai lasciato un compito aperto",
+      "practiceTitle": "Hai lasciato un'esercitazione aperta",
+      "reviewTitle": "Hai lasciato un ripasso aperto",
       "progress": "{answered} risposte su {total}. Non si è perso niente: ti aspetta finché vuoi.",
       "cta": "Riprendilo",
       "abandon": "Buttalo e iniziane uno nuovo",
       "warn": {
-        "title": "Butti tutto il compito?",
-        "practiceTitle": "Butti tutta la sessione?",
+        "examTitle": "Butti via tutto il compito?",
+        "practiceTitle": "Butti via tutta la sessione?",
+        "reviewTitle": "Butti via tutta la sessione?",
         "body": "{count, plural, =0 {È ancora intatto, quindi non c'è granché da piangere. Però sparisce per sempre.} one {Se ne va anche # risposta, per sempre.} other {Se ne vanno anche # risposte, per sempre.}}",
         "confirm": "Buttalo",
         "abandoning": "Lo butto…",

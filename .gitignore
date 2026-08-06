@@ -58,3 +58,9 @@ next-env.d.ts
 
 # design handoff — mockups kept locally, not in repo
 design_handoff_tannino_incazzato/
+
+# OpenCode runtime config — local, machine-specific. The QA agent itself lives
+# in .claude/agents/qa-sommelier.md (committed); these only re-point OpenCode at
+# it and pin its model, which is a per-machine provider choice.
+opencode.json
+.opencode/

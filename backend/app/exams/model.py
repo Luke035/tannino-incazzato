@@ -19,6 +19,7 @@ from app.questions.model import FORMAT_MULTIPLE_CHOICE, FORMAT_OPEN, FORMAT_TRUE
 # keeps Practice out of the Exam history: only `exam` rows are an exam result.
 MODE_EXAM = "exam"
 MODE_PRACTICE = "practice"
+MODE_REVIEW = "review"
 
 STATUS_IN_PROGRESS = "in_progress"
 STATUS_SUBMITTED = "submitted"
@@ -65,6 +66,20 @@ PRACTICE_COMPOSITION = {
     20: {FORMAT_OPEN: 10, FORMAT_MULTIPLE_CHOICE: 7, FORMAT_TRUE_FALSE: 3},
     30: dict(EXAM_COMPOSITION),
 }
+
+# ── Error Review ──────────────────────────────────────────────────────────────
+# What a question has to earn before it stops coming back: three correct
+# answers, in three *distinct* Sessions. Three in a row inside one sitting is
+# short-term memory and counts once — the rule is deliberately about coming
+# back to a question on a different day and still having it.
+MASTERY_SESSIONS = 3
+
+# The lengths an Error Review Session comes in, the same as Practice's, because
+# the time a student has is the same time whichever mode they spend it in.
+# Unlike Practice there is no format composition and no Level: the pool is
+# whatever this player has personally not Mastered yet, and it is served as it
+# is rather than reshaped into an exam paper.
+REVIEW_LENGTHS = (10, 20, 30)
 
 # The two answers a true/false question accepts, in the bank's own vocabulary.
 # The player answers in these terms and the screen localizes the labels, so the
