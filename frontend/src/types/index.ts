@@ -60,9 +60,17 @@ export interface ExamQuestion {
   feedback: string | null;
 }
 
+// Which mode of the game a Session belongs to. There is one Session in
+// progress at a time across all of them, so the mode is what tells a returning
+// player which screen they were on.
+export type QuizMode = 'exam' | 'practice';
+
 export interface Exam {
   id: number;
-  mode: string;
+  mode: QuizMode;
+  // The Level a Practice Session was drawn from. Null on an Exam, which is
+  // deliberately blind across all three.
+  level: QuestionLevel | null;
   status: ExamStatus;
   max_score: number;
   score: number | null;
@@ -76,4 +84,21 @@ export interface Exam {
   submitted_at: string | null;
   duration_seconds: number | null;
   questions: ExamQuestion[];
+}
+
+// The Exam and Practice are the same resource with a different `mode`, so they
+// are the same payload. The alias is here so that Practice code does not have
+// to call a Practice Session an Exam to say what it is holding.
+export type QuizSession = Exam;
+
+// What comes back from answering one Practice question: the Verdict lands with
+// the answer, which is the whole reason the mode exists. `verdict` is null only
+// when the agent could not read a written answer — that is not a wrong answer,
+// gives nothing away, and is retried by sending the same answer again.
+export interface PracticeAnswerResult {
+  question_id: number;
+  answer: string | null;
+  verdict: ExamVerdict | null;
+  correct_answer: string | null;
+  feedback: string | null;
 }

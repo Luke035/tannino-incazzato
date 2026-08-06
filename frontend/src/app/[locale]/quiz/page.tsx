@@ -5,7 +5,13 @@ import { Link, useRouter } from '@/i18n/navigation';
 import Header from '@/components/Header';
 import { Mascot } from '@/components/Mascot';
 import { ConfirmSheet } from '@/components/quiz/ConfirmSheet';
-import { abandonExam, ExamRefusal, fetchCurrentExam, startExam } from '@/lib/api';
+import {
+  abandonExam,
+  abandonPractice,
+  ExamRefusal,
+  fetchCurrentExam,
+  startExam,
+} from '@/lib/api';
 import { answeredCount, EXAM_COMPOSITION, EXAM_LENGTH, PASS_MARK_PCT } from '@/lib/exam';
 import { Exam } from '@/types';
 
@@ -54,16 +60,24 @@ export default function QuizPage() {
     setRefused(result.refused);
   };
 
+  // The one open Session belongs to whichever mode drew it, and every screen
+  // that touches it has to ask the same question: which mode? Asked once, here.
+  const openIsPractice = openExam?.mode === 'practice';
+
   const abandon = useCallback(async () => {
     if (!openExam) return;
     setAbandoning(true);
-    const dropped = await abandonExam(openExam.id);
+    // Each mode bins its own: a Practice Session is not an Exam, and the
+    // backend will not pretend otherwise.
+    const dropped = openIsPractice
+      ? await abandonPractice(openExam.id)
+      : await abandonExam(openExam.id);
     setAbandoning(false);
     setConfirmingAbandon(false);
     // Refetched rather than assumed: if the slot was not freed, the panel has
     // to keep saying so instead of offering a start that would be refused.
     setOpenExam(dropped ? null : await fetchCurrentExam());
-  }, [openExam]);
+  }, [openExam, openIsPractice]);
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--bg)' }}>
@@ -115,6 +129,7 @@ export default function QuizPage() {
         {openExam && (
           <ResumePanel
             exam={openExam}
+            practice={openIsPractice}
             onAbandon={() => setConfirmingAbandon(true)}
           />
         )}
@@ -208,6 +223,58 @@ export default function QuizPage() {
             {starting ? t('quiz.start.starting') : t('quiz.start.cta')}
           </button>
         )}
+
+        {/* The other way in. It sits below the Exam rather than beside it: the
+            Exam is what the student came for, Practice is what they will
+            actually spend their time on. Offered even while a Session is open —
+            it leads to the setup screen, not to a second Session, and that
+            screen sends them back here if the slot is still taken. */}
+        <section
+          data-testid="practice-card"
+          className="flex flex-col gap-4 card-rounded p-5 sm:p-7"
+          style={{ backgroundColor: 'var(--surface-2)', border: '2px solid var(--border)' }}
+        >
+          <div className="flex items-center gap-4">
+            <Mascot mood="happy" size={52} />
+            <div>
+              <h2
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: '1.25rem',
+                  color: 'var(--ink)',
+                }}
+              >
+                {t('quiz.modes.practice.name')}
+              </h2>
+              <p
+                style={{
+                  fontFamily: 'var(--font-sans)',
+                  fontSize: '0.88rem',
+                  color: 'var(--muted)',
+                }}
+              >
+                {t('quiz.modes.practice.blurb')}
+              </p>
+            </div>
+          </div>
+
+          <Link
+            data-testid="practice-open"
+            href="/quiz/practice"
+            className="w-full px-6 py-4 pill font-bold text-center transition-opacity hover:opacity-90"
+            style={{
+              fontFamily: 'var(--font-sans)',
+              fontSize: '0.95rem',
+              minHeight: '3.5rem',
+              lineHeight: '1.5rem',
+              backgroundColor: 'var(--surface)',
+              color: 'var(--accent)',
+              border: '2px solid var(--accent)',
+            }}
+          >
+            {t('quiz.modes.practice.cta')}
+          </Link>
+        </section>
       </main>
 
       {confirmingAbandon && openExam && (
@@ -215,7 +282,11 @@ export default function QuizPage() {
           testId="exam-abandon-warning"
           confirmTestId="exam-abandon-confirm"
           cancelTestId="exam-abandon-cancel"
-          title={t('quiz.resume.warn.title')}
+          title={
+            openIsPractice
+              ? t('quiz.resume.warn.practiceTitle')
+              : t('quiz.resume.warn.title')
+          }
           body={t('quiz.resume.warn.body', { count: answeredCount(openExam.questions) })}
           confirmLabel={
             abandoning ? t('quiz.resume.warn.abandoning') : t('quiz.resume.warn.confirm')
@@ -232,7 +303,15 @@ export default function QuizPage() {
 
 /** What a student who was interrupted comes back to: what is open, how far it
  *  got, and the two ways out of it. */
-function ResumePanel({ exam, onAbandon }: { exam: Exam; onAbandon: () => void }) {
+function ResumePanel({
+  exam,
+  practice,
+  onAbandon,
+}: {
+  exam: Exam;
+  practice: boolean;
+  onAbandon: () => void;
+}) {
   const t = useTranslations();
   const answered = answeredCount(exam.questions);
 
@@ -252,7 +331,7 @@ function ResumePanel({ exam, onAbandon }: { exam: Exam; onAbandon: () => void })
               color: 'var(--ink)',
             }}
           >
-            {t('quiz.resume.title')}
+            {practice ? t('quiz.resume.practiceTitle') : t('quiz.resume.title')}
           </h2>
           <p
             data-testid="exam-in-progress-answered"
@@ -265,7 +344,7 @@ function ResumePanel({ exam, onAbandon }: { exam: Exam; onAbandon: () => void })
 
       <Link
         data-testid="exam-resume"
-        href={`/quiz/exam/${exam.id}`}
+        href={practice ? `/quiz/practice/${exam.id}` : `/quiz/exam/${exam.id}`}
         className="w-full px-8 py-4 font-bold pill text-white text-center transition-opacity hover:opacity-90"
         style={{
           fontFamily: 'var(--font-sans)',

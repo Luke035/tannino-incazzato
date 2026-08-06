@@ -208,6 +208,57 @@ and `gradeExam` in `frontend/src/lib/api.ts`; never call these endpoints from a 
 (one offers the player a choice, the other is a dead end) and the wrapper is where they are told
 apart.
 
+### Practice mode (`backend/app/exams/practice.py`)
+Practice is the same Session resource under `mode = practice`, on the same tables, sharing
+`backend/app/exams/service.py` with the Exam — loading a Session, deciding what of it the
+browser may see, shuffling options and marking a Closed Question are written once, there. It
+differs from the Exam in exactly three ways a caller can see:
+
+- **One chosen Level** (`PRACTICE_LEVELS`), because a student drills the block they have
+  lessons on. The Exam is never filtered by Level; Practice always is.
+- **The length they have time for** — 10, 20 or 30 (`PRACTICE_LENGTHS`), in the Exam's own
+  format proportions scaled by the largest remainder method and then *written down* in
+  `PRACTICE_COMPOSITION`: 5/4/1, 10/7/3, 14/11/5. Open Questions stay the largest block at
+  every length.
+- **The Verdict lands with the answer.** The `PUT` returns it, along with the correct answer and
+  the agent's note — one model call for one Open Question, not a batch.
+
+| Endpoint | Does |
+|---|---|
+| `POST /quiz/practice` | Draws at `{level, length}`. 422 `level_not_offered` / `length_not_offered`, 409 `question_bank_too_small`, 409 `exam_in_progress`. |
+| `GET /quiz/practice/{id}` | The Session with the corrections on the questions already marked. |
+| `PUT /quiz/practice/{id}/answers/{question_id}` | Records **and marks** one answer, returning `{verdict, correct_answer, feedback}`. |
+| `POST /quiz/practice/{id}/finish` | Ends and records it. |
+| `POST /quiz/practice/{id}/abandon` | Frees the slot, recording nothing. |
+
+Rules that are not negotiable:
+- **Nothing here passes or fails anybody.** `passed` is `None` on a Practice Session however it
+  went — the only pass mark in the product is the Exam's, and `read_session` gates it on mode.
+- **A question is answered once.** One that already carries a Verdict is closed (409
+  `answer_already_graded`): being shown the right answer and then being allowed to change yours
+  is not studying. A written answer the agent *could not read* carries no Verdict and is
+  therefore not closed — sending it again is the retry.
+- **There is no skipping.** A blank is refused (422 `answer_required`) rather than marked wrong
+  on the spot, which could not be taken back.
+- **Selection is adaptive**, which the Exam's deliberately is not: never-seen questions first,
+  then the ones this player got wrong, then the ones they have not seen for longest. History is
+  read across *every* mode, and a question that was drawn but never answered counts as never
+  seen.
+- **Scored on what was actually marked.** `finish` sets `max_score` to the number of questions
+  carrying a Verdict, so a Session ended after four questions reads 4 of 4. A question never
+  reached and an answer the agent could not read are both left out rather than counted wrong.
+  This overwrites the length the Session was drawn at, so **anything reporting on Practice later
+  reads the chosen length as the number of `exam_answers` rows, not from `max_score`** — one row
+  exists per question drawn, so the 10, 20 or 30 is still there.
+- The recap leads on the **count**, never a percentage under a badge: that shape is the Exam's
+  verdict screen, and Practice must not read as one.
+- The single-in-progress rule is the game's, not the mode's: `GET /quiz/exams/current` answers
+  with a Practice Session just as readily and `mode` says which it is. Only `mode = exam` rows
+  are Exam history.
+
+Use `startPractice`, `fetchPracticeSession`, `savePracticeAnswer`, `finishPractice` and
+`abandonPractice` in `frontend/src/lib/api.ts`; never call these endpoints from a component.
+
 ### Grading the Open Questions (`backend/app/ai/grading.py`)
 The Open Questions of a submitted Exam are graded by a **PydanticAI** agent with a typed result,
 in one call carrying the whole paper (ADR 0010). `/hint`, `/memorize` and `/review` are untouched
@@ -328,11 +379,12 @@ sommelier_game/
 ├── frontend/
 │   └── src/
 │       ├── app/[locale]/      # Login, register, setup, game, recap, profile screens
-│       │   └── quiz/         # exam landing, quiz/exam/[examId] sitting + result
+│       │   └── quiz/         # mode landing; exam/[examId] and practice/[sessionId]
+│       │                     #   sitting + result screens
 │       ├── components/
 │       │   ├── game/          # PostIt, ScoreCounter, AutoPlaceModal
 │       │   ├── map/           # ItalyMap, RegionPanel
-│       │   ├── quiz/          # QuestionCard (one question per screen)
+│       │   ├── quiz/          # QuestionCard (one per screen), Breakdown, ConfirmSheet
 │       │   └── recap/         # RecapStats, AIReview
 │       ├── context/
 │       │   └── AuthContext.tsx   # AuthProvider + useAuth() hook
@@ -343,6 +395,7 @@ sommelier_game/
 │       │   ├── auth.ts        # typed client wrappers for auth endpoints
 │       │   ├── exam.ts        # paper shape mirrored from the backend
 │       │   ├── examTime.ts    # elapsed-time hook + duration formatting
+│       │   ├── practice.ts    # Levels, lengths and open-question counts on offer
 │       │   ├── gameLogic.ts   # scoring, shuffling, recap stats
 │       │   ├── regionMapping.ts  # JSON name <-> SVG ID conversion
 │       │   ├── svgCollision.ts   # custom dnd-kit collision detection
@@ -366,9 +419,11 @@ sommelier_game/
 │   │   ├── questions/
 │   │   │   ├── model.py       # Question SQLModel table
 │   │   │   └── seed.py        # seed CSV → Question rows
-│   │   ├── exams/
-│   │   │   ├── model.py       # ExamSession + ExamAnswer tables, composition, pass mark
-│   │   │   └── router.py      # POST /quiz/exams, GET current/{id}, PUT answer, submit/abandon/grade
+│   │   ├── exams/             # every mode of Promossi o Cirrotici — see ADR 0008
+│   │   │   ├── model.py       # ExamSession + ExamAnswer tables, compositions, pass mark
+│   │   │   ├── service.py     # the session layer both modes share (read/load/mark)
+│   │   │   ├── router.py      # POST /quiz/exams, GET current/{id}, PUT answer, submit/abandon/grade
+│   │   │   └── practice.py    # POST /quiz/practice, GET/{id}, PUT answer (+verdict), finish/abandon
 │   │   ├── sessions/
 │   │   │   ├── model.py       # GameSession + SessionCardAttempt SQLModel tables
 │   │   │   └── router.py      # POST /session, GET /session/stats
@@ -383,7 +438,7 @@ sommelier_game/
 │   ├── scripts/
 │   │   ├── ingest_denominations.py
 │   │   └── seed_questions.py  # seed-once loader (no-op if the bank is loaded)
-│   └── tests/                 # pytest suite (test_auth.py, test_denominations.py, test_sessions.py, test_exams.py …)
+│   └── tests/                 # pytest suite (test_auth.py, test_denominations.py, test_sessions.py, test_exams.py, test_practice.py …)
 │
 ├── infra/
 │   └── docker-compose.yml     # PostgreSQL 17
