@@ -6,7 +6,7 @@ exactly three ways a player can see:
 * it is drawn from **one chosen Level**, because a student practises the block
   they have lessons on this month;
 * it comes in the **length they have time for**, in the Exam's own format
-  proportions, so the Open Questions stay the majority;
+  proportions, so the Open Questions stay the largest block;
 * the **Verdict lands the moment the answer does**, while the reasoning behind
   it is still fresh. That is the whole reason the mode exists.
 
@@ -21,7 +21,7 @@ the time you brought to it.
 """
 import random
 from datetime import datetime, timezone
-from typing import Annotated, Dict, List, Optional, Tuple
+from typing import Annotated, Dict, List, NamedTuple, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
@@ -91,18 +91,34 @@ class PracticeAnswerRead(BaseModel):
 
 # ── Drawing the Session ───────────────────────────────────────────────────────
 
-def _history(db: Session, user_id: int) -> Dict[int, Tuple[int, Optional[str]]]:
+class Attempt(NamedTuple):
+    """The last thing this player did with one question. Named rather than a
+    bare tuple because `history[q.id][0]` says nothing about what is being
+    sorted on, and the sort is the whole point of the adaptive draw."""
+
+    seen_at: int  # the answer's row id — see `_history` on what it does and does not mean
+    verdict: Optional[str]
+
+
+def _history(db: Session, user_id: int) -> Dict[int, Attempt]:
     """What this player has made of each question they have ever answered, as
-    `question_id -> (recency, verdict of the most recent attempt)`.
+    `question_id -> Attempt`.
 
     Only answers that were actually given count. A question that was drawn onto
     a Session and never reached has not been seen, and pushing it to the back
     of the queue would punish a student for stopping early.
 
-    The answer id stands in for recency: rows are only ever appended, so a
-    higher id is a later answer. It is read across every mode, because a
-    question you got wrong in an Exam last week is exactly one Practice should
-    bring back.
+    The answer id stands in for recency, and it is worth being exact about what
+    that buys: an `exam_answers` row is written when the Session is *drawn* and
+    only updated when the question is answered, so a higher id means a later
+    Session — not a later keystroke. Recency is therefore at Session
+    granularity, which is the granularity "least recently seen" means anyway;
+    within one Session the order is the order the questions were drawn in, and
+    nothing depends on it. Buying finer than that would cost a column and a
+    migration to order questions inside a Session nobody is comparing.
+
+    History is read across every mode, because a question you got wrong in an
+    Exam last week is exactly one Practice should bring back.
     """
     rows = db.exec(
         select(ExamAnswer.question_id, ExamAnswer.id, ExamAnswer.verdict)
@@ -111,7 +127,10 @@ def _history(db: Session, user_id: int) -> Dict[int, Tuple[int, Optional[str]]]:
         .order_by(ExamAnswer.id)  # type: ignore[arg-type]
     ).all()
     # Ordered by id, so the last row for a question is the one that survives.
-    return {question_id: (answer_id, verdict) for question_id, answer_id, verdict in rows}
+    return {
+        question_id: Attempt(seen_at=answer_id, verdict=verdict)
+        for question_id, answer_id, verdict in rows
+    }
 
 
 def _draw_adaptive(
@@ -120,7 +139,7 @@ def _draw_adaptive(
     question_format: str,
     level: int,
     count: int,
-    history: Dict[int, Tuple[int, Optional[str]]],
+    history: Dict[int, Attempt],
 ) -> List[Question]:
     """`count` questions of one format from one Level, in the order that is
     worth the student's time: never seen, then previously wrong, then whatever
@@ -147,10 +166,12 @@ def _draw_adaptive(
     unseen = [q for q in candidates if q.id not in history]
     seen = [q for q in candidates if q.id in history]
     wrong = sorted(
-        (q for q in seen if history[q.id][1] == VERDICT_WRONG), key=lambda q: history[q.id][0]
+        (q for q in seen if history[q.id].verdict == VERDICT_WRONG),
+        key=lambda q: history[q.id].seen_at,
     )
     rest = sorted(
-        (q for q in seen if history[q.id][1] != VERDICT_WRONG), key=lambda q: history[q.id][0]
+        (q for q in seen if history[q.id].verdict != VERDICT_WRONG),
+        key=lambda q: history[q.id].seen_at,
     )
 
     return (unseen + wrong + rest)[:count]
@@ -167,6 +188,13 @@ def _settle_practice_score(exam: ExamSession, answers: List[ExamAnswer]) -> None
     Session ended after four questions reads "4 out of 4", which is the truth
     about it. There is no pass mark to distort: `passed` is `None` in this mode
     whatever the number says.
+
+    This overwrites the length the Session was drawn at, and deliberately: after
+    the fact, "how many did I get right" is about the questions that were
+    marked. The chosen length is not lost by it — one `exam_answers` row exists
+    per question drawn, so `len(answers)` is still the 10, 20 or 30 the student
+    asked for, and anything reporting on Sessions later reads it from there
+    rather than from `max_score`.
     """
     marked = [answer for answer in answers if answer.verdict is not None]
     exam.max_score = len(marked)

@@ -60,22 +60,24 @@ export default function QuizPage() {
     setRefused(result.refused);
   };
 
+  // The one open Session belongs to whichever mode drew it, and every screen
+  // that touches it has to ask the same question: which mode? Asked once, here.
+  const openIsPractice = openExam?.mode === 'practice';
+
   const abandon = useCallback(async () => {
     if (!openExam) return;
     setAbandoning(true);
-    // The one open Session belongs to whichever mode drew it, and each mode
-    // bins its own: a Practice Session is not an Exam and the backend will not
-    // pretend otherwise.
-    const dropped =
-      openExam.mode === 'practice'
-        ? await abandonPractice(openExam.id)
-        : await abandonExam(openExam.id);
+    // Each mode bins its own: a Practice Session is not an Exam, and the
+    // backend will not pretend otherwise.
+    const dropped = openIsPractice
+      ? await abandonPractice(openExam.id)
+      : await abandonExam(openExam.id);
     setAbandoning(false);
     setConfirmingAbandon(false);
     // Refetched rather than assumed: if the slot was not freed, the panel has
     // to keep saying so instead of offering a start that would be refused.
     setOpenExam(dropped ? null : await fetchCurrentExam());
-  }, [openExam]);
+  }, [openExam, openIsPractice]);
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--bg)' }}>
@@ -127,6 +129,7 @@ export default function QuizPage() {
         {openExam && (
           <ResumePanel
             exam={openExam}
+            practice={openIsPractice}
             onAbandon={() => setConfirmingAbandon(true)}
           />
         )}
@@ -280,7 +283,7 @@ export default function QuizPage() {
           confirmTestId="exam-abandon-confirm"
           cancelTestId="exam-abandon-cancel"
           title={
-            openExam.mode === 'practice'
+            openIsPractice
               ? t('quiz.resume.warn.practiceTitle')
               : t('quiz.resume.warn.title')
           }
@@ -300,10 +303,17 @@ export default function QuizPage() {
 
 /** What a student who was interrupted comes back to: what is open, how far it
  *  got, and the two ways out of it. */
-function ResumePanel({ exam, onAbandon }: { exam: Exam; onAbandon: () => void }) {
+function ResumePanel({
+  exam,
+  practice,
+  onAbandon,
+}: {
+  exam: Exam;
+  practice: boolean;
+  onAbandon: () => void;
+}) {
   const t = useTranslations();
   const answered = answeredCount(exam.questions);
-  const practice = exam.mode === 'practice';
 
   return (
     <section

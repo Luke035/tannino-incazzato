@@ -164,8 +164,7 @@ test('a session runs to the end and reports a count, never a verdict', async ({ 
   }
 
   await page.waitForURL(`**/quiz/practice/${PRACTICE_ID}/result`);
-  await expect(page.getByTestId('practice-score')).toContainText('7 of 10 right');
-  await expect(page.getByTestId('practice-score-pct')).toContainText('70');
+  await expect(page.getByTestId('practice-score')).toContainText('7/10');
   // No pass, no fail, at any point.
   await expect(page.getByTestId('exam-verdict')).toHaveCount(0);
   await expect(page.getByText('Passed', { exact: true })).toHaveCount(0);
@@ -185,7 +184,7 @@ test('a session ended early is counted on what was actually answered', async ({ 
   await page.getByTestId('practice-end-confirm').tap();
 
   await page.waitForURL(`**/quiz/practice/${PRACTICE_ID}/result`);
-  await expect(page.getByTestId('practice-score')).toContainText('2 of 2 right');
+  await expect(page.getByTestId('practice-score')).toContainText('2/2');
 });
 
 test('an interrupted session is waiting on the landing screen', async ({ page }) => {

@@ -122,7 +122,6 @@
     "unavailableTitle": "The tannin isn't answering",
     "unavailableSubtitle": "Couldn't reach the cellar to draw you a paper. Nothing is lost — try again in a moment.",
     "modes": {
-      "title": "Two ways in",
       "practice": {
         "name": "Practice",
         "blurb": "One level, the length you have time for, and the tannin tells you straight after every answer. This is where you actually study.",

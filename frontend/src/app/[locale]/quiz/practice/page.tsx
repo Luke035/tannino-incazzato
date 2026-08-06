@@ -232,7 +232,14 @@ function Choice<T extends number>({
       >
         {label}
       </legend>
-      <div className="grid grid-cols-3 gap-2">
+      {/* The segmented control of DESIGN.md: a pill track in `--soon` with the
+          active segment filled `--primary`, exactly as Mappa dei Vini's filter
+          chooser does it. A grid rather than a row because three labels have to
+          fit a 393px phone without the track ever scrolling sideways. */}
+      <div
+        className="grid grid-cols-3 gap-2 p-2 pill"
+        style={{ backgroundColor: 'var(--soon)' }}
+      >
         {options.map((option) => {
           const active = option.value === selected;
           return (
@@ -248,9 +255,8 @@ function Choice<T extends number>({
                 fontFamily: 'var(--font-sans)',
                 fontSize: '0.85rem',
                 minHeight: '3rem',
-                backgroundColor: active ? 'var(--accent)' : 'var(--surface-2)',
+                backgroundColor: active ? 'var(--primary)' : 'transparent',
                 color: active ? 'white' : 'var(--ink)',
-                border: `2px solid ${active ? 'var(--accent)' : 'var(--border)'}`,
               }}
             >
               {option.label}

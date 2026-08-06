@@ -55,10 +55,11 @@ PRACTICE_LENGTHS = (10, 20, 30)
 PRACTICE_LEVELS = (1, 2, 3)
 
 # The same format proportions as the Exam, scaled to each length by the largest
-# remainder method and then written down, because a composition that is
-# computed is a composition nobody can check. Open Questions stay the majority
-# at every length — they are what the real paper is mostly made of, and they
-# are the ones worth practising.
+# remainder method and then written down, because a composition that is computed
+# is a composition nobody can check. Open Questions stay the *largest block* at
+# every length, and never a smaller share of the paper than the Exam's 14 of 30
+# — they are what the real sitting is mostly made of, and the ones worth
+# practising. (A plurality, not a majority: the Exam's own share is 46.7%.)
 PRACTICE_COMPOSITION = {
     10: {FORMAT_OPEN: 5, FORMAT_MULTIPLE_CHOICE: 4, FORMAT_TRUE_FALSE: 1},
     20: {FORMAT_OPEN: 10, FORMAT_MULTIPLE_CHOICE: 7, FORMAT_TRUE_FALSE: 3},

@@ -83,17 +83,29 @@ export default function PracticeResultPage({
       >
         <Mascot mood={nothingAnswered ? 'lost' : 'happy'} size={80} />
 
+        {/* A count, not a percentage. The Exam's recap leads on a big
+            percentage under a PASSED/FAILED badge, and that whole shape reads
+            as a verdict — which is the one thing this screen must not be. What
+            a student takes from a Practice Session is how many they got, and
+            then which ones. */}
         {!nothingAnswered && (
           <p
-            data-testid="practice-score-pct"
+            data-testid="practice-score"
+            // Shown as a bare fraction and read out as a sentence: "7/10" is
+            // the fastest thing to take in on a phone, and no use at all to a
+            // screen reader.
+            aria-label={t('quiz.practice.result.score', {
+              score: session.score ?? 0,
+              total: session.max_score,
+            })}
             style={{
               fontFamily: 'var(--font-display)',
-              fontSize: 'clamp(3rem, 18vw, 5rem)',
+              fontSize: 'clamp(2.8rem, 16vw, 4.5rem)',
               lineHeight: '1',
               color: 'var(--primary)',
             }}
           >
-            {session.score_pct}%
+            {session.score ?? 0}/{session.max_score}
           </p>
         )}
 
@@ -115,15 +127,6 @@ export default function PracticeResultPage({
         </p>
 
         <dl className="flex flex-wrap justify-center gap-x-6 gap-y-2 pt-2">
-          {!nothingAnswered && (
-            <Figure
-              testId="practice-score"
-              label={t('quiz.practice.result.score', {
-                score: session.score ?? 0,
-                total: session.max_score,
-              })}
-            />
-          )}
           {session.level !== null && (
             <Figure
               testId="practice-level-badge"
