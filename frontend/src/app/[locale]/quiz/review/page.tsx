@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { Link, useRouter } from '@/i18n/navigation';
 import Header from '@/components/Header';
 import { Mascot } from '@/components/Mascot';
+import { Choice } from '@/components/quiz/Choice';
 import { fetchCurrentExam, fetchErrorReviewPool, ReviewRefusal, startErrorReview } from '@/lib/api';
 import {
   DEFAULT_REVIEW_LENGTH,
@@ -292,66 +293,5 @@ export default function ReviewSetupPage() {
         )}
       </main>
     </div>
-  );
-}
-
-/** The segmented control of DESIGN.md, sized for a thumb. */
-function Choice<T extends number>({
-  testId,
-  label,
-  options,
-  selected,
-  onSelect,
-  note,
-}: {
-  testId: string;
-  label: string;
-  options: { value: T; label: string }[];
-  selected: T;
-  onSelect: (value: T) => void;
-  note?: string;
-}) {
-  return (
-    <fieldset className="flex flex-col gap-2">
-      <legend
-        className="font-bold mb-2"
-        style={{ fontFamily: 'var(--font-sans)', fontSize: '0.9rem', color: 'var(--ink)' }}
-      >
-        {label}
-      </legend>
-      <div className="grid grid-cols-3 gap-2 p-2 pill" style={{ backgroundColor: 'var(--soon)' }}>
-        {options.map((option) => {
-          const active = option.value === selected;
-          return (
-            <button
-              key={option.value}
-              type="button"
-              data-testid={testId}
-              data-value={option.value}
-              aria-pressed={active}
-              onClick={() => onSelect(option.value)}
-              className="pill font-bold transition-colors px-2 py-3"
-              style={{
-                fontFamily: 'var(--font-sans)',
-                fontSize: '0.85rem',
-                minHeight: '3rem',
-                backgroundColor: active ? 'var(--primary)' : 'transparent',
-                color: active ? 'white' : 'var(--ink)',
-              }}
-            >
-              {option.label}
-            </button>
-          );
-        })}
-      </div>
-      {note && (
-        <p
-          data-testid={`${testId}-note`}
-          style={{ fontFamily: 'var(--font-sans)', fontSize: '0.82rem', color: 'var(--faint)' }}
-        >
-          {note}
-        </p>
-      )}
-    </fieldset>
   );
 }

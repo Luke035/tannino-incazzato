@@ -6,6 +6,7 @@ import Header from '@/components/Header';
 import { Mascot } from '@/components/Mascot';
 import { Breakdown } from '@/components/quiz/Breakdown';
 import { formatDuration } from '@/lib/examTime';
+import { FeedbackCopy, FeedbackMode } from '@/components/quiz/FeedbackSitting';
 import { QuizSession } from '@/types';
 
 /** How a Session in a mode that marks as it goes turned out — and nothing more
@@ -17,8 +18,8 @@ import { QuizSession } from '@/types';
  *  question-by-question of what they got wrong. */
 export interface FeedbackResultProps<S extends QuizSession> {
   sessionId: number;
-  mode: 'practice' | 'review';
-  copy: string;
+  mode: FeedbackMode;
+  copy: FeedbackCopy;
   load: (id: number) => Promise<S | null>;
   /** Where "go again" leads — each mode's own setup screen. */
   againHref: string;

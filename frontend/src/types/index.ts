@@ -113,7 +113,7 @@ export interface ReviewPool {
 // whole reason those modes exist. `verdict` is null only
 // when the agent could not read a written answer — that is not a wrong answer,
 // gives nothing away, and is retried by sending the same answer again.
-export interface PracticeAnswerResult {
+export interface MarkedAnswerResult {
   question_id: number;
   answer: string | null;
   verdict: ExamVerdict | null;

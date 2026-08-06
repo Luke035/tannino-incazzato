@@ -662,12 +662,17 @@ def test_the_open_session_is_reported_by_the_shared_current_endpoint(
 
 # ── The number of questions still waiting ─────────────────────────────────────
 
-def test_the_pool_count_is_on_the_session_and_moves_as_it_is_worked_through(
+def test_the_pool_count_is_on_every_payload_and_moves_when_the_session_is_settled(
     client: TestClient, session: Session
 ):
     """Visible before the Session — that is `/pool` — and visible during it,
     which is this. The number is what progress looks like in this mode, so it
-    is on every payload and recomputed rather than remembered."""
+    is on every payload and recomputed rather than remembered.
+
+    It is honest about *when* it moves, too: answering does not master
+    anything, because mastery is counted in submitted Sessions. A counter that
+    ticked down as the student answered would be promising credit that a
+    closed tab would take back."""
     _seed_bank(session)
     _authenticate(client)
     for _ in range(MASTERY_SESSIONS - 1):

@@ -434,12 +434,13 @@ sommelier_game/
 ├── frontend/
 │   └── src/
 │       ├── app/[locale]/      # Login, register, setup, game, recap, profile screens
-│       │   └── quiz/         # mode landing; exam/[examId] and practice/[sessionId]
-│       │                     #   sitting + result screens
+│       │   └── quiz/         # mode landing; exam/[examId], practice/[sessionId] and
+│       │                     #   review/[sessionId] sitting + result screens
 │       ├── components/
 │       │   ├── game/          # PostIt, ScoreCounter, AutoPlaceModal
 │       │   ├── map/           # ItalyMap, RegionPanel
-│       │   ├── quiz/          # QuestionCard (one per screen), Breakdown, ConfirmSheet
+│       │   ├── quiz/          # QuestionCard, Breakdown, ConfirmSheet, and
+│       │   │                  #   FeedbackSitting/FeedbackResult (Practice + Error Review)
 │       │   └── recap/         # RecapStats, AIReview
 │       ├── context/
 │       │   └── AuthContext.tsx   # AuthProvider + useAuth() hook
@@ -451,6 +452,7 @@ sommelier_game/
 │       │   ├── exam.ts        # paper shape mirrored from the backend
 │       │   ├── examTime.ts    # elapsed-time hook + duration formatting
 │       │   ├── practice.ts    # Levels, lengths and open-question counts on offer
+│       │   ├── review.ts     # Error Review lengths and the Mastered threshold
 │       │   ├── gameLogic.ts   # scoring, shuffling, recap stats
 │       │   ├── regionMapping.ts  # JSON name <-> SVG ID conversion
 │       │   ├── svgCollision.ts   # custom dnd-kit collision detection
@@ -476,9 +478,10 @@ sommelier_game/
 │   │   │   └── seed.py        # seed CSV → Question rows
 │   │   ├── exams/             # every mode of Promossi o Cirrotici — see ADR 0008
 │   │   │   ├── model.py       # ExamSession + ExamAnswer tables, compositions, pass mark
-│   │   │   ├── service.py     # the session layer both modes share (read/load/mark)
+│   │   │   ├── service.py     # the layer every mode shares (read/load/mark/history/mastery)
 │   │   │   ├── router.py      # POST /quiz/exams, GET current/{id}, PUT answer, submit/abandon/grade
-│   │   │   └── practice.py    # POST /quiz/practice, GET/{id}, PUT answer (+verdict), finish/abandon
+│   │   │   ├── practice.py    # POST /quiz/practice, GET/{id}, PUT answer (+verdict), finish/abandon
+│   │   │   └── review.py      # GET /quiz/review/pool, POST /quiz/review, …  Error Review + Mastered
 │   │   ├── sessions/
 │   │   │   ├── model.py       # GameSession + SessionCardAttempt SQLModel tables
 │   │   │   └── router.py      # POST /session, GET /session/stats
@@ -493,7 +496,7 @@ sommelier_game/
 │   ├── scripts/
 │   │   ├── ingest_denominations.py
 │   │   └── seed_questions.py  # seed-once loader (no-op if the bank is loaded)
-│   └── tests/                 # pytest suite (test_auth.py, test_denominations.py, test_sessions.py, test_exams.py, test_practice.py …)
+│   └── tests/                 # pytest suite (test_auth.py, test_denominations.py, test_sessions.py, test_exams.py, test_practice.py, test_review.py …)
 │
 ├── infra/
 │   └── docker-compose.yml     # PostgreSQL 17

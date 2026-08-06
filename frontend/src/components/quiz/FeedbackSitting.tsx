@@ -7,7 +7,14 @@ import { Mascot } from '@/components/Mascot';
 import { ConfirmSheet } from '@/components/quiz/ConfirmSheet';
 import { optionLabel, QuestionCard } from '@/components/quiz/QuestionCard';
 import { isBlank } from '@/lib/exam';
-import { ExamQuestion, Language, PracticeAnswerResult, QuizSession } from '@/types';
+import { ExamQuestion, Language, MarkedAnswerResult, QuizSession } from '@/types';
+
+/** The two modes that mark as they go, and the message namespace each one's
+ *  copy lives under. Kept together because they always travel together: the
+ *  mode prefixes every `data-testid` on the screen, the namespace prefixes
+ *  every string on it. */
+export type FeedbackMode = 'practice' | 'review';
+export type FeedbackCopy = 'quiz.practice' | 'quiz.review';
 
 /** A Session in a mode that marks as it goes: one question, one answer, one
  *  correction, next. Practice and Error Review are the same screen — they
@@ -23,16 +30,18 @@ export interface FeedbackSittingProps<S extends QuizSession> {
   sessionId: number;
   /** Prefixes every `data-testid` on the screen, so each mode is addressable on
    *  its own without either of them having to invent a second vocabulary. */
-  mode: 'practice' | 'review';
-  /** The message namespace this mode's copy lives under, e.g. `quiz.practice`. */
-  copy: string;
+  mode: FeedbackMode;
+  /** The message namespace this mode's copy lives under. Narrowed rather than
+   *  a bare string: it tracks `mode`, and a typo in it would only ever surface
+   *  as a raw key on a screen. */
+  copy: FeedbackCopy;
   load: (id: number) => Promise<S | null>;
   save: (
     id: number,
     questionId: number,
     answer: string,
     language: Language
-  ) => Promise<PracticeAnswerResult | null>;
+  ) => Promise<MarkedAnswerResult | null>;
   finish: (id: number) => Promise<S | null>;
   /** Where "start a fresh one" goes when this Session turns out not to exist. */
   setupHref: string;
@@ -62,7 +71,7 @@ export function FeedbackSitting<S extends QuizSession>({
   // What has been marked so far, keyed by question. Seeded from the Session on
   // load, so a student who closed the tab comes back to the corrections they
   // already had rather than to a blank slate.
-  const [marked, setMarked] = useState<Record<number, PracticeAnswerResult>>({});
+  const [marked, setMarked] = useState<Record<number, MarkedAnswerResult>>({});
   // What the student has put into the question on screen but has not had marked
   // yet — the option they just tapped, or the written answer they are still
   // typing. Unlike the Exam it is not saved as it is typed: here sending it *is*
@@ -398,7 +407,7 @@ function Correction({
   mode: string;
   copy: string;
   question: ExamQuestion;
-  result: PracticeAnswerResult;
+  result: MarkedAnswerResult;
 }) {
   const t = useTranslations();
   const correct = result.verdict === 'correct';
@@ -472,7 +481,7 @@ function Waiting({
 
 /** A question that came back already marked, in the shape the screen uses for
  *  one it just marked. Resuming and answering are then the same state. */
-function toResult(question: ExamQuestion): PracticeAnswerResult {
+function toResult(question: ExamQuestion): MarkedAnswerResult {
   return {
     question_id: question.question_id,
     answer: question.answer,

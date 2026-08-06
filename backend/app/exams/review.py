@@ -75,8 +75,6 @@ class ReviewAnswerRequest(BaseModel):
     language: str = "en"
 
 
-ReviewAnswerRead = MarkedAnswerRead
-
 
 class ReviewPoolRead(BaseModel):
     """How much is left to learn, before there is a Session to put it in.
@@ -274,7 +272,7 @@ def get_review(
 
 # ── PUT /quiz/review/{session_id}/answers/{question_id} ───────────────────────
 
-@router.put("/{session_id}/answers/{question_id}", response_model=ReviewAnswerRead)
+@router.put("/{session_id}/answers/{question_id}", response_model=MarkedAnswerRead)
 async def answer_review_question(
     session_id: int,
     question_id: int,

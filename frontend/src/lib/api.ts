@@ -4,7 +4,7 @@ import {
   Exam,
   Filter,
   Language,
-  PracticeAnswerResult,
+  MarkedAnswerResult,
   QuizSession,
   ReviewPool,
   ReviewSession,
@@ -275,7 +275,7 @@ export async function savePracticeAnswer(
   questionId: number,
   answer: string,
   language: Language
-): Promise<PracticeAnswerResult | null> {
+): Promise<MarkedAnswerResult | null> {
   const res = await fetch(
     `${apiUrl()}/quiz/practice/${sessionId}/answers/${questionId}`,
     {
@@ -392,7 +392,7 @@ export async function saveErrorReviewAnswer(
   questionId: number,
   answer: string,
   language: Language
-): Promise<PracticeAnswerResult | null> {
+): Promise<MarkedAnswerResult | null> {
   const res = await fetch(`${apiUrl()}/quiz/review/${sessionId}/answers/${questionId}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },

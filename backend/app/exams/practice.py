@@ -76,11 +76,6 @@ class PracticeAnswerRequest(BaseModel):
     language: str = "en"
 
 
-# The correction the screen shows, in the shape every mode that marks as it goes
-# uses. Named here for the endpoint that returns it; the type is the shared one.
-PracticeAnswerRead = MarkedAnswerRead
-
-
 # ── Drawing the Session ───────────────────────────────────────────────────────
 
 def _draw_adaptive(
@@ -213,7 +208,7 @@ def get_practice(
 
 # ── PUT /quiz/practice/{session_id}/answers/{question_id} ─────────────────────
 
-@router.put("/{session_id}/answers/{question_id}", response_model=PracticeAnswerRead)
+@router.put("/{session_id}/answers/{question_id}", response_model=MarkedAnswerRead)
 async def answer_practice_question(
     session_id: int,
     question_id: int,
