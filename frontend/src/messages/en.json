@@ -92,7 +92,23 @@
     "emptySubtitle": "Complete your first session to see your statistics.",
     "playCta": "Play now →",
     "comingSoon": "Coming soon",
-    "comingSoonTagline": "New game coming"
+    "comingSoonTagline": "New game coming",
+    "quizEmptyTitle": "No exams yet",
+    "quizEmptySubtitle": "Sit your first exam or study session to see how you're doing.",
+    "quizPlayCta": "Open the quiz →",
+    "quizExamsPassed": "Exams passed",
+    "quizExamsSat": "of exams sat",
+    "quizAcrossExams": "across exams",
+    "quizBestExam": "best exam",
+    "quizToMaster": "Left to master",
+    "quizStillWaiting": "questions still waiting",
+    "quizExamHistory": "Exam history",
+    "quizNoExams": "No exams submitted yet — your practice still counts below.",
+    "quizPassed": "Passed",
+    "quizFailed": "Failed",
+    "quizByFormat": "By question format",
+    "quizByLevel": "By level",
+    "quizByTopic": "By topic"
   },
   "language": {
     "toggle": "Italiano"
@@ -113,6 +129,22 @@
       "true_false": "True or false",
       "multiple_choice": "Multiple choice",
       "open": "Open question"
+    },
+    "formatGroups": {
+      "closed": "Closed questions",
+      "open": "Written questions"
+    },
+    "topics": {
+      "viticulture": "Viticulture",
+      "winemaking": "Winemaking",
+      "sparkling_wines": "Sparkling wines",
+      "italian_regions": "Italian regions",
+      "foreign_regions": "Foreign regions",
+      "tasting": "Tasting",
+      "service": "Service",
+      "food_pairing": "Food pairing",
+      "spirits": "Spirits",
+      "legislation": "Legislation"
     },
     "true": "True",
     "false": "False",

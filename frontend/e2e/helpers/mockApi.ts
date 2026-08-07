@@ -2,6 +2,7 @@ import type { Page } from '@playwright/test';
 import { DENOMINATIONS } from '../fixtures/denominations';
 import { HINT_RESPONSE, MEMORIZE_TIP_RESPONSE, REVIEW_RESPONSE } from '../fixtures/aiResponses';
 import { EMPTY_STATS, ONE_SESSION_STATS } from '../fixtures/sessionStats';
+import { EMPTY_QUIZ_STATS, ONE_EXAM_QUIZ_STATS } from '../fixtures/quizStats';
 import {
   CORRECT_OPTION,
   EXAM_ID,
@@ -31,6 +32,7 @@ import {
 const MOCK_USER = { id: 1, email: 'e2e-test@sommelier.test', first_name: 'Test', last_name: 'User' };
 
 export type StatsVariant = 'empty' | 'one-session';
+export type QuizStatsVariant = 'empty' | 'one-exam';
 
 // Intercepts all backend API calls and returns deterministic fixture data.
 // Call this before navigating to any page.
@@ -39,6 +41,7 @@ export async function mockApi(
   options?: {
     denominations?: typeof DENOMINATIONS;
     statsVariant?: StatsVariant;
+    quizStatsVariant?: QuizStatsVariant;
     // Starts the spec with a paper already drawn, and optionally with answers
     // already on it — what a student who was interrupted comes back to.
     exam?: ExamFixture | null;
@@ -75,6 +78,8 @@ export async function mockApi(
 ): Promise<void> {
   const denoms = options?.denominations ?? DENOMINATIONS;
   const statsData = options?.statsVariant === 'one-session' ? ONE_SESSION_STATS : EMPTY_STATS;
+  const quizStatsData =
+    options?.quizStatsVariant === 'one-exam' ? ONE_EXAM_QUIZ_STATS : EMPTY_QUIZ_STATS;
 
   // The Exam is a stateful resource, so the mock is a small server rather than
   // a fixed payload: the answers a spec gives have to come back on a refetch,
@@ -478,6 +483,10 @@ export async function mockApi(
 
   await page.route('**/session/stats', (route) =>
     route.fulfill({ contentType: 'application/json', body: JSON.stringify(statsData) })
+  );
+
+  await page.route('**/quiz/stats', (route) =>
+    route.fulfill({ contentType: 'application/json', body: JSON.stringify(quizStatsData) })
   );
 
   await page.route('**/session', (route) => {

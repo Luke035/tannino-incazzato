@@ -132,6 +132,39 @@ export async function fetchSessionStats(): Promise<SessionStats> {
   return res.json();
 }
 
+// ── Promossi o Cirrotici: profile statistics (#24) ───────────────────────────
+// Read from the quiz's own tables and never averaged with Mappa dei Vini. The
+// exam list and pass rate are Exams only; the breakdowns count every submitted
+// Session, Practice and Error Review included.
+
+export interface QuizStats {
+  exams: {
+    id: number;
+    score_pct: number;
+    passed: boolean;
+    duration_seconds: number | null;
+    played_at: string;
+  }[];
+  aggregate: {
+    total_exams: number;
+    exams_passed: number;
+    avg_score_pct: number;
+    best_score_pct: number;
+  };
+  by_level: { level: number; correct_pct: number; answered: number }[];
+  // `format` is 'closed' | 'open' — the tick-boxes versus the written ones.
+  by_format: { format: string; correct_pct: number; answered: number }[];
+  by_topic: { topic: string; correct_pct: number; answered: number }[];
+  pending_mastery: number;
+}
+
+export async function fetchQuizStats(): Promise<QuizStats> {
+  const res = await fetch(`${apiUrl()}/quiz/stats`, {
+    credentials: 'include',
+  });
+  return res.json();
+}
+
 // ── Promossi o Cirrotici: the Exam ───────────────────────────────────────────
 // The backend draws the paper, shuffles the options and produces every Verdict
 // (ADR 0007), so these wrappers carry state rather than compute it.

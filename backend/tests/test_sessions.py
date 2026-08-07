@@ -242,3 +242,33 @@ def test_stats_shows_last_5_sessions(client: TestClient):
         client.post("/session", json={**SESSION_PAYLOAD, "history": single})
     data = client.get("/session/stats").json()
     assert len(data["sessions"]) == 5
+
+
+# ── Separation from the quiz (#24) ────────────────────────────────────────────
+
+def test_mappa_stats_unaffected_by_quiz_sessions(client: TestClient, session):
+    """Mappa dei Vini and Promossi o Cirrotici live in separate tables (ADR
+    0008) and their numbers must never be averaged together. A quiz Session
+    sitting in `exam_sessions` must leave `/session/stats` exactly as it was."""
+    from app.exams.model import STATUS_SUBMITTED, VERDICT_CORRECT, ExamAnswer, ExamSession
+    from app.questions.model import FORMAT_MULTIPLE_CHOICE, Question
+
+    _register_and_get_client(client)
+    client.post("/session", json=SESSION_PAYLOAD)
+    before = client.get("/session/stats").json()
+
+    # Plant a submitted quiz Exam for the same user directly in the quiz tables.
+    q = Question(text="Q", format=FORMAT_MULTIPLE_CHOICE, level=1,
+                 reference_answer="ref", topic="tasting")
+    session.add(q)
+    session.flush()
+    exam = ExamSession(user_id=1, mode="exam", status=STATUS_SUBMITTED,
+                       max_score=1, score=1)
+    session.add(exam)
+    session.flush()
+    session.add(ExamAnswer(session_id=exam.id, question_id=q.id, position=0,
+                           served_options=[], answer="ref", verdict=VERDICT_CORRECT))
+    session.commit()
+
+    after = client.get("/session/stats").json()
+    assert after == before
