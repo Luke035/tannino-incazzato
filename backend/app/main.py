@@ -8,6 +8,7 @@ from app.auth.router import router as auth_router
 from app.exams.practice import router as practice_router
 from app.exams.review import router as review_router
 from app.exams.router import router as exams_router
+from app.exams.stats import router as quiz_stats_router
 from app.sessions.router import router as sessions_router
 
 app = FastAPI(title="Sommelier Game API")
@@ -29,6 +30,7 @@ app.include_router(sessions_router)
 app.include_router(exams_router)
 app.include_router(practice_router)
 app.include_router(review_router)
+app.include_router(quiz_stats_router)
 
 
 @app.get("/health")

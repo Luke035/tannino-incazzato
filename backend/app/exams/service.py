@@ -339,6 +339,19 @@ def is_mastered(sessions_correct: int) -> bool:
     return sessions_correct >= MASTERY_SESSIONS
 
 
+def exam_score_view(exam: ExamSession) -> Optional[tuple]:
+    """The percentage and pass/fail of a scored Exam, or None when it has no
+    score yet. Decided on whole marks, not the rounded percentage, so a paper
+    that fell just short cannot round up onto the mark — the same rule
+    `read_session` applies, kept here so the profile and the recap can never
+    disagree about whether a paper passed."""
+    if exam.score is None or exam.max_score <= 0:
+        return None
+    score_pct = round(exam.score / exam.max_score * 100, 1)
+    passed = exam.score * 100 >= exam.max_score * PASS_MARK_PCT
+    return score_pct, passed
+
+
 # ── Marking an answer as it is given ──────────────────────────────────────────
 
 class MarkedAnswerRead(BaseModel):
