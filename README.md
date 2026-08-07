@@ -15,7 +15,7 @@ graph TD
     frontend["Next.js :3000\nproxy.ts — JWT auth guard\nstandalone build"]
     backend["FastAPI :8000\nSQLModel · Alembic"]
     db[("PostgreSQL 17")]
-    gemini["Google Gemini\ngemini-3.1-flash-lite"]
+    gemini["Google Gemini\ngemini-3.5-flash"]
 
     Browser -->|HTTP| nginx
     nginx -->|"/ → "| frontend
@@ -251,7 +251,7 @@ Multi-region denominations (e.g. Prosecco spans Veneto + Friuli Venezia Giulia) 
 | Auth (backend) | `python-jose` (JWT), `passlib[bcrypt]` (passwords), `authlib` (Google OAuth) |
 | ORM / schema | SQLModel + Alembic |
 | Database | PostgreSQL 17 |
-| AI | Google Gemini `gemini-3.1-flash-lite` |
+| AI | Google Gemini `gemini-3.5-flash` |
 | Frontend tests | Vitest (unit) + Playwright (E2E) |
 | Backend tests | pytest + httpx |
 

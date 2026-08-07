@@ -27,7 +27,7 @@ from pydantic_ai.providers.google import GoogleProvider
 
 from app.questions.model import SUBTYPE_CONCEPTUAL, SUBTYPE_LIST
 
-MODEL_NAME = "gemini-3.1-flash-lite"
+MODEL_NAME = "gemini-3.5-flash"
 
 
 class OpenAnswerToGrade(BaseModel):

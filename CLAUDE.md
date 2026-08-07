@@ -95,7 +95,7 @@ The browser calls FastAPI directly using `NEXT_PUBLIC_API_URL`. There are no Nex
 - **python-jose[cryptography]** — JWT signing/verification
 - **passlib[bcrypt]** — password hashing (bcrypt pinned to `<5.0` for passlib compatibility)
 - **authlib** + **httpx** — Google OAuth2 backend flow
-- **google-genai** — Gemini model `gemini-3.1-flash-lite` (hints, memory tips, session reviews)
+- **google-genai** — Gemini model `gemini-3.5-flash` (hints, memory tips, session reviews)
 - **pydantic-ai-slim[google]** — typed agent grading the Exam's Open Questions (ADR 0010)
 - **pytest** + **httpx** for testing (SQLite in-memory for DB isolation)
 
