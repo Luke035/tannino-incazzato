@@ -33,5 +33,6 @@ irreversibly wrong the first time the sheet is reordered.
   correction expected — but the edit is now versioned, reviewed and reproducible rather than a
   hand-run production query. ADR 0012 also records the one accepted hazard: closed questions are
   graded at submit, so a correction landing between a player's answer and their submit changes
-  that answer's verdict.)
+  that answer's verdict. Settled by ADR 0013: the admin panel now exists and owns corrections at
+  steady state, with the corrections file kept for bulk remediation.)
 - Questions are deactivated, never deleted, so answers already given stay readable.

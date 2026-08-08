@@ -63,7 +63,11 @@ sound stable key survives a regeneration of the sheet.
 ## Consequences
 
 - This ADR amends ADR 0009: correcting a question no longer means a query against production. It
-  means an append to the corrections file, reviewed and merged like any other change.
+  means an append to the corrections file, reviewed and merged like any other change. (Amended in
+  turn by ADR 0013, once the admin panel exists: at steady state a correction is made in the panel,
+  and this file is retained for bulk remediation against an external dated authority — the sweep it
+  was built for. ADR 0013 also explains why the panel may change `text` and `options` when this file
+  may not, and why `reference_answer` carries a sharper hazard than the one accepted below.)
 - The corrections file and the snapshot both live in git, so the delta over the seed CSV is
   auditable even though the live bank itself still has no single versioned description (ADR 0009).
 - Corrections are applied on every boot on any database, freshly seeded or years in production,

@@ -46,8 +46,22 @@ sitting covering all three course levels at once.
 _Avoid_: naming the certifying body anywhere in the product, the code or the docs.
 
 **Question Bank**:
-The body of certified course questions the game draws from. The database is its source of truth.
+The body of questions the game draws from. The database is its source of truth. It was once
+certified course material by construction; now that questions can be written in the platform, every
+question carries its Provenance instead.
 _Avoid_: "the CSV", "the questions file" — the CSV only ever seeded the bank.
+
+**Provenance**:
+Where a question came from: **certified**, transcribed from the course's material, or **authored**,
+written in the platform. Every question carries exactly one, so a question drawn into an Exam can
+always be traced back to whether it is exam material or not.
+_Avoid_: origin, custom question, "my questions".
+
+**Correction**:
+A change to a question the bank already holds. At steady state a Correction is a single deliberate
+act by an Admin, taking effect immediately. The committed corrections file is a different thing: a
+bulk remediation against an external dated authority, not the everyday path.
+_Avoid_: edit, fix, patch, update.
 
 **Level**:
 The sommelier course level a question belongs to: 1 (viticulture, oenology, tasting, service),
@@ -100,3 +114,30 @@ _Avoid_: essay question, written question.
 **Verdict**:
 The outcome of judging one answer: acceptable or not. Binary, never partial.
 _Avoid_: score (a score counts Verdicts across a Session), mark, grade.
+
+### Administration
+
+**Admin**:
+A player who may also govern the platform: correct the Question Bank, suspend an account, take a
+game offline. Being an Admin says what someone may govern, never what they may play — an Admin
+holds a Plan and can be Suspended like anybody else.
+_Avoid_: superuser, moderator, staff, owner.
+
+**Suspended**:
+An account an Admin has closed to play. A Suspended player still signs in and still sees the
+platform; every game is simply shown greyed and refuses to open. It is a state of an account, and
+it is always for one person.
+_Avoid_: banned, blocked, deleted, and especially deactivated — a *question* is deactivated, an
+*account* is Suspended.
+
+**Plan**:
+What a player is entitled to use — **free** or **premium** — as distinct from what they may govern
+(Admin) and from whether they may play at all (Suspended). Both names exist today and nothing in
+the game reads them yet.
+_Avoid_: role, tier, subscription (nothing is being sold), premium user.
+
+**Availability**:
+Whether a game can be reached at all: **published** (playable), **maintenance** (shown, refused,
+and explained) or **hidden** (not shown). Availability is always set for everybody at once, which
+is what separates it from Suspended and from Plan.
+_Avoid_: enabled/disabled, feature flag, toggle.
