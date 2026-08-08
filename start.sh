@@ -62,6 +62,9 @@ log "Backfilling topic/open_subtype for already-seeded questions (no-op if none 
 (cd "$ROOT/backend" && uv run python scripts/backfill_question_classification.py \
     "$ROOT/backend/data/question_bank.csv")
 
+log "Applying question bank corrections (no-op if already applied)..."
+(cd "$ROOT/backend" && uv run python scripts/apply_corrections.py)
+
 # ── services ──────────────────────────────────────────────────────────────────
 # local dev runs over HTTP — keep cookies non-Secure
 export COOKIE_SECURE=false
