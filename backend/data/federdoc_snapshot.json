@@ -1,0 +1,565 @@
+{
+  "source": "https://www.federdoc.com/vini-a-d-o/",
+  "updated": "2026-01",
+  "regions": [
+    {
+      "region": "Abruzzo",
+      "DOCG": [
+        "Casauria",
+        "Montepulciano d’Abruzzo Colline Teramane",
+        "Terre Tollesi o Tullum"
+      ],
+      "DOC": [
+        "Abruzzo",
+        "Cerasuolo d’Abruzzo",
+        "Controguerra",
+        "Montepulciano d’Abruzzo",
+        "Ortona",
+        "Trebbiano d’Abruzzo",
+        "Villamagna"
+      ]
+    },
+    {
+      "region": "Basilicata",
+      "DOCG": [
+        "Aglianico del Vulture Superiore"
+      ],
+      "DOC": [
+        "Aglianico del Vulture",
+        "Grottino di Roccanova",
+        "Matera",
+        "Terre dell’Alta Val d’Agri"
+      ]
+    },
+    {
+      "region": "Calabria",
+      "DOCG": [
+        "Cirò Classico"
+      ],
+      "DOC": [
+        "Bivongi",
+        "Cirò",
+        "Greco di Bianco",
+        "Lamezia",
+        "Melissa",
+        "S. Anna di Isola Capo Rizzuto",
+        "Savuto",
+        "Scavigna",
+        "Terre di Cosenza"
+      ]
+    },
+    {
+      "region": "Campania",
+      "DOCG": [
+        "Aglianico del Taburno",
+        "Fiano di Avellino",
+        "Greco di Tufo",
+        "Taurasi"
+      ],
+      "DOC": [
+        "Aversa",
+        "Campi Flegrei",
+        "Capri",
+        "Casavecchia di Pontelatone",
+        "Castel San Lorenzo",
+        "Cilento",
+        "Costa d’Amalἀ",
+        "Falanghina del Sannio",
+        "Falerno del Massico",
+        "Galluccio",
+        "Irpinia",
+        "Ischia",
+        "Penisola Sorrentina",
+        "Sannio",
+        "Vesuvio"
+      ]
+    },
+    {
+      "region": "Emilia Romagna",
+      "DOCG": [
+        "Colli Bolognesi Pignoletto",
+        "Romagna Albana"
+      ],
+      "DOC": [
+        "Bosco Eliceo",
+        "Colli Bolognesi",
+        "Colli d’Imola",
+        "Colli di Faenza",
+        "Colli di Parma",
+        "Colli di Scandiano e di Canossa",
+        "Colli Piacentini",
+        "Colli Romagna Centrale",
+        "Emilia-Romagna",
+        "Gutturnio",
+        "Lambrusco di Sorbara",
+        "Lambrusco Grasparossa di Castelvetro",
+        "Lambrusco Salamino di Santa Croce",
+        "Modena o Di Modena",
+        "Ortrugo dei Colli Piacentini",
+        "Reggiano",
+        "Reno",
+        "Rimini",
+        "Romagna"
+      ]
+    },
+    {
+      "region": "Friuli Venezia Giulia",
+      "DOCG": [
+        "Colli Orientali del Friuli Picolit",
+        "Lison",
+        "Ramandolo",
+        "Rosazzo"
+      ],
+      "DOC": [
+        "Carso o Carso-Kras",
+        "Collio Goriziano o Collio",
+        "delle Venezie o Beneških Okolišev* **",
+        "Friuli o Friuli Venezia Giulia* **",
+        "Friuli Annia",
+        "Friuli Aquileia",
+        "Friuli Colli Orientali",
+        "Friuli Grave",
+        "Friuli Isonzo o Isonzo del Friuli",
+        "Friuli Latisana",
+        "Lison-Pramaggiore",
+        "Prosecco*"
+      ]
+    },
+    {
+      "region": "Lazio",
+      "DOCG": [
+        "Cannellino di Frascati",
+        "Cesanese del Piglio o Piglio",
+        "Frascati Superiore"
+      ],
+      "DOC": [
+        "Aleatico di Gradoli",
+        "Aprilia",
+        "Atina",
+        "Bianco Capena",
+        "Castelli Romani",
+        "Cerveteri",
+        "Cesanese di Affile o Affile",
+        "Cesanese di Olevano Romano o Olevano Romano",
+        "Circeo",
+        "Colli Albani",
+        "Colli della Sabina",
+        "Colli Etruschi Viterbesi o Tuscia",
+        "Colli Lanuvini",
+        "Cori",
+        "Est! Est!! Est!!! di Montefiascone",
+        "Frascati",
+        "Genazzano",
+        "Marino",
+        "Montecompatri Colonna o Montecompatri o Colonna",
+        "Nettuno",
+        "Orvieto",
+        "Roma",
+        "Tarquinia",
+        "Terracina o Moscato di Terracina",
+        "Velletri",
+        "Vignanello",
+        "Zagarolo"
+      ]
+    },
+    {
+      "region": "Liguria",
+      "DOCG": [],
+      "DOC": [
+        "Cinque Terre e Cinque Terre Sciacchetrà",
+        "Colli di Luni",
+        "Colline di Levanto",
+        "Dolceacqua o Rossese di Dolceacqua",
+        "Golfo del Tigullio-Portofino o Portofino",
+        "Pornassio o Ormeasco di Pornassio",
+        "Riviera Ligure di Ponente",
+        "Val Polcèvera"
+      ]
+    },
+    {
+      "region": "Lombardia",
+      "DOCG": [
+        "Franciacorta",
+        "Oltrepò Pavese Metodo Classico",
+        "Scanzo o Moscato di Scanzo",
+        "Sforzato di Valtellina o Sfursat di Valtellina",
+        "Valtellina Superiore"
+      ],
+      "DOC": [
+        "Bonarda dell’Oltrepò Pavese",
+        "Botticino",
+        "Buttafuoco dell’Oltrepò Pavese or Buttafuoco",
+        "Capriano del Colle",
+        "Casteggio",
+        "Cellatica",
+        "Curtefranca",
+        "Garda",
+        "Garda Colli Mantovani",
+        "Lambrusco Mantovano",
+        "Lugana",
+        "Oltrepò Pavese",
+        "Oltrepò Pavese Pinot Grigio",
+        "Pinot Nero dell’Oltrepò Pavese",
+        "Riviera del Garda Classico*",
+        "San Colombano al Lambro o San Colombano",
+        "San Martino della Battaglia",
+        "Sangue di Giuda dell’Oltrepò Pavese o Sangue di Giuda",
+        "Terre di Colleoni o Colleoni",
+        "Valcalepio",
+        "Valtellina Rosso o Rosso di Valtellina"
+      ]
+    },
+    {
+      "region": "Marche",
+      "DOCG": [
+        "Castelli di Jesi Verdicchio Riserva",
+        "Cònero",
+        "Offida",
+        "Verdicchio di Matelica Riserva",
+        "Vernaccia di Serrapetrona"
+      ],
+      "DOC": [
+        "Bianchello del Metauro",
+        "Colli Maceratesi",
+        "Colli Pesaresi",
+        "Esino",
+        "Falerio",
+        "I Terreni di Sanseverino",
+        "Lacrima di Morro o Lacrima di Morro d’Alba",
+        "Pergola",
+        "Rosso Cònero",
+        "Rosso Piceno o Piceno",
+        "San Ginesio",
+        "Serrapetrona",
+        "Terre di Offida",
+        "Verdicchio dei Castelli di Jesi",
+        "Verdicchio di Matelica"
+      ]
+    },
+    {
+      "region": "Molise",
+      "DOCG": [],
+      "DOC": [
+        "Biferno",
+        "Molise o del Molise",
+        "Pentro d’Isernia o Pentro",
+        "Tintilia del Molise*"
+      ]
+    },
+    {
+      "region": "Piemonte",
+      "DOCG": [
+        "Erbaluce di Caluso o Caluso",
+        "Gattinara",
+        "Ghemme",
+        "Barbera del Monferrato Superiore",
+        "Gavi o Cortese di Gavi",
+        "Asti",
+        "Barbera d’Asti",
+        "Brachetto d’Acqui o Acqui",
+        "Canelli",
+        "Nizza",
+        "Ruché di Castagnole Monferrato",
+        "Terre Alfieri",
+        "Alta Langa",
+        "Barbaresco",
+        "Barolo",
+        "Dogliani",
+        "Dolcetto di Diano d’Alba o Diano d’Alba",
+        "Dolcetto di Ovada Superiore o Ovada",
+        "Roero"
+      ],
+      "DOC": [
+        "Boca",
+        "Bramaterra",
+        "Canavese",
+        "Carema",
+        "Collina Torinese",
+        "Colline Novaresi",
+        "Colline Saluzzesi",
+        "Coste della Sesia",
+        "Fara",
+        "Freisa di Chieri",
+        "Lessona",
+        "Pinerolese",
+        "Sizzano",
+        "Valli Ossolane",
+        "Valsusa",
+        "Barbera del Monferrato",
+        "Colli Tortonesi",
+        "Cortese dell’Alto Monferrato",
+        "Dolcetto d’Acqui",
+        "Gabiano",
+        "Grignolino del Monferrato Casalese",
+        "Monferrato",
+        "Piemonte*",
+        "Rubino di Cantavenna",
+        "Strevi",
+        "Albugnano",
+        "Calosso",
+        "Cisterna d’Asti",
+        "Dolcetto d’Asti",
+        "Freisa d’Asti",
+        "Grignolino d’Asti",
+        "Loazzolo",
+        "Malvasia di Casorzo d’Asti o Casorzo o Malvasia di Casorzo",
+        "Malvasia di Castelnuovo Don Bosco",
+        "Alba",
+        "Barbera d’Alba",
+        "Dolcetto d’Alba",
+        "Dolcetto di Ovada",
+        "Langhe",
+        "Nebbiolo d’Alba",
+        "Verduno Pelaverga"
+      ]
+    },
+    {
+      "region": "Puglia",
+      "DOCG": [
+        "Castel del Monte Bombino Nero",
+        "Castel del Monte Nero di Troia Riserva",
+        "Castel del Monte Rosso Riserva",
+        "Primitivo di Manduria Dolce Naturale"
+      ],
+      "DOC": [
+        "Aleatico di Puglia*",
+        "Alezio",
+        "Barletta",
+        "Brindisi",
+        "Cacc’è mmitte di Lucera",
+        "Castel del Monte",
+        "Colline Joniche Tarantine",
+        "Copertino",
+        "Galatina",
+        "Gioia del Colle",
+        "Gravina",
+        "Leverano",
+        "Lizzano",
+        "Locorotondo",
+        "Martina o Martina Franca",
+        "Matino",
+        "Moscato di Trani",
+        "Nardò",
+        "Negroamaro di Terra d’Otranto",
+        "Orta Nova",
+        "Ostuni",
+        "Primitivo di Manduria",
+        "Rosso di Cerignola",
+        "Salice Salentino",
+        "San Severo",
+        "Squinzano",
+        "Tavoliere delle Puglie o Tavoliere",
+        "Terra d’Otranto"
+      ]
+    },
+    {
+      "region": "Sardegna",
+      "DOCG": [
+        "Vermentino di Gallura"
+      ],
+      "DOC": [
+        "Alghero",
+        "Arborea",
+        "Cagliari",
+        "Campidano di Terralba o Terralba",
+        "Cannonau di Sardegna*",
+        "Carignano del Sulcis",
+        "Girò di Cagliari",
+        "Malvasia di Bosa",
+        "Mandrolisai",
+        "Monica di Sardegna*",
+        "Moscato di Sardegna*",
+        "Moscato di Sorso-Sennori o Moscato di Sorso o Moscato di Sennori",
+        "Nasco di Cagliari",
+        "Nuragus di Cagliari",
+        "Sardegna Semidano*",
+        "Vermentino di Sardegna*",
+        "Vernaccia di Oristano"
+      ]
+    },
+    {
+      "region": "Sicilia",
+      "DOCG": [
+        "Cerasuolo di Vittoria"
+      ],
+      "DOC": [
+        "Alcamo",
+        "Contea di Sclafani o Valledolmo – Contea di Sclafani",
+        "Contessa Entellina",
+        "Delia Nivolelli",
+        "Eloro",
+        "Erice",
+        "Etna",
+        "Faro",
+        "Malvasia delle Lipari",
+        "Mamertino di Milazzo o Mamertino",
+        "Marsala",
+        "Menfi",
+        "Monreale",
+        "Noto",
+        "Pantelleria",
+        "Riesi",
+        "Salaparuta",
+        "Sambuca di Sicilia",
+        "Santa Margherita di Belice",
+        "Sciacca",
+        "Sicilia*",
+        "Siracusa",
+        "Vittoria"
+      ]
+    },
+    {
+      "region": "Toscana",
+      "DOCG": [
+        "Elba Aleatico Passito o Aleatico Passito dell’Elba",
+        "Montecucco Sangiovese",
+        "Morellino di Scansano",
+        "Suvereto",
+        "Val di Cornia Rosso o Rosso della Val di Cornia",
+        "Brunello di Montalcino",
+        "Carmignano",
+        "Chianti",
+        "Chianti Classico",
+        "Vernaccia di San Gimignano",
+        "Vino Nobile di Montepulciano"
+      ],
+      "DOC": [
+        "Ansonica Costa dell’Argentario",
+        "Bianco di Pitigliano",
+        "Bolgheri",
+        "Bolgheri Sassicaia",
+        "Candia dei Colli Apuani",
+        "Capalbio",
+        "Colli di Luni",
+        "Colline Lucchesi",
+        "Cortona",
+        "Elba",
+        "Grance Senesi",
+        "Maremma Toscana",
+        "Montecarlo",
+        "Montecucco",
+        "Monteregio di Massa Marittima",
+        "Montescudaio",
+        "Parrina",
+        "San Torpè",
+        "Sovana",
+        "Terratico di Bibbona",
+        "Terre di Casole",
+        "Terre di Pisa",
+        "Val d’Arno di Sopra o Valdarno di Sopra",
+        "Val di Cornia",
+        "Valdichiana Toscana",
+        "Valdinievole",
+        "Barco Reale di Carmignano",
+        "Bianco dell’Empolese",
+        "Colli dell’Etruria Centrale",
+        "Moscadello di Montalcino",
+        "Orcia",
+        "Pomino",
+        "Rosso di Montalcino",
+        "Rosso di Montepulciano",
+        "San Gimignano",
+        "Sant’Antimo",
+        "Val d’Arbia",
+        "Vin Santo del Chianti",
+        "Vin Santo del Chianti Classico",
+        "Vin Santo di Carmignano",
+        "Vin Santo di Montepulciano"
+      ]
+    },
+    {
+      "region": "Trentino Alto Adige",
+      "DOCG": [],
+      "DOC": [
+        "Alto Adige o dell’Alto Adige o Südtirol o Südtiroler",
+        "Casteller",
+        "delle Venezie o Beneških Okolišev",
+        "Lago di Caldaro o Caldaro o Kalterersee o Kalterer",
+        "Teroldego Rotaliano",
+        "Trentino",
+        "Trento",
+        "Valdadige o Etschtaler",
+        "Valdadige Terradeiforti o Terradeiforti"
+      ]
+    },
+    {
+      "region": "Umbria",
+      "DOCG": [
+        "Montefalco Sagrantino",
+        "Torgiano Rosso Riserva"
+      ],
+      "DOC": [
+        "Amelia",
+        "Assisi",
+        "Colli Altotiberini",
+        "Colli del Trasimeno o Trasimeno",
+        "Colli Martani",
+        "Colli Perugini",
+        "Lago di Corbara",
+        "Montefalco",
+        "Orvieto",
+        "Rosso Orvietano o Orvietano Rosso",
+        "Spoleto",
+        "Todi",
+        "Torgiano"
+      ]
+    },
+    {
+      "region": "Valle d'Aosta",
+      "DOCG": [],
+      "DOC": [
+        "Valle d’Aosta o Valée d’Aoste"
+      ]
+    },
+    {
+      "region": "Veneto",
+      "DOCG": [
+        "Amarone della Valpolicella",
+        "Asolo Prosecco o Asolo",
+        "Bagnoli Friularo o Friularo di Bagnoli",
+        "Bardolino Superiore",
+        "Colli di Conegliano",
+        "Colli Euganei Fior d’Arancio o Fior d’Arancio Colli Euganei",
+        "Conegliano Valdobbiadene-Prosecco o Conegliano-Prosecco o Valdobbiadene Prosecco",
+        "Lison",
+        "Montello Rosso o Montello",
+        "Piave Malanotte o Malanotte del Piave",
+        "Recioto della Valpolicella",
+        "Recioto di Gambellara",
+        "Recioto di Soave",
+        "Soave Superiore"
+      ],
+      "DOC": [
+        "Arcole",
+        "Bagnoli di Sopra o Bagnoli",
+        "Bardolino",
+        "Bianco di Custoza o Custoza",
+        "Breganze",
+        "Colli Berici",
+        "Colli Euganei",
+        "Corti Benedettine del Padovano",
+        "delle Venezie o Beneških Okolišev***",
+        "Gambellara",
+        "Garda",
+        "Lessini Durello o Durello Lessini",
+        "Lison-Pramaggiore",
+        "Lugana",
+        "Merlara",
+        "Montello Asolo o Asolo Montello",
+        "Monti Lessini",
+        "Piave",
+        "Prosecco*",
+        "Riviera del Brenta",
+        "San Martino della Battaglia",
+        "Soave",
+        "Valdadige o Etschtaler",
+        "Valdadige Terradeiforti o Terradeiforti",
+        "Valpolicella",
+        "Valpolicella Ripasso",
+        "Venezia",
+        "Vicenza",
+        "Vigneti della Serenissima o Serenissima**"
+      ]
+    }
+  ]
+}
