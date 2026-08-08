@@ -15,7 +15,7 @@ function apiUrl() {
 }
 
 export async function fetchDenominations(): Promise<Denomination[]> {
-  const res = await fetch(`${apiUrl()}/denominations`);
+  const res = await fetch(`${apiUrl()}/denominations`, { credentials: 'include' });
   return res.json();
 }
 
@@ -31,6 +31,7 @@ export async function fetchHint(params: {
   const res = await fetch(`${apiUrl()}/hint`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(params),
   });
   const data = await res.json();
@@ -46,6 +47,7 @@ export async function fetchMemorizeTip(params: {
   const res = await fetch(`${apiUrl()}/memorize`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(params),
   });
   const data = await res.json();
@@ -66,6 +68,7 @@ export async function fetchReview(params: {
   const res = await fetch(`${apiUrl()}/review`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify({ history: payload, language: params.language }),
   });
   const data = await res.json();
