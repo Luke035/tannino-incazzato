@@ -1,7 +1,8 @@
-from typing import List, Literal
-from fastapi import APIRouter
+from typing import Annotated, List, Literal
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from app.ai.gemini import generate_hint, generate_memorize_tip, generate_review
+from app.auth.jwt import get_current_user_id
 
 router = APIRouter()
 
@@ -37,7 +38,7 @@ class ReviewRequest(BaseModel):
 
 
 @router.post("/hint")
-async def hint(req: HintRequest):
+async def hint(req: HintRequest, user_id: Annotated[int, Depends(get_current_user_id)]):
     text = await generate_hint(
         req.denominationName,
         req.denominationType,
@@ -51,7 +52,7 @@ async def hint(req: HintRequest):
 
 
 @router.post("/memorize")
-async def memorize(req: MemorizeRequest):
+async def memorize(req: MemorizeRequest, user_id: Annotated[int, Depends(get_current_user_id)]):
     text = await generate_memorize_tip(
         req.denominationName,
         req.denominationType,
@@ -62,7 +63,7 @@ async def memorize(req: MemorizeRequest):
 
 
 @router.post("/review")
-async def review(req: ReviewRequest):
+async def review(req: ReviewRequest, user_id: Annotated[int, Depends(get_current_user_id)]):
     text = await generate_review(
         [item.model_dump() for item in req.history],
         req.language,
