@@ -72,3 +72,50 @@ class AdminUserRead(SQLModel):
     plan: str
     created_at: datetime
     last_login: Optional[datetime]
+
+
+# What a row of the player list carries. It extends the safe axes-and-timestamps
+# schema with the two figures that make the screen worth having (#41): how many
+# Sessions the player has actually played, and when they were last active —
+# `last_activity` being the most recent of any login or any game played, so an
+# abandoned account reads as abandoned even if its owner never logged out.
+# Like every admin schema it is spelled out field by field, so a sensitive field
+# can only ever be added on purpose (ADR 0014): no password hash, no Google id.
+class AdminPlayerListItem(SQLModel):
+    id: int
+    email: str
+    first_name: str
+    last_name: str
+    account_state: str
+    role: str
+    plan: str
+    created_at: datetime
+    last_login: Optional[datetime]
+    last_activity: Optional[datetime]
+    sessions_played: int
+
+
+# The paginated envelope. `total` is the count *after* the search filter, so the
+# screen can render "showing 20 of 137" and page through it honestly.
+class AdminPlayerPage(SQLModel):
+    players: list[AdminPlayerListItem]
+    total: int
+    page: int
+    page_size: int
+
+
+# One player's own page. The same facts as a list row today; a distinct schema
+# because the detail page is where later slices hang their actions (#38), and it
+# should not have to change shape when they arrive.
+class AdminPlayerDetail(SQLModel):
+    id: int
+    email: str
+    first_name: str
+    last_name: str
+    account_state: str
+    role: str
+    plan: str
+    created_at: datetime
+    last_login: Optional[datetime]
+    last_activity: Optional[datetime]
+    sessions_played: int

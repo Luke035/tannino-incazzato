@@ -84,7 +84,7 @@ function AdminNav() {
 
   const items: { key: string; href: string | null }[] = [
     { key: 'overview', href: '/admin' },
-    { key: 'users', href: null },
+    { key: 'users', href: '/admin/users' },
     { key: 'questionBank', href: null },
     { key: 'corrections', href: null },
   ];

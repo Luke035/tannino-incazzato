@@ -370,6 +370,58 @@
       "questionBank": "Banco Domande",
       "corrections": "Correzioni"
     },
-    "soon": "Presto"
+    "soon": "Presto",
+    "users": {
+      "title": "Giocatori",
+      "subtitle": "Ogni giocatore registrato, e quanto ha davvero giocato.",
+      "searchPlaceholder": "Cerca per nome o email",
+      "search": "Cerca",
+      "count": "{total, plural, =0 {Nessun giocatore} one {# giocatore} other {# giocatori}}",
+      "loading": "Caricamento giocatori…",
+      "error": "Impossibile caricare la lista dei giocatori. Riprova.",
+      "retry": "Riprova",
+      "empty": "Ancora nessun giocatore.",
+      "noMatches": "Nessun giocatore corrisponde a “{search}”.",
+      "columns": {
+        "name": "Nome",
+        "email": "Email",
+        "registered": "Registrato",
+        "lastActivity": "Ultima attività",
+        "account": "Account",
+        "role": "Ruolo",
+        "plan": "Piano",
+        "sessions": "Sessioni"
+      },
+      "accountState": {
+        "open": "Aperto",
+        "suspended": "Sospeso"
+      },
+      "role": {
+        "player": "Giocatore",
+        "admin": "Admin"
+      },
+      "plan": {
+        "free": "Gratuito",
+        "premium": "Premium"
+      },
+      "never": "Mai",
+      "pagination": {
+        "showing": "Da {from} a {to} di {total}",
+        "previous": "Precedente",
+        "next": "Successivo"
+      },
+      "detail": {
+        "back": "← Torna ai giocatori",
+        "notFound": "Giocatore non trovato.",
+        "loading": "Caricamento giocatore…",
+        "sessionsPlayed": "{count, plural, =0 {Nessuna sessione giocata} one {# sessione giocata} other {# sessioni giocate}}",
+        "registered": "Registrato",
+        "lastActivity": "Ultima attività",
+        "lastLogin": "Ultimo accesso",
+        "account": "Account",
+        "role": "Ruolo",
+        "plan": "Piano"
+      }
+    }
   }
 }
