@@ -1,5 +1,7 @@
 import os
 
+from datetime import datetime, timezone
+
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
@@ -129,6 +131,45 @@ def test_admin_users_counts_finished_sessions_across_both_games(
     counts = {row["email"]: row["sessions_played"] for row in rows}
     assert counts[PLAYER["email"]] == 3
     assert counts[ADMIN["email"]] == 0
+
+
+def test_admin_users_last_activity_is_the_most_recent_sign_of_life(
+    client: TestClient, session: Session
+):
+    _admin_client(client, session)
+    player = _add_player(session, PLAYER["email"])
+
+    older = datetime(2023, 1, 1, tzinfo=timezone.utc)
+    newer = datetime(2024, 6, 1, tzinfo=timezone.utc)
+    player.last_login = older
+    session.add(player)
+    # A game played after the last login is the most recent activity...
+    session.add(GameSession(
+        user_id=player.id, game_id="wine-map", filter="both",
+        score=1, max_score=1, duration_seconds=10, played_at=newer,
+    ))
+    # ...and even an abandoned quiz — not a game *played* — is still a sign of
+    # life, so an earlier one does not overtake the game above.
+    session.add(ExamSession(
+        user_id=player.id, max_score=30, status=STATUS_ABANDONED,
+        started_at=datetime(2023, 6, 1, tzinfo=timezone.utc),
+    ))
+    session.commit()
+
+    rows = client.get("/admin/users").json()["players"]
+    row = next(r for r in rows if r["email"] == PLAYER["email"])
+    assert row["last_activity"] is not None
+    assert row["last_activity"].startswith("2024-06-01")
+
+
+def test_admin_users_last_activity_is_null_for_a_player_never_seen(
+    client: TestClient, session: Session
+):
+    _admin_client(client, session)
+    _add_player(session, PLAYER["email"])
+    rows = client.get("/admin/users").json()["players"]
+    row = next(r for r in rows if r["email"] == PLAYER["email"])
+    assert row["last_activity"] is None
 
 
 # ── Search matches name and email ─────────────────────────────────────────────

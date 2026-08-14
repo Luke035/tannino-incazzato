@@ -12,9 +12,13 @@ two games' own tables and folded onto each row.
   An abandoned or in-progress quiz Session was not a game played and is not
   counted.
 * **Last activity** is the most recent of the player's last login and the times
-  they last played either game, so an account that plays daily but never logs
-  out again still reads as live, and one that registered a year ago and never
-  came back reads as abandoned.
+  they last *touched* either game — and unlike "sessions played" it counts a
+  quiz Session whatever its status, including one started and abandoned. The two
+  figures answer different questions: "sessions played" is how much genuine play
+  an account holds, while "last activity" is the last sign of life, and a player
+  who opened a quiz yesterday and walked away was still here yesterday. So an
+  account that plays daily but never logs out again still reads as live, and one
+  that registered a year ago and never came back reads as abandoned.
 
 Every aggregation is done in Python over rows pulled with plain `select`s — the
 convention across this codebase (see `exams/stats.py`) — so the numbers are

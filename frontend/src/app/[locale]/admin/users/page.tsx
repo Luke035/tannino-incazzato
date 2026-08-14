@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { AdminPlayer, AdminPlayerPage, fetchAdminPlayers } from '@/lib/admin';
+import { formatDate } from '@/lib/adminFormat';
 
 const PAGE_SIZE = 20;
 
@@ -228,12 +229,4 @@ function PlayerRow({ player, locale }: { player: AdminPlayer; locale: string }) 
       <td className="px-4 py-3 text-right text-ink tabular-nums">{player.sessions_played}</td>
     </tr>
   );
-}
-
-export function formatDate(iso: string, locale: string): string {
-  return new Date(iso).toLocaleDateString(locale === 'it' ? 'it-IT' : 'en-GB', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-  });
 }

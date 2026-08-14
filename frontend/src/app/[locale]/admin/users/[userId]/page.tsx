@@ -4,7 +4,7 @@ import { use, useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { AdminPlayer, fetchAdminPlayer } from '@/lib/admin';
-import { formatDate } from '../page';
+import { formatDate } from '@/lib/adminFormat';
 
 /**
  * One player's own page (#41): the same facts as the list row, on a page of
