@@ -5,7 +5,7 @@ import { jwtVerify } from 'jose';
 
 const intlMiddleware = createMiddleware(routing);
 
-const PROTECTED = ['/', '/wine-map', '/game', '/recap', '/profile', '/quiz'];
+const PROTECTED = ['/', '/wine-map', '/game', '/recap', '/profile', '/quiz', '/admin'];
 const AUTH_ONLY = ['/login', '/register'];
 const COOKIE_NAME = 'sommelier_session';
 

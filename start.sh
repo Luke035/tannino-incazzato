@@ -65,6 +65,9 @@ log "Backfilling topic/open_subtype for already-seeded questions (no-op if none 
 log "Applying question bank corrections (no-op if already applied)..."
 (cd "$ROOT/backend" && uv run python scripts/apply_corrections.py)
 
+log "Promoting the configured admin into a vacuum (no-op if an admin exists)..."
+(cd "$ROOT/backend" && uv run python scripts/promote_admin.py)
+
 # ── services ──────────────────────────────────────────────────────────────────
 # local dev runs over HTTP — keep cookies non-Secure
 export COOKIE_SECURE=false

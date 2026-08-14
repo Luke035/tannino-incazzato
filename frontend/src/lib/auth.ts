@@ -7,6 +7,12 @@ export interface AuthUser {
   email: string;
   first_name: string;
   last_name: string;
+  // The three independent axes (ADR 0014): whether the account may be used,
+  // what it may govern, and what it is entitled to. The browser reads `role`
+  // to decide whether to offer the panel.
+  account_state: 'open' | 'suspended';
+  role: 'player' | 'admin';
+  plan: 'free' | 'premium';
 }
 
 export async function fetchMe(): Promise<AuthUser | null> {

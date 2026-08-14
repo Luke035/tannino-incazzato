@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.denominations.router import router as denominations_router
 from app.ai.router import router as ai_router
 from app.auth.router import router as auth_router
+from app.admin.router import router as admin_router
 from app.exams.practice import router as practice_router
 from app.exams.review import router as review_router
 from app.exams.router import router as exams_router
@@ -26,6 +27,7 @@ app.add_middleware(
 app.include_router(denominations_router)
 app.include_router(ai_router)
 app.include_router(auth_router)
+app.include_router(admin_router)
 app.include_router(sessions_router)
 app.include_router(exams_router)
 app.include_router(practice_router)
