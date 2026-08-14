@@ -75,6 +75,33 @@ def test_me_returns_user_when_logged_in(client: TestClient):
     assert response.json()["email"] == REGISTER_PAYLOAD["email"]
 
 
+def test_me_reports_the_three_axes_with_defaults(client: TestClient):
+    # The browser reads these to decide whether to offer the panel; a fresh
+    # user is an open, playing, free account.
+    client.post("/auth/register", json=REGISTER_PAYLOAD)
+    data = client.get("/auth/me").json()
+    assert data["account_state"] == "open"
+    assert data["role"] == "player"
+    assert data["plan"] == "free"
+
+
+def test_me_never_leaks_the_hash_or_google_id(client: TestClient):
+    # The user entity never leaves the process (ADR 0014): not the password
+    # hash, not the Google id, for anybody.
+    client.post("/auth/register", json=REGISTER_PAYLOAD)
+    data = client.get("/auth/me").json()
+    assert "hashed_password" not in data
+    assert "google_id" not in data
+
+
+def test_register_defaults_the_three_axes(client: TestClient):
+    data = client.post("/auth/register", json=REGISTER_PAYLOAD).json()
+    assert data["account_state"] == "open"
+    assert data["role"] == "player"
+    assert data["plan"] == "free"
+    assert "google_id" not in data
+
+
 def test_me_returns_401_without_cookie(client: TestClient):
     response = client.get("/auth/me")
     assert response.status_code == 401

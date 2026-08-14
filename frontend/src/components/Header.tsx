@@ -1,10 +1,12 @@
 'use client';
+import { useTranslations } from 'next-intl';
 import LanguageToggle from './LanguageToggle';
 import { Mascot } from './Mascot';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter, Link } from '@/i18n/navigation';
 
 export default function Header() {
+  const t = useTranslations('admin');
   const { user, logout } = useAuth();
   const router = useRouter();
 
@@ -41,6 +43,15 @@ export default function Header() {
         <LanguageToggle />
         {user && (
           <>
+            {user.role === 'admin' && (
+              <Link
+                href="/admin"
+                className="px-3 sm:px-4 py-2 rounded-full bg-accent text-white text-sm font-semibold hover:opacity-90 transition-opacity whitespace-nowrap"
+                style={{ fontFamily: 'var(--font-sans)' }}
+              >
+                {t('brand')}
+              </Link>
+            )}
             <Link
               href="/profile"
               className="px-3 sm:px-4 py-2 rounded-full bg-surface-2 text-ink text-sm font-semibold hover:bg-border transition-colors whitespace-nowrap"

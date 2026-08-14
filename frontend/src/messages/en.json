@@ -357,5 +357,19 @@
       "again": "Sit another one",
       "backToGames": "Back to the games"
     }
+  },
+  "admin": {
+    "brand": "Admin Panel",
+    "loading": "Opening the panel…",
+    "welcomeTitle": "Welcome to the panel",
+    "welcomeBody": "This is where the game is kept in order. The tools land here one by one.",
+    "backToApp": "← Back to the game",
+    "nav": {
+      "overview": "Overview",
+      "users": "Users",
+      "questionBank": "Question Bank",
+      "corrections": "Corrections"
+    },
+    "soon": "Soon"
   }
 }

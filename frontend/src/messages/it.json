@@ -357,5 +357,19 @@
       "again": "Fanne un altro",
       "backToGames": "Torna ai giochi"
     }
+  },
+  "admin": {
+    "brand": "Pannello Admin",
+    "loading": "Apertura del pannello…",
+    "welcomeTitle": "Benvenuto nel pannello",
+    "welcomeBody": "Qui il gioco viene tenuto in ordine. Gli strumenti arrivano uno alla volta.",
+    "backToApp": "← Torna al gioco",
+    "nav": {
+      "overview": "Panoramica",
+      "users": "Utenti",
+      "questionBank": "Banco Domande",
+      "corrections": "Correzioni"
+    },
+    "soon": "Presto"
   }
 }

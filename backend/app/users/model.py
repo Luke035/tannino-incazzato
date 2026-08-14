@@ -2,6 +2,18 @@ from datetime import datetime, timezone
 from typing import Optional
 from sqlmodel import Field, SQLModel
 
+# The three independent axes a user carries (ADR 0014). Stored as strings so
+# that each has room to grow its own vocabulary — `plan` above all, which will
+# one day carry premium tiers — without a re-modelling of the user.
+ACCOUNT_STATE_OPEN = "open"
+ACCOUNT_STATE_SUSPENDED = "suspended"
+
+ROLE_PLAYER = "player"
+ROLE_ADMIN = "admin"
+
+PLAN_FREE = "free"
+PLAN_PREMIUM = "premium"
+
 
 class User(SQLModel, table=True):
     __tablename__ = "users"
@@ -14,9 +26,49 @@ class User(SQLModel, table=True):
     google_id: Optional[str] = Field(default=None, unique=True, index=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+    # The three axes are separate facts with separate lifecycles (ADR 0014):
+    # whether the account may be used at all, what it may govern, and what it is
+    # entitled to use. None of them is carried in the session token; all are read
+    # from the row on every authenticated request.
+    account_state: str = Field(default=ACCOUNT_STATE_OPEN)
+    role: str = Field(default=ROLE_PLAYER)
+    plan: str = Field(default=PLAN_FREE)
 
+    # Updated on both password login and the Google callback.
+    last_login: Optional[datetime] = Field(default=None)
+
+    @property
+    def is_admin(self) -> bool:
+        return self.role == ROLE_ADMIN
+
+    @property
+    def is_suspended(self) -> bool:
+        return self.account_state == ACCOUNT_STATE_SUSPENDED
+
+
+# A user is entitled to know their own three axes, so the self-facing schema
+# carries them. It still never carries the password hash or the Google id.
 class UserRead(SQLModel):
     id: int
     email: str
     first_name: str
     last_name: str
+    account_state: str
+    role: str
+    plan: str
+
+
+# The admin listing serialises a schema of its own, distinct from the
+# player-facing one, so the only way to add a sensitive field to it is to type
+# it out — a deliberate act, visible in review (ADR 0014). It deliberately does
+# not carry the password hash or the Google id.
+class AdminUserRead(SQLModel):
+    id: int
+    email: str
+    first_name: str
+    last_name: str
+    account_state: str
+    role: str
+    plan: str
+    created_at: datetime
+    last_login: Optional[datetime]

@@ -1,4 +1,5 @@
 import os
+from datetime import datetime, timezone
 from typing import Annotated
 
 from authlib.integrations.httpx_client import AsyncOAuth2Client
@@ -10,9 +11,9 @@ from sqlmodel import Session, select
 
 from app.database import get_session
 from app.users.model import User, UserRead
+from app.auth.deps import get_current_user
 from app.auth.jwt import (
     create_access_token,
-    get_current_user_id,
     set_auth_cookie,
     clear_auth_cookie,
 )
@@ -76,6 +77,10 @@ async def login(body: LoginRequest, response: Response, db: Session = Depends(ge
     if not user or not user.hashed_password or not _pwd_context.verify(body.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="invalid_credentials")
 
+    user.last_login = datetime.now(timezone.utc)
+    db.add(user)
+    db.commit()
+
     set_auth_cookie(response, create_access_token(user.id))
     return user
 
@@ -87,13 +92,7 @@ async def logout(response: Response):
 
 
 @router.get("/me", response_model=UserRead)
-async def me(
-    user_id: Annotated[int, Depends(get_current_user_id)],
-    db: Session = Depends(get_session),
-):
-    user = db.get(User, user_id)
-    if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
+async def me(user: Annotated[User, Depends(get_current_user)]):
     return user
 
 
@@ -130,9 +129,11 @@ async def google_callback(code: str, response: Response, db: Session = Depends(g
                 last_name=last_name,
                 google_id=google_id,
             )
-        db.add(user)
-        db.commit()
-        db.refresh(user)
+
+    user.last_login = datetime.now(timezone.utc)
+    db.add(user)
+    db.commit()
+    db.refresh(user)
 
     frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
     redirect = RedirectResponse(url=f"{frontend_url}/en")
