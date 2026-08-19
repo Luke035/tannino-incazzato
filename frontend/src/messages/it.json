@@ -27,6 +27,10 @@
       },
       "annate": {
         "title": "Annate"
+      },
+      "suspended": {
+        "badge": "Sospeso",
+        "explanation": "Il tuo account è sospeso. I giochi non sono disponibili finché non viene riattivato."
       }
     },
     "backToGames": "← Giochi"
@@ -420,7 +424,41 @@
         "lastLogin": "Ultimo accesso",
         "account": "Account",
         "role": "Ruolo",
-        "plan": "Piano"
+        "plan": "Piano",
+        "actions": {
+          "title": "Azioni",
+          "suspend": "Sospendi account",
+          "reinstate": "Riattiva account",
+          "makeAdmin": "Rendi Admin",
+          "makePlayer": "Rendi Giocatore",
+          "setFree": "Imposta Piano su Free",
+          "setPremium": "Imposta Piano su Premium",
+          "roleLabel": "Ruolo",
+          "planLabel": "Piano",
+          "accountLabel": "Account",
+          "working": "In corso…",
+          "cannotSuspendSelf": "Non puoi sospendere il tuo account.",
+          "cannotDemoteSelf": "Non puoi rimuovere il tuo ruolo di Admin.",
+          "error": "La modifica non è stata salvata. Riprova."
+        },
+        "audit": {
+          "title": "Registro attività",
+          "subtitle": "Ogni modifica fatta a questo giocatore, dalla più recente.",
+          "empty": "Nessuna modifica registrata.",
+          "loading": "Caricamento del registro…",
+          "error": "Impossibile caricare il registro.",
+          "colWhen": "Quando",
+          "colActor": "Da",
+          "colField": "Campo",
+          "colFrom": "Prima",
+          "colTo": "Ora",
+          "field": {
+            "account_state": "Account",
+            "role": "Ruolo",
+            "plan": "Piano"
+          },
+          "empty_value": "—"
+        }
       }
     }
   }

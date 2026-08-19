@@ -11,12 +11,31 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session, func, or_, select
 
 from app.admin.players import last_activity_by_user, sessions_played_by_user
+from app.audit.model import (
+    ENTITY_USER,
+    FIELD_ACCOUNT_STATE,
+    FIELD_PLAN,
+    FIELD_ROLE,
+    AuditLogEntry,
+    AuditLogPage,
+    AuditLogRead,
+    record,
+)
 from app.auth.deps import get_current_admin
 from app.database import get_session
 from app.users.model import (
+    ACCOUNT_STATE_SUSPENDED,
+    ACCOUNT_STATES,
+    PLANS,
+    ROLE_ADMIN,
+    ROLE_PLAYER,
+    ROLES,
     AdminPlayerDetail,
     AdminPlayerListItem,
     AdminPlayerPage,
+    AdminSetAccountStateRequest,
+    AdminSetPlanRequest,
+    AdminSetRoleRequest,
     AdminUserRead,
     User,
 )
@@ -27,6 +46,14 @@ router = APIRouter(prefix="/admin", tags=["admin"], dependencies=[Depends(get_cu
 # a hand-typed `page_size` from asking for the whole table at once.
 DEFAULT_PAGE_SIZE = 20
 MAX_PAGE_SIZE = 100
+
+# The distinct codes the self-guards return, so the interface can explain to an
+# admin why an action on their own account was refused rather than show a bare
+# 400. An admin locking themselves out or stripping their own role would leave
+# a vacuum only the boot-time promotion could fill (ADR 0014); the panel refuses
+# it outright and says which one it was.
+CODE_CANNOT_SUSPEND_SELF = "cannot_suspend_self"
+CODE_CANNOT_DEMOTE_SELF = "cannot_demote_self"
 
 
 @router.get("/whoami", response_model=AdminUserRead)
@@ -119,3 +146,197 @@ def _player_fields(user: User) -> dict:
         "created_at": user.created_at,
         "last_login": user.last_login,
     }
+
+
+def _detail_for(db: Session, user: User) -> AdminPlayerDetail:
+    """Build the detail response the mutation endpoints all return."""
+    played = sessions_played_by_user(db, [user.id])
+    activity = last_activity_by_user(db, [user])
+    return AdminPlayerDetail(
+        **_player_fields(user),
+        last_activity=activity.get(user.id),
+        sessions_played=played.get(user.id, 0),
+    )
+
+
+def _load_target(db: Session, user_id: int) -> User:
+    user = db.get(User, user_id)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    return user
+
+
+def _apply_change(
+    db: Session,
+    *,
+    target: User,
+    actor: User,
+    field: str,
+    new_value: str,
+) -> None:
+    """Set one axis and record the change, previous value beside new.
+
+    A no-op change — setting a value to what it already holds — still writes an
+    entry: the panel's honest answer to "what happened at this moment" includes
+    the act, not only the transitions. The whole thing commits as one unit so a
+    row can never move without its audit entry, nor an entry without its row.
+    """
+    previous_value = getattr(target, field)
+    setattr(target, field, new_value)
+    db.add(target)
+    record(
+        db,
+        actor_id=actor.id,
+        entity_type=ENTITY_USER,
+        entity_id=target.id,
+        field=field,
+        previous_value=previous_value,
+        new_value=new_value,
+    )
+    db.commit()
+    db.refresh(target)
+
+
+# ── Mutations: the four acts this slice records ───────────────────────────────
+
+@router.put("/users/{user_id}/account-state", response_model=AdminPlayerDetail)
+async def set_account_state(
+    user_id: int,
+    body: AdminSetAccountStateRequest,
+    admin: Annotated[User, Depends(get_current_admin)],
+    db: Session = Depends(get_session),
+):
+    """Suspend or reinstate an account (#44).
+
+    An admin cannot suspend themselves — it would leave the panel with no one
+    able to reinstate but the boot-time promotion, and the refusal says so.
+    """
+    if body.account_state not in ACCOUNT_STATES:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    target = _load_target(db, user_id)
+    if target.id == admin.id and body.account_state == ACCOUNT_STATE_SUSPENDED:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"code": CODE_CANNOT_SUSPEND_SELF},
+        )
+
+    _apply_change(
+        db, target=target, actor=admin,
+        field=FIELD_ACCOUNT_STATE, new_value=body.account_state,
+    )
+    return _detail_for(db, target)
+
+
+@router.put("/users/{user_id}/role", response_model=AdminPlayerDetail)
+async def set_role(
+    user_id: int,
+    body: AdminSetRoleRequest,
+    admin: Annotated[User, Depends(get_current_admin)],
+    db: Session = Depends(get_session),
+):
+    """Change a player's role (#44).
+
+    An admin cannot demote themselves out of admin — same vacuum, same refusal.
+    """
+    if body.role not in ROLES:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    target = _load_target(db, user_id)
+    if target.id == admin.id and body.role != ROLE_ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail={"code": CODE_CANNOT_DEMOTE_SELF},
+        )
+
+    _apply_change(
+        db, target=target, actor=admin,
+        field=FIELD_ROLE, new_value=body.role,
+    )
+    return _detail_for(db, target)
+
+
+@router.put("/users/{user_id}/plan", response_model=AdminPlayerDetail)
+async def set_plan(
+    user_id: int,
+    body: AdminSetPlanRequest,
+    admin: Annotated[User, Depends(get_current_admin)],
+    db: Session = Depends(get_session),
+):
+    """Change a player's Plan (#44).
+
+    This changes no capability anywhere — `plan` is dormant (ADR 0014). It is
+    stored, shown, editable and audited, and that is the whole of premium in
+    this scope. There is no self-guard: an admin may change their own Plan
+    freely, because it governs nothing.
+    """
+    if body.plan not in PLANS:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+    target = _load_target(db, user_id)
+    _apply_change(
+        db, target=target, actor=admin,
+        field=FIELD_PLAN, new_value=body.plan,
+    )
+    return _detail_for(db, target)
+
+
+# ── The audit log, readable and filterable ────────────────────────────────────
+
+@router.get("/audit", response_model=AuditLogPage)
+async def read_audit(
+    db: Session = Depends(get_session),
+    entity_type: Optional[str] = Query(default=None),
+    entity_id: Optional[int] = Query(default=None),
+    actor_id: Optional[int] = Query(default=None),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=DEFAULT_PAGE_SIZE, ge=1, le=MAX_PAGE_SIZE),
+):
+    """The panel's window on the audit log (#44).
+
+    Filterable by entity — a kind, optionally narrowed to one row — and by
+    actor, the two questions the panel asks of it: "everything that happened to
+    this player" and "everything this admin did". Newest first, paged like the
+    player list. Each row carries the acting admin's name and email so the
+    screen need not resolve actor ids itself.
+    """
+    statement = select(AuditLogEntry)
+    if entity_type is not None:
+        statement = statement.where(AuditLogEntry.entity_type == entity_type)
+    if entity_id is not None:
+        statement = statement.where(AuditLogEntry.entity_id == entity_id)
+    if actor_id is not None:
+        statement = statement.where(AuditLogEntry.actor_id == actor_id)
+
+    total = len(db.exec(statement).all())
+
+    rows = db.exec(
+        statement.order_by(AuditLogEntry.created_at.desc(), AuditLogEntry.id.desc())  # type: ignore[union-attr]
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    ).all()
+
+    # Resolve the acting admins once for the page, not per row.
+    actor_ids = {row.actor_id for row in rows}
+    actors = {
+        u.id: u
+        for u in db.exec(select(User).where(User.id.in_(actor_ids))).all()  # type: ignore[union-attr]
+    } if actor_ids else {}
+
+    entries = []
+    for row in rows:
+        actor = actors.get(row.actor_id)
+        entries.append(AuditLogRead(
+            id=row.id,
+            actor_id=row.actor_id,
+            actor_email=actor.email if actor else None,
+            actor_name=f"{actor.first_name} {actor.last_name}" if actor else None,
+            created_at=row.created_at,
+            entity_type=row.entity_type,
+            entity_id=row.entity_id,
+            field=row.field,
+            previous_value=row.previous_value,
+            new_value=row.new_value,
+        ))
+
+    return AuditLogPage(entries=entries, total=total, page=page, page_size=page_size)

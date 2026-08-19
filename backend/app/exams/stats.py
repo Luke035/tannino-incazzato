@@ -29,6 +29,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
+from app.auth.deps import require_active_user
 from app.auth.jwt import get_current_user_id
 from app.database import get_session
 from app.exams.model import (
@@ -41,7 +42,7 @@ from app.exams.model import (
 from app.exams.service import exam_score_view, history, is_mastered, mastery_counts
 from app.questions.model import FORMAT_OPEN, Question
 
-router = APIRouter(prefix="/quiz", tags=["quiz"])
+router = APIRouter(prefix="/quiz", tags=["quiz"], dependencies=[Depends(require_active_user)])
 
 # Closed Questions are the tick-boxes — true/false and multiple choice — and
 # Open Questions are the written ones. The ticket asks for exactly this split:

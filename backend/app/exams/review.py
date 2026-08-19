@@ -30,6 +30,7 @@ from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select
 
+from app.auth.deps import require_active_user
 from app.auth.jwt import get_current_user_id
 from app.database import get_session
 from app.exams.model import (
@@ -59,7 +60,7 @@ from app.exams.service import (
 )
 from app.questions.model import Question
 
-router = APIRouter(prefix="/quiz/review", tags=["quiz"])
+router = APIRouter(prefix="/quiz/review", tags=["quiz"], dependencies=[Depends(require_active_user)])
 
 
 # ── Schemas ───────────────────────────────────────────────────────────────────

@@ -16,6 +16,14 @@ from app.auth.jwt import get_current_user_id
 from app.database import get_session
 from app.users.model import User
 
+# The distinct code a game endpoint returns when it refuses a suspended player.
+# It is deliberately its own string — not a bare 403 — so the interface can tell
+# "your account is suspended" apart from every other reason a game might refuse,
+# above all a game taken offline for maintenance, whose message is the same
+# pixels with the opposite meaning (#44). The status is 403: the caller is
+# authenticated and identified, but not permitted to play.
+ACCOUNT_SUSPENDED_CODE = "account_suspended"
+
 
 def get_current_user(
     user_id: Annotated[int, Depends(get_current_user_id)],
@@ -38,4 +46,29 @@ def get_current_admin(
     """
     if not user.is_admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
+    return user
+
+
+def require_active_user(
+    user: Annotated[User, Depends(get_current_user)],
+) -> User:
+    """Refuse a suspended player, and only a suspended player.
+
+    This is the one dependency the game routers mount (ADR 0014): sessions,
+    exams, practice, review, quiz statistics and the AI endpoints. It is
+    deliberately *not* mounted on the calls that identify a player — `/auth/me`,
+    the profile, past results — so a suspended player still signs in, still
+    reaches the home screen, and is told what happened rather than dropped at a
+    login screen with no explanation.
+
+    The refusal carries a distinct code so the interface can grey a game with
+    "your account is suspended" and never confuse it with a game offline for
+    maintenance. Every new game router mounts this; it is never written endpoint
+    by endpoint.
+    """
+    if user.is_suspended:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"code": ACCOUNT_SUSPENDED_CODE},
+        )
     return user
