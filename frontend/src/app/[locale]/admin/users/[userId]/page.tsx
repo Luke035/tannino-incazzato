@@ -249,7 +249,7 @@ function ActionButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className="px-4 py-2 rounded-full text-sm font-semibold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+      className="w-56 px-4 py-2 rounded-full text-sm font-semibold text-center transition-colors cursor-pointer hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
       style={{
         backgroundColor: destructive ? 'var(--primary)' : 'var(--accent)',
         color: 'white',
