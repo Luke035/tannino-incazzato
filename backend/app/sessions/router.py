@@ -5,12 +5,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlmodel import Session, select
 
+from app.auth.deps import require_active_user
 from app.auth.jwt import get_current_user_id
 from app.database import get_session
 from app.denominations.model import Denomination
 from app.sessions.model import GameSession, SessionCardAttempt
 
-router = APIRouter(tags=["sessions"])
+router = APIRouter(tags=["sessions"], dependencies=[Depends(require_active_user)])
 
 GAME_ID = "mappa-vini"
 

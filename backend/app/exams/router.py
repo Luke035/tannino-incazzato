@@ -21,6 +21,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select
 
 from app.ai.grading import OpenAnswerToGrade, grade_open_answers
+from app.auth.deps import require_active_user
 from app.auth.jwt import get_current_user_id
 from app.database import get_session
 from app.exams.model import (
@@ -48,7 +49,7 @@ from app.exams.service import (
 )
 from app.questions.model import FORMAT_OPEN, SUBTYPE_CONCEPTUAL, Question
 
-router = APIRouter(prefix="/quiz/exams", tags=["quiz"])
+router = APIRouter(prefix="/quiz/exams", tags=["quiz"], dependencies=[Depends(require_active_user)])
 
 
 # ── Request schemas ───────────────────────────────────────────────────────────

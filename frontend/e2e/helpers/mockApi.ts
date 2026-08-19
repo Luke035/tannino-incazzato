@@ -29,7 +29,15 @@ import {
   reviewInProgress,
 } from '../fixtures/review';
 
-const MOCK_USER = { id: 1, email: 'e2e-test@sommelier.test', first_name: 'Test', last_name: 'User' };
+const MOCK_USER = {
+  id: 1,
+  email: 'e2e-test@sommelier.test',
+  first_name: 'Test',
+  last_name: 'User',
+  account_state: 'open',
+  role: 'player',
+  plan: 'free',
+};
 
 export type StatsVariant = 'empty' | 'one-session';
 export type QuizStatsVariant = 'empty' | 'one-exam';
@@ -74,6 +82,10 @@ export async function mockApi(
     // The grading agent on a written Error Review answer, marked one question
     // at a time exactly as in Practice.
     reviewGrader?: 'ok' | 'down' | 'downOnce';
+    // Signs the player in as suspended: they still reach the home screen and
+    // read their identity, but every game is greyed and their endpoints refuse
+    // (#44).
+    suspended?: boolean;
   }
 ): Promise<void> {
   const denoms = options?.denominations ?? DENOMINATIONS;
@@ -336,7 +348,12 @@ export async function mockApi(
   });
 
   await page.route('**/auth/me', (route) =>
-    route.fulfill({ contentType: 'application/json', body: JSON.stringify(MOCK_USER) })
+    route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify(
+        options?.suspended ? { ...MOCK_USER, account_state: 'suspended' } : MOCK_USER
+      ),
+    })
   );
 
   await page.route('**/denominations', (route) =>

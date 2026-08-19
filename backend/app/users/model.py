@@ -119,3 +119,24 @@ class AdminPlayerDetail(SQLModel):
     last_login: Optional[datetime]
     last_activity: Optional[datetime]
     sessions_played: int
+
+
+# The mutation request bodies. Each carries the single field it sets, validated
+# against that axis's vocabulary at the edge so an unknown value is refused with
+# a 422 before any row or audit entry is touched.
+class AdminSetAccountStateRequest(SQLModel):
+    account_state: str
+
+
+class AdminSetRoleRequest(SQLModel):
+    role: str
+
+
+class AdminSetPlanRequest(SQLModel):
+    plan: str
+
+
+# The known vocabularies, so the router can refuse a value outside them.
+ACCOUNT_STATES = {ACCOUNT_STATE_OPEN, ACCOUNT_STATE_SUSPENDED}
+ROLES = {ROLE_PLAYER, ROLE_ADMIN}
+PLANS = {PLAN_FREE, PLAN_PREMIUM}

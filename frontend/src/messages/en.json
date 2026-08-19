@@ -27,6 +27,10 @@
       },
       "annate": {
         "title": "Vintages"
+      },
+      "suspended": {
+        "badge": "Suspended",
+        "explanation": "Your account is suspended. Games are unavailable until it is reinstated."
       }
     },
     "backToGames": "← Games"
@@ -420,7 +424,41 @@
         "lastLogin": "Last login",
         "account": "Account",
         "role": "Role",
-        "plan": "Plan"
+        "plan": "Plan",
+        "actions": {
+          "title": "Actions",
+          "suspend": "Suspend account",
+          "reinstate": "Reinstate account",
+          "makeAdmin": "Make Admin",
+          "makePlayer": "Make Player",
+          "setFree": "Set Plan to Free",
+          "setPremium": "Set Plan to Premium",
+          "roleLabel": "Role",
+          "planLabel": "Plan",
+          "accountLabel": "Account",
+          "working": "Working…",
+          "cannotSuspendSelf": "You cannot suspend your own account.",
+          "cannotDemoteSelf": "You cannot remove your own Admin role.",
+          "error": "That change could not be saved. Try again."
+        },
+        "audit": {
+          "title": "Activity log",
+          "subtitle": "Every change made to this player, most recent first.",
+          "empty": "No changes recorded yet.",
+          "loading": "Loading the log…",
+          "error": "The log could not be loaded.",
+          "colWhen": "When",
+          "colActor": "By",
+          "colField": "Field",
+          "colFrom": "Was",
+          "colTo": "Now",
+          "field": {
+            "account_state": "Account",
+            "role": "Role",
+            "plan": "Plan"
+          },
+          "empty_value": "—"
+        }
       }
     }
   }

@@ -10,6 +10,12 @@ export default function HomePage() {
   const router = useRouter();
   const { user } = useAuth();
 
+  // A suspended player still reaches this screen and still sees their games —
+  // but every one is greyed with an explanation, and none can be opened (#44,
+  // ADR 0014). The greyed-for-suspension look must be distinguishable from a
+  // game greyed for any other reason: it carries its own badge and copy.
+  const suspended = user?.account_state === 'suspended';
+
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: 'var(--bg)' }}>
       <Header />
@@ -87,102 +93,27 @@ export default function HomePage() {
         {/* One column on a phone — Promossi o Cirrotici is played there */}
         <div className="grid gap-6 mb-12 grid-cols-1 sm:grid-cols-2">
           {/* Wine Map - Live Game */}
-          <button
-            onClick={() => router.push('/wine-map')}
-            className="flex flex-col p-6 rounded-3xl transition-all hover:shadow-lg hover:-translate-y-0.5 cursor-pointer group"
-            style={{
-              backgroundColor: 'var(--surface)',
-              border: '2px solid var(--primary)',
-            }}
-          >
-            <div className="flex-1 flex items-center justify-center mb-4 h-24">
-              <Mascot mood="skeptical" size={48} />
-            </div>
-            <div className="flex justify-between items-start mb-4 w-full">
-              <h2
-                style={{
-                  fontFamily: 'var(--font-baloo)',
-                  fontSize: '1.5rem',
-                  fontWeight: '700',
-                  color: 'var(--ink)',
-                }}
-              >
-                {t('home.games.wineMap.title')}
-              </h2>
-              <span
-                className="px-3 py-1 rounded-full text-white font-bold text-sm"
-                style={{
-                  backgroundColor: 'var(--correct)',
-                  fontFamily: 'var(--font-nunito)',
-                  fontSize: '0.66rem',
-                  letterSpacing: '0.08em',
-                }}
-              >
-                {t('home.games.wineMap.badge')}
-              </span>
-            </div>
-            <div
-              className="w-full px-4 py-2.5 rounded-full text-center font-bold transition-opacity group-hover:opacity-80"
-              style={{
-                backgroundColor: 'var(--accent)',
-                color: 'white',
-                fontFamily: 'var(--font-nunito)',
-                fontSize: '0.92rem',
-              }}
-            >
-              {t('home.games.wineMap.cta')}
-            </div>
-          </button>
+          <LiveGameTile
+            title={t('home.games.wineMap.title')}
+            badge={t('home.games.wineMap.badge')}
+            cta={t('home.games.wineMap.cta')}
+            onPlay={() => router.push('/wine-map')}
+            suspended={suspended}
+            suspendedBadge={t('home.games.suspended.badge')}
+            suspendedExplanation={t('home.games.suspended.explanation')}
+          />
 
           {/* Promossi o Cirrotici - Live Game */}
-          <button
-            data-testid="quiz-game-card"
-            onClick={() => router.push('/quiz')}
-            className="flex flex-col p-6 rounded-3xl transition-all hover:shadow-lg hover:-translate-y-0.5 cursor-pointer group"
-            style={{
-              backgroundColor: 'var(--surface)',
-              border: '2px solid var(--primary)',
-            }}
-          >
-            <div className="flex-1 flex items-center justify-center mb-4 h-24">
-              <Mascot mood="skeptical" size={48} />
-            </div>
-            <div className="flex justify-between items-start mb-4 w-full gap-3">
-              <h2
-                className="text-left"
-                style={{
-                  fontFamily: 'var(--font-baloo)',
-                  fontSize: '1.5rem',
-                  fontWeight: '700',
-                  color: 'var(--ink)',
-                }}
-              >
-                {t('home.games.quiz.title')}
-              </h2>
-              <span
-                className="px-3 py-1 rounded-full text-white font-bold text-sm whitespace-nowrap"
-                style={{
-                  backgroundColor: 'var(--correct)',
-                  fontFamily: 'var(--font-nunito)',
-                  fontSize: '0.66rem',
-                  letterSpacing: '0.08em',
-                }}
-              >
-                {t('home.games.quiz.badge')}
-              </span>
-            </div>
-            <div
-              className="w-full px-4 py-2.5 rounded-full text-center font-bold transition-opacity group-hover:opacity-80"
-              style={{
-                backgroundColor: 'var(--accent)',
-                color: 'white',
-                fontFamily: 'var(--font-nunito)',
-                fontSize: '0.92rem',
-              }}
-            >
-              {t('home.games.quiz.cta')}
-            </div>
-          </button>
+          <LiveGameTile
+            testId="quiz-game-card"
+            title={t('home.games.quiz.title')}
+            badge={t('home.games.quiz.badge')}
+            cta={t('home.games.quiz.cta')}
+            onPlay={() => router.push('/quiz')}
+            suspended={suspended}
+            suspendedBadge={t('home.games.suspended.badge')}
+            suspendedExplanation={t('home.games.suspended.explanation')}
+          />
 
           {/* Coming Soon Cards */}
           {[
@@ -241,5 +172,132 @@ export default function HomePage() {
         </div>
       </main>
     </div>
+  );
+}
+
+/**
+ * A live game on the home screen. Normally an interactive tile that opens the
+ * game; for a suspended player it is greyed and non-interactive, carrying a
+ * badge and copy that name suspension specifically — never confusable with a
+ * game greyed for maintenance or one merely coming soon (#44).
+ */
+function LiveGameTile({
+  title,
+  badge,
+  cta,
+  onPlay,
+  suspended,
+  suspendedBadge,
+  suspendedExplanation,
+  testId,
+}: {
+  title: string;
+  badge: string;
+  cta: string;
+  onPlay: () => void;
+  suspended: boolean;
+  suspendedBadge: string;
+  suspendedExplanation: string;
+  testId?: string;
+}) {
+  if (suspended) {
+    return (
+      <div
+        data-testid={testId}
+        data-suspended="true"
+        aria-disabled="true"
+        className="flex flex-col p-6 rounded-3xl cursor-not-allowed"
+        style={{ backgroundColor: 'var(--soon)', opacity: 0.78 }}
+      >
+        <div className="flex-1 flex items-center justify-center mb-4 h-24">
+          <Mascot mood="skeptical" size={48} />
+        </div>
+        <div className="flex justify-between items-start mb-4 w-full gap-3">
+          <h2
+            className="text-left"
+            style={{
+              fontFamily: 'var(--font-baloo)',
+              fontSize: '1.5rem',
+              fontWeight: '700',
+              color: 'var(--ink)',
+            }}
+          >
+            {title}
+          </h2>
+          <span
+            className="px-3 py-1 rounded-full text-white font-bold text-sm whitespace-nowrap"
+            style={{
+              backgroundColor: 'var(--primary)',
+              fontFamily: 'var(--font-nunito)',
+              fontSize: '0.66rem',
+              letterSpacing: '0.08em',
+            }}
+          >
+            {suspendedBadge}
+          </span>
+        </div>
+        <p
+          className="text-left"
+          style={{
+            fontFamily: 'var(--font-nunito)',
+            fontSize: '0.82rem',
+            color: 'var(--muted)',
+          }}
+        >
+          {suspendedExplanation}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      data-testid={testId}
+      onClick={onPlay}
+      className="flex flex-col p-6 rounded-3xl transition-all hover:shadow-lg hover:-translate-y-0.5 cursor-pointer group"
+      style={{
+        backgroundColor: 'var(--surface)',
+        border: '2px solid var(--primary)',
+      }}
+    >
+      <div className="flex-1 flex items-center justify-center mb-4 h-24">
+        <Mascot mood="skeptical" size={48} />
+      </div>
+      <div className="flex justify-between items-start mb-4 w-full gap-3">
+        <h2
+          className="text-left"
+          style={{
+            fontFamily: 'var(--font-baloo)',
+            fontSize: '1.5rem',
+            fontWeight: '700',
+            color: 'var(--ink)',
+          }}
+        >
+          {title}
+        </h2>
+        <span
+          className="px-3 py-1 rounded-full text-white font-bold text-sm whitespace-nowrap"
+          style={{
+            backgroundColor: 'var(--correct)',
+            fontFamily: 'var(--font-nunito)',
+            fontSize: '0.66rem',
+            letterSpacing: '0.08em',
+          }}
+        >
+          {badge}
+        </span>
+      </div>
+      <div
+        className="w-full px-4 py-2.5 rounded-full text-center font-bold transition-opacity group-hover:opacity-80"
+        style={{
+          backgroundColor: 'var(--accent)',
+          color: 'white',
+          fontFamily: 'var(--font-nunito)',
+          fontSize: '0.92rem',
+        }}
+      >
+        {cta}
+      </div>
+    </button>
   );
 }

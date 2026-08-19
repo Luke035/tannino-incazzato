@@ -2,9 +2,10 @@ from typing import Annotated, List, Literal
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from app.ai.gemini import generate_hint, generate_memorize_tip, generate_review
+from app.auth.deps import require_active_user
 from app.auth.jwt import get_current_user_id
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(require_active_user)])
 
 
 class HintRequest(BaseModel):
