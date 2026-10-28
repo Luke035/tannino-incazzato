@@ -26,6 +26,8 @@ VALID_SUBTYPES = {SUBTYPE_CONCEPTUAL, SUBTYPE_LIST}
 
 @pytest.fixture(scope="module")
 def bank() -> list[Question]:
+    if not SEED_CSV.exists():
+        pytest.skip("question bank CSV is not included in the public repository")
     return parse_questions(SEED_CSV)
 
 

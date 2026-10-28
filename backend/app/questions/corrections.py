@@ -73,7 +73,7 @@ CORRECTIONS: List[Correction] = [
     # Classico as Calabria's sole D.O.C.G. (data/federdoc_snapshot.json). The
     # answer follows the house "quante e quali" style already set by n=424.
     FieldCorrection(
-        question_text="[question text removed]",
+        question_text="[question n=425 removed]",
         field="reference_answer",
         old="Nessuna",
         new="1 - Cirò Classico.",
@@ -81,7 +81,7 @@ CORRECTIONS: List[Correction] = [
     # Once the answer is an enumeration rather than "Nessuna", `list` is the
     # criterion the grading agent should apply, not `conceptual`.
     FieldCorrection(
-        question_text="[question text removed]",
+        question_text="[question n=425 removed]",
         field="open_subtype",
         old=SUBTYPE_CONCEPTUAL,
         new=SUBTYPE_LIST,
@@ -117,7 +117,7 @@ CORRECTIONS: List[Correction] = [
     # Only the name is corrected; the "Giminiano" misspelling of "Gimignano" is
     # left as it stands, being outside the snapshot's authority.
     FieldCorrection(
-        question_text="[question text removed]",
+        question_text="[question n=285 removed]",
         field="reference_answer",
         old="[question text removed]",
         new="[answer text removed]",
@@ -128,7 +128,7 @@ CORRECTIONS: List[Correction] = [
     # false, and flipping the single stored word to FALSO makes it correct — the
     # same shape as the T/F flip #34 anticipated. No text change is needed.
     FieldCorrection(
-        question_text="[question text removed]",
+        question_text="[question n=713 removed]",
         field="reference_answer",
         old="VERO",
         new="FALSO",
@@ -137,7 +137,7 @@ CORRECTIONS: List[Correction] = [
     # answer now denies, so it is corrected in the same pass to match the
     # snapshot: the Marche DOCG is "Cònero", and "Rosso Cònero" is a DOC.
     FieldCorrection(
-        question_text="[question text removed]",
+        question_text="[question n=713 removed]",
         field="explanation",
         old="Si, DOCG dal 2004.",
         new="No: la DOCG marchigiana è il Cònero; il Rosso Cònero è una DOC.",
@@ -149,7 +149,7 @@ CORRECTIONS: List[Correction] = [
     # so the answer key is corrected to it — no change to `options` is needed,
     # which is what keeps this a correction rather than a deactivation.
     FieldCorrection(
-        question_text="[question text removed]",
+        question_text="[question n=1791 removed]",
         field="reference_answer",
         old="Due",
         new="Tre",
@@ -158,7 +158,7 @@ CORRECTIONS: List[Correction] = [
     # in the same pass to name all three from snapshot region Abruzzo: Casauria,
     # Montepulciano d'Abruzzo Colline Teramane, and Terre Tollesi o Tullum.
     FieldCorrection(
-        question_text="[question text removed]",
+        question_text="[question n=1791 removed]",
         field="explanation",
         old="[question text removed]",
         new="In Abruzzo sono presenti 3 DOCG: Casauria, Montepulciano d'Abruzzo Colline Teramane e Terre Tollesi o Tullum.",

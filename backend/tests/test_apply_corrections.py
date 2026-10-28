@@ -188,7 +188,7 @@ def test_real_corrections_fix_the_calabria_question_end_to_end(session: Session)
     them a second time is a no-op."""
     calabria = _add(
         session,
-        text="[question text removed]",
+        text="[question n=425 removed]",
         format=FORMAT_OPEN,
         level=2,
         reference_answer="Nessuna",

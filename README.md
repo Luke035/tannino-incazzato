@@ -6,6 +6,25 @@ Place **DOC** and **DOCG** wine denomination cards onto the correct regions of a
 
 ---
 
+## About this repository
+
+This is the public copy of a private project, published to show how it is built: the
+commit history, the [ADRs](docs/adr/), the agent setup (`CLAUDE.md`, `AGENTS.md`,
+`.claude/agents/`) and the test suites. Issues and pull requests from the private
+repository are reproduced as issues, keeping their original numbers.
+
+**The question bank is not included.** The quiz game ships as an empty container: put a
+CSV at `backend/data/question_bank.csv` and the boot scripts seed it (ADR 0009, 0011). The
+expected header is:
+
+```
+n,formato,tipo_codice,domanda,opzione_1,opzione_2,opzione_3,risposta_corretta,spiegazione,topic,open_subtype
+```
+
+Without it the app starts with an empty bank, and the tests that check the bank's content
+are skipped. Question text quoted in comments, tests and docs has been replaced with
+placeholders throughout the history.
+
 ## Architecture
 
 ```mermaid

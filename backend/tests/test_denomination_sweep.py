@@ -31,6 +31,11 @@ SNAPSHOT = BACKEND / "data" / "federdoc_snapshot.json"
 CANDIDATES_CSV = BACKEND / "data" / "denomination_sweep_candidates.csv"
 VERDICTS_CSV = BACKEND / "data" / "denomination_sweep_verdicts.csv"
 
+pytestmark = pytest.mark.skipif(
+    not (SEED_CSV.exists() and CANDIDATES_CSV.exists() and VERDICTS_CSV.exists()),
+    reason="question bank sweep data is not included in the public repository",
+)
+
 VALID_VERDICTS = {"unchanged", "corrected", "deactivated", "outside_authority"}
 
 
@@ -106,7 +111,7 @@ def test_sweep_corrections_are_recorded_as_corrected(verdict_rows):
 
     corrected_ns = {row["n"] for row in verdict_rows if row["verdict"] == "corrected"}
 
-    already_landed = "[question text removed]"
+    already_landed = "[question n=425 removed]"
     for correction in CORRECTIONS:
         if not isinstance(correction, FieldCorrection):
             continue

@@ -18,6 +18,8 @@ SEED_CSV = Path(__file__).parent.parent / "data" / "question_bank.csv"
 
 @pytest.fixture(scope="module")
 def bank() -> list[Question]:
+    if not SEED_CSV.exists():
+        pytest.skip("question bank CSV is not included in the public repository")
     return parse_questions(SEED_CSV)
 
 

@@ -29,6 +29,8 @@ SEED_CSV = Path(__file__).parent.parent / "data" / "question_bank.csv"
 
 @pytest.fixture(scope="module")
 def bank_by_text() -> Dict[str, Question]:
+    if not SEED_CSV.exists():
+        pytest.skip("question bank CSV is not included in the public repository")
     return {q.text: q for q in parse_questions(SEED_CSV)}
 
 
@@ -108,7 +110,7 @@ def test_calabria_docg_correction_is_present_and_literal(bank_by_text):
         c
         for c in CORRECTIONS
         if isinstance(c, FieldCorrection)
-        and c.question_text == "[question text removed]"
+        and c.question_text == "[question n=425 removed]"
     ]
     fields = {c.field: c for c in calabria}
     assert set(fields) == {"reference_answer", "open_subtype"}

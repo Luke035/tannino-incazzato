@@ -64,3 +64,8 @@ design_handoff_tannino_incazzato/
 # it and pin its model, which is a per-machine provider choice.
 opencode.json
 .opencode/
+
+# question bank data is not distributed with the repository
+backend/data/question_bank.csv
+backend/data/denomination_sweep_candidates.csv
+backend/data/denomination_sweep_verdicts.csv

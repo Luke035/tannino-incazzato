@@ -54,16 +54,20 @@ log "Ingesting denominations..."
 (cd "$ROOT/backend" && uv run python scripts/ingest_denominations.py \
     "$ROOT/backend/data/denominations.json")
 
-log "Seeding the question bank (no-op if already loaded)..."
-(cd "$ROOT/backend" && uv run python scripts/seed_questions.py \
-    "$ROOT/backend/data/question_bank.csv")
+if [ -f "$ROOT/backend/data/question_bank.csv" ]; then
+    log "Seeding the question bank (no-op if already loaded)..."
+    (cd "$ROOT/backend" && uv run python scripts/seed_questions.py \
+        "$ROOT/backend/data/question_bank.csv")
 
-log "Backfilling topic/open_subtype for already-seeded questions (no-op if none are missing)..."
-(cd "$ROOT/backend" && uv run python scripts/backfill_question_classification.py \
-    "$ROOT/backend/data/question_bank.csv")
+    log "Backfilling topic/open_subtype for already-seeded questions (no-op if none are missing)..."
+    (cd "$ROOT/backend" && uv run python scripts/backfill_question_classification.py \
+        "$ROOT/backend/data/question_bank.csv")
 
-log "Applying question bank corrections (no-op if already applied)..."
-(cd "$ROOT/backend" && uv run python scripts/apply_corrections.py)
+    log "Applying question bank corrections (no-op if already applied)..."
+    (cd "$ROOT/backend" && uv run python scripts/apply_corrections.py)
+else
+    log "backend/data/question_bank.csv not found: starting with an empty question bank"
+fi
 
 log "Promoting the configured admin into a vacuum (no-op if an admin exists)..."
 (cd "$ROOT/backend" && uv run python scripts/promote_admin.py)
